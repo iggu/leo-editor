@@ -128,6 +128,7 @@ javascript_main_keywords_dict = {
     "char": "keyword3",
     "class": "keyword1",
     "const": "keyword1",
+    "console": "keyword3",
     "continue": "keyword1",
     "debugger": "keyword1",
     "default": "keyword1",
@@ -156,10 +157,12 @@ javascript_main_keywords_dict = {
     "interface": "keyword1",
     "isFinite": "literal2",
     "isNaN": "literal2",
+    "let": "keyword1",
     "long": "keyword3",
     "native": "keyword1",
     "new": "keyword1",
     "null": "literal2",
+    "of": "keyword1",
     "package": "keyword2",
     "parseFloat": "literal2",
     "parseInt": "literal2",
@@ -328,6 +331,13 @@ def javascript_rule30(colorer, s, i):
 def javascript_rule31(colorer, s, i):
     return colorer.match_keywords(s, i)
 
+def javascript_rule32(colorer, s, i):
+    return colorer.match_span(s, i, kind="literal1", begin="`", end="`",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
+
+
 # Rules dict for javascript_main ruleset.
 rulesDict1 = {
     "!": [javascript_rule7,],
@@ -335,6 +345,7 @@ rulesDict1 = {
     "%": [javascript_rule16,],
     "&": [javascript_rule17,],
     "'": [javascript_rule2,],
+    "`": [javascript_rule32,],
     "(": [javascript_rule3,],
     "*": [javascript_rule13,],
     "+": [javascript_rule10,],

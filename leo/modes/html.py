@@ -136,12 +136,19 @@ def html_rule_handlebar(colorer,s,i):
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
     
+        
+# New rule for jinja markup, colored with the literal3 color.
+def html_rule_jinja(colorer,s,i):
+    return colorer.match_span(s, i, kind="literal3", begin="{%", end="%}",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
 
 # Rules dict for html_main ruleset.
 rulesDict1 = {
     "&": [html_rule5,],
     "<": [html_rule0,html_rule1,html_rule2,html_rule3,html_rule4,],
-    "{": [html_rule_handlebar,],
+    "{": [html_rule_handlebar,html_rule_jinja,],
 }
 
 # Rules for html_tags ruleset.
