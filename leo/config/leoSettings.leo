@@ -664,7 +664,6 @@
 <v t="ekr.20150216135059.1"><vh>@bool create-at-persistence-nodes-automatically = False</vh></v>
 <v t="ekr.20041119041304"><vh>@bool create-nonexistent-directories = False</vh></v>
 <v t="ekr.20170718054928.1"><vh>@bool log-show-save-time = False</vh></v>
-<v t="ekr.20170706103545.1"><vh>@bool report-unchanged-files = True</vh></v>
 <v t="ekr.20170718054951.1"><vh>@string log-timestamp-format = %H:%M:%S</vh></v>
 <v t="ekr.20041119041304.1"><vh>@string relative-path-base-directory = .</vh></v>
 <v t="ekr.20181018113812.1"><vh>@string initial-chooser-directory = None</vh></v>
@@ -11099,7 +11098,6 @@ if 0: # The base class
       function/method into the headline of the imported node.
       
 **Note**: The importer will copy only the first line of a multiline decorator.</t>
-<t tx="ekr.20170706103545.1">True: Report unchanged written files.</t>
 <t tx="ekr.20170706103843.1"></t>
 <t tx="ekr.20170718054928.1"></t>
 <t tx="ekr.20170718054951.1"></t>

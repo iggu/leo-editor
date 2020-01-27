@@ -995,7 +995,7 @@ class ActiveSettingsOutline:
         lm.finishOpen(c)
         g.app.writeWaitingLog(c)
         c.setLog()
-        c.setChanged(False)
+        c.clearChanged() # Clears all dirty bits.
         g.app.disable_redraw = False
         return c
     #@+node:ekr.20190905091614.6: *3* aso.create_outline & helper
@@ -1018,7 +1018,7 @@ class ActiveSettingsOutline:
         # Clean all dirty/changed bits, so closing this outline won't prompt for a save.
         for v in c.all_nodes():
             v.clearDirty()
-        c.setChanged(changedFlag=False, redrawFlag=True)
+        c.setChanged()
         c.redraw()
 
     #@+node:ekr.20190905091614.7: *4* aso.legend

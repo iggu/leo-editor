@@ -49,9 +49,15 @@ class BaseSpellWrapper:
     #@+node:ekr.20180207071114.5: *3* spell.create
     def create(self, fn):
         """Create the given file with empty contents."""
+        # Make the directories as needed.
         theDir = g.os_path_dirname(fn)
-        g.makeAllNonExistentDirectories(theDir, c=self.c, force=True, verbose=True)
-            # Make the directories as needed.
+        if theDir:
+            ok = g.makeAllNonExistentDirectories(theDir)
+            # #1453: Don't assume the directory exists.
+            if not ok:
+                g.error(f"did not create directory: {theDir}")
+                return
+        # Create the file.
         try:
             f = open(fn, mode='wb')
             f.close()
@@ -424,11 +430,11 @@ class EnchantWrapper(BaseSpellWrapper):
     def show_info(self):
 
         g.es_print('pyenchant spell checker')
-        g.es_print('user dictionary:   %s' % self.find_user_dict())
+        g.es_print(f"user dictionary:   {self.find_user_dict()}")
         try:
             aList = enchant.list_dicts()
             aList2 = [a for a, b in aList]
-            g.es_print('main dictionaries: %s' % ', '.join(aList2))
+            g.es_print(f"main dictionaries: {', '.join(aList2)}")
         except Exception:
             g.es_exception()
 

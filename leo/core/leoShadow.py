@@ -110,7 +110,7 @@ class ShadowController:
         x = self; path = x.shadowDirName(fn)
         if not g.os_path_exists(path):
             # Force the creation of the directories.
-            g.makeAllNonExistentDirectories(path, c=None, force=True)
+            g.makeAllNonExistentDirectories(path)
         return g.os_path_exists(path) and g.os_path_isdir(path)
     #@+node:ekr.20080713091247.1: *4* x.replaceFileWithString
     def replaceFileWithString(self, encoding, fileName, s):
@@ -394,7 +394,7 @@ class ShadowController:
         self.encoding = at.encoding
         s = at.readFileToUnicode(old_private_file)
             # Sets at.encoding and inits at.readLines.
-        old_private_lines = g.splitLines(s)
+        old_private_lines = g.splitLines(s or '')  # #1466.
         s = at.readFileToUnicode(old_public_file)
         if at.encoding != self.encoding:
             g.trace(f"can not happen: encoding mismatch: {at.encoding} {self.encoding}")

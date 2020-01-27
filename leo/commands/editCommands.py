@@ -110,8 +110,8 @@ def mark_first_parents(event):
         return changed
     for parent in c.p.self_and_parents():
         if not parent.isMarked():
-            parent.v.setMarked()
-            parent.setAllAncestorAtFileNodesDirty()
+            parent.setMarked()
+            parent.setDirty()
             changed.append(parent.copy())
     if changed:
         # g.es("marked: " + ', '.join([z.h for z in changed]))
@@ -158,7 +158,7 @@ def promoteBodies(event):
     for child in p.subtree():
         h = child.h.strip()
         if child.b:
-            body = '\n'.join(['  %s' % (z) for z in g.splitLines(child.b)])
+            body = '\n'.join([f"  {z}" for z in g.splitLines(child.b)])
             s = '- %s\n%s' % (h,body)
         else:
             s = '- %s' % h
@@ -237,8 +237,8 @@ def unmark_first_parents(event=None):
         return changed
     for parent in c.p.self_and_parents():
         if parent.isMarked():
-            parent.v.clearMarked()
-            parent.setAllAncestorAtFileNodesDirty()
+            parent.clearMarked()
+            parent.setDirty()
             changed.append(parent.copy())
     if changed:
         # g.es("unmarked: " + ', '.join([z.h for z in changed]))
@@ -1000,7 +1000,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         aList = self.getIconList(c.p)
         if aList:
             self.setIconList(c.p, aList[1:])
-            c.setChanged(True)
+            c.setChanged()
             c.redraw_after_icons_changed()
     #@+node:ekr.20150514063305.237: *4* ec.deleteIconByName
     def deleteIconByName(self, t, name, relPath): # t not used.
@@ -1021,7 +1021,7 @@ class EditCommandsClass(BaseEditCommandsClass):
                 newList.append(d)
         if len(newList) != len(aList):
             self.setIconList(p, newList)
-            c.setChanged(True)
+            c.setChanged()
             c.redraw_after_icons_changed()
         else:
             g.trace('not found', name)
@@ -1033,7 +1033,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         aList = self.getIconList(c.p)
         if aList:
             self.setIconList(c.p, aList[: -1])
-            c.setChanged(True)
+            c.setChanged()
             c.redraw_after_icons_changed()
     #@+node:ekr.20150514063305.239: *4* ec.deleteNodeIcons
     @cmd('delete-node-icons')
@@ -1045,7 +1045,7 @@ class EditCommandsClass(BaseEditCommandsClass):
             p.v._p_changed = 1
             self.setIconList(p, [])
             p.setDirty()
-            c.setChanged(True)
+            c.setChanged()
             c.redraw_after_icons_changed()
     #@+node:ekr.20150514063305.240: *4* ec.insertIcon
     @cmd('insert-icon')
@@ -1067,7 +1067,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         aList2 = self.getIconList(p)
         aList2.extend(aList)
         self.setIconList(p, aList2)
-        c.setChanged(True)
+        c.setChanged()
         c.redraw_after_icons_changed()
     #@+node:ekr.20150514063305.241: *4* ec.insertIconFromFile
     def insertIconFromFile(self, path, p=None, pos=None, **kargs):
@@ -1080,7 +1080,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         if pos is None: pos = len(aList2)
         aList2.insert(pos, aList[0])
         self.setIconList(p, aList2)
-        c.setChanged(True)
+        c.setChanged()
         c.redraw_after_icons_changed()
     #@+node:ekr.20150514063305.242: *3* ec: indent
     #@+node:ekr.20150514063305.243: *4* ec.deleteIndentation
@@ -1323,7 +1323,7 @@ class EditCommandsClass(BaseEditCommandsClass):
                 print(p.h)
                 bunch = u.beforeChangeNodeContents(p)
                 p.b = s2
-                p.setDirty() # Was p.v.setDirty.
+                p.setDirty()
                 n += 1
                 u.afterChangeNodeContents(p, tag, bunch)
         u.afterChangeGroup(c.p, tag)
@@ -2086,10 +2086,9 @@ class EditCommandsClass(BaseEditCommandsClass):
         s = w.getAllText()
         n = len(s)
         i = w.getInsertPoint()
-        # pylint: disable=anomalous-backslash-in-string
-        alphanumeric_re = re.compile("\w")
-        whitespace_re = re.compile("\s")
-        simple_whitespace_re = re.compile("[ \t]")
+        alphanumeric_re = re.compile(r"\w")
+        whitespace_re = re.compile(r"\s")
+        simple_whitespace_re = re.compile(r"[ \t]")
         #@+others
         #@+node:ekr.20150514063305.318: *6* ec.moveWordHelper functions
         def is_alphanumeric(c):
@@ -3592,7 +3591,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         if p and p.v.u:
             p.v.u = {}
             # #1276.
-            p.setDirty() # was p.v.setDirty.
+            p.setDirty()
             c.setChanged()
             c.redraw()
             
@@ -3605,7 +3604,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         for p in self.c.all_unique_positions():
             if p.v.u:
                 p.v.u = {}
-                p.setDirty() # was p.v.setDirty.
+                p.setDirty()
                 changed = True
         if changed:
             c.setChanged()

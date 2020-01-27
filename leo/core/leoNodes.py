@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
 #@+node:ekr.20031218072017.3320: * @file leoNodes.py
+#@@first
 """Leo's fundamental data classes."""
 #@+<< imports >>
-#@+node:ekr.20060904165452.1: ** << imports >> (leoNodes)
+#@+node:ekr.20060904165452.1: ** << imports >> (leoNodes.py)
 import copy
 import itertools
 import time
@@ -206,12 +208,9 @@ class Position:
             return False
         if p2 is None or p2.v is None:
             return p1.v is None
-        if isinstance(p2, self.__class__):
-            return (p1.v == p2.v and
-                p1._childIndex == p2._childIndex and
-                p1.stack == p2.stack)
-        # Do this only after testing for None.
-        return NotImplementedError
+        return (p1.v == p2.v and
+            p1._childIndex == p2._childIndex and
+            p1.stack == p2.stack)
 
     def __ne__(self, p2):
         """Return True if two postions are not equivalent."""
@@ -1767,48 +1766,22 @@ class Position:
                 return True
         return False
     #@+node:ekr.20040303214038: *5* p.setAllAncestorAtFileNodesDirty
-    def setAllAncestorAtFileNodesDirty(self): # setDescendentsDirty=False
+    def setAllAncestorAtFileNodesDirty(self):
         """
-        Rewritten by Виталије Милошевић (Vitalije Milosevic).
+        Set all ancestor @<file> nodes dirty, including ancestors of all clones of p.
         """
         p = self
-        c = p.v.context
-
-        def v_and_parents(v):
-            if v != c.hiddenRootNode:
-                yield v
-            for parent_v in v.parents:
-                yield from v_and_parents(parent_v)
-                
-        dirtyVnodeList = list(set(
-            [v for v in v_and_parents(p.v)
-                if v.isAnyAtFileNode() and not v.isDirty()]
-        ))
-        if 'dirty' in g.app.debug and dirtyVnodeList:
-            g.trace(p.h, g.callers())
-            g.printObj(dirtyVnodeList)
-        for v in dirtyVnodeList:
-            v.setDirty()
-        return dirtyVnodeList
-      
+        p.v.setAllAncestorAtFileNodesDirty()
     #@+node:ekr.20040303163330: *5* p.setDirty
-    def setDirty(self): # setDescendentsDirty=True
+    def setDirty(self):
         """
         Mark a node and all ancestor @file nodes dirty.
 
         p.setDirty() is no longer expensive.
         """
         p = self
-        dirtyVnodeList = []
-        if not p.v.isDirty():
-            p.v.setDirty()
-            dirtyVnodeList.append(p.v)
-        #
-        # Important: this must be called even if p.v is already dirty.
-        # Typing can change the @ignore state!
-        dirtyVnodeList2 = p.setAllAncestorAtFileNodesDirty() # setDescendentsDirty
-        dirtyVnodeList.extend(dirtyVnodeList2)
-        return dirtyVnodeList
+        p.v.setAllAncestorAtFileNodesDirty()
+        p.v.setDirty()
     #@+node:ekr.20160225153333.1: *3* p.Predicates
     #@+node:ekr.20160225153414.1: *4* p.is_at_all & is_at_all_tree
     def is_at_all(self):
@@ -2095,11 +2068,14 @@ class VNode:
     isAtAsisFileNode = isAtSilentFileNode
     #@+node:ekr.20031218072017.3351: *4* v.isAtIgnoreNode
     def isAtIgnoreNode(self):
-        """Returns True if the receiver contains @ignore in its body at the start of a line.
+        """
+        Returns True if:
+            
+        - the vnode' body contains @ignore at the start of a line or
 
-        or if the headline starts with @ignore."""
+        - the vnode's headline starts with @ignore.
+        """
         # v = self
-        # 2011/10/08: honor @ignore in headlines.  Sheesh.
         if g.match_word(self._headString, 0, '@ignore'):
             return True
         flag, i = g.is_special(self._bodyString, "@ignore")
@@ -2419,6 +2395,26 @@ class VNode:
         v = self
         v.selectionStart = start
         v.selectionLength = length
+    #@+node:ekr.20191213161023.1: *3* v.setAllAncestorAtFileNodesDirty
+    def setAllAncestorAtFileNodesDirty(self):
+        """
+        Original idea by Виталије Милошевић (Vitalije Milosevic).
+        
+        Modified by EKR.
+        """
+        v = self
+        hiddenRootVnode = v.context.hiddenRootNode
+
+        def v_and_parents(v):
+            if v != hiddenRootVnode:
+                yield v
+                for parent_v in v.parents:
+                    yield from v_and_parents(parent_v)
+                    
+        # There is no harm in calling v2.setDirty redundantly.
+        for v2 in v_and_parents(v):
+            if v2.isAnyAtFileNode():
+                v2.setDirty()
     #@+node:ekr.20130524063409.10700: *3* v.Inserting & cloning
     def cloneAsNthChild(self, parent_v, n):
         # Does not check for illegal clones!

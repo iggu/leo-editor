@@ -92,7 +92,7 @@ class LeoMenu:
         }
 
         for i in range(1,9):
-            d ['expand-to-level-%s' % (i)] = lambda: c.p.hasChildren()
+            d [f"expand-to-level-{i}"] = lambda: c.p.hasChildren()
 
         if 0: # Initial testing.
             commandKeys = list(c.commandsDict.keys())
@@ -557,6 +557,8 @@ class LeoMenu:
                 return c.doCommand(command, label)
 
             return legacyMenuCallback
+        # For pylint
+        return None
     #@+node:ekr.20031218072017.3805: *4* LeoMenu.deleteMenu
     def deleteMenu(self, menuName):
         try:

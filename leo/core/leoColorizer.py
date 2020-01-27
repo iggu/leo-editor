@@ -680,7 +680,7 @@ class BaseJEditColorizer (BaseColorizer):
         path = g.os_path_join(g.app.loadDir, '..', 'modes')
         fn = g.os_path_join(path, f"{language}.py")
         if g.os_path_exists(fn):
-            mode = g.importFromPath(moduleName=language, path=path)
+            mode = g.import_module(name = f"leo.modes.{language}")
         else:
             mode = None
         return self.init_mode_from_module(name, mode)
@@ -1722,7 +1722,7 @@ class JEditColorizer(BaseJEditColorizer):
             re_obj = re.compile(pattern, flags)
         except Exception:
             # Do not call g.es here!
-            g.trace('Invalid regular expression: %s' % (pattern))
+            g.trace(f"Invalid regular expression: {pattern}")
             return 0
         # Match succeeds or fails more quickly than search.
         self.match_obj = mo = re_obj.match(s, i) # re_obj.search(s,i)
@@ -1845,6 +1845,7 @@ class JEditColorizer(BaseJEditColorizer):
         Return n >= 0 if s[i] ends with a non-escaped 'end' string.
         """
         esc = self.escape
+        # pylint: disable=inconsistent-return-statements
         while 1:
             j = s.find(pattern, i)
             if j == -1:
@@ -1868,6 +1869,8 @@ class JEditColorizer(BaseJEditColorizer):
                     return j
             else:
                 return j
+        # For pylint.
+        return -1
     #@+node:ekr.20110605121601.18624: *5* jedit.restart_match_span
     def restart_match_span(self, s,
         delegate, end, exclude_match, kind,

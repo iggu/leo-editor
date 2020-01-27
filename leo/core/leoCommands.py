@@ -1252,6 +1252,32 @@ class Commands:
         for p in c.all_unique_positions(copy=False):
             p.v.clearVisited()
             p.v.clearWriteBit()
+    #@+node:ekr.20191215044636.1: *5* c.clearChanged
+    def clearChanged(self):
+        """clear the marker that indicates that the .leo file has been changed."""
+        c = self
+        if not c.frame:
+            return
+        c.changed = False
+        if c.loading:
+            return # don't update while loading.
+        # Clear all dirty bits _before_ setting the caption.
+        for v in c.all_unique_nodes():
+            v.clearDirty()
+        c.changed = False
+        # Do nothing for null frames.
+        assert c.gui
+        if c.gui.guiName() == 'nullGui':
+            return
+        if not c.frame.top:
+            return
+        master = getattr(c.frame.top, 'leo_master', None)
+        if master:
+            master.setChanged(c, False)
+                # LeoTabbedTopLevel.setChanged.
+        s = c.frame.getTitle()
+        if len(s) > 2 and s[0: 2] == "* ":
+            c.frame.setTitle(s[2:])
     #@+node:ekr.20060906211138: *5* c.clearMarked
     def clearMarked(self, p):
         c = self
@@ -1281,22 +1307,17 @@ class Commands:
             v.setSelection(0, 0)
             p.setDirty()
             if not c.isChanged():
-                c.setChanged(True)
+                c.setChanged()
             c.redraw_after_icons_changed()
-    #@+node:ekr.20031218072017.2989: *5* c.setChanged (no longer changed)
-    def setChanged(self, changedFlag=True, redrawFlag=True):
-        """Set or clear the marker that indicates that the .leo file has been changed."""
+    #@+node:ekr.20031218072017.2989: *5* c.setChanged
+    def setChanged(self, redrawFlag=True):
+        """Set the marker that indicates that the .leo file has been changed."""
         c = self
         if not c.frame:
             return
-        c.changed = changedFlag
+        c.changed = True
         if c.loading:
             return # don't update while loading.
-        # Clear all dirty bits _before_ setting the caption.
-        if not changedFlag:
-            for v in c.all_unique_nodes():
-                if v.isDirty():
-                    v.clearDirty()
         # Do nothing for null frames.
         assert c.gui
         if c.gui.guiName() == 'nullGui':
@@ -1307,16 +1328,11 @@ class Commands:
             return
         master = getattr(c.frame.top, 'leo_master', None)
         if master:
-            master.setChanged(c, changedFlag)
-                # Call LeoTabbedTopLevel.setChanged.
+            master.setChanged(c, True)
+                # LeoTabbedTopLevel.setChanged.
         s = c.frame.getTitle()
-        if len(s) > 2:
-            if changedFlag:
-                if s[0] != '*':
-                    c.frame.setTitle("* " + s)
-            else:
-                if s[0: 2] == "* ":
-                    c.frame.setTitle(s[2:])
+        if len(s) > 2 and s[0] != '*':
+            c.frame.setTitle("* " + s)
     #@+node:ekr.20040803140033.1: *5* c.setCurrentPosition
     _currentCount = 0
 
@@ -1337,6 +1353,7 @@ class Commands:
         else: # 2011/02/25:
             c._currentPosition = c.rootPosition()
             g.trace(f"Invalid position: {repr(p and p.h)}")
+            g.trace(g.callers())
             # Don't kill unit tests for this kind of problem.
 
     # For compatibiility with old scripts.
@@ -1363,10 +1380,11 @@ class Commands:
                 g.app.setLog(c.frame.log)
             except AttributeError:
                 pass
-    #@+node:ekr.20060906211138.1: *5* c.setMarked
+    #@+node:ekr.20060906211138.1: *5* c.setMarked (calls hook)
     def setMarked(self, p):
         c = self
-        p.v.setMarked()
+        p.setMarked()
+        p.setDirty()  # Defensive programming.
         g.doHook("set-mark", c=c, p=p)
     #@+node:ekr.20040803140033.3: *5* c.setRootPosition (A do-nothing)
     def setRootPosition(self, unused_p=None):
@@ -2478,12 +2496,13 @@ class Commands:
     #@+node:ekr.20031218072017.2925: *4* c.markAllAtFileNodesDirty
     def markAllAtFileNodesDirty(self, event=None):
         """Mark all @file nodes as changed."""
-        c = self; p = c.rootPosition()
+        c = self
         c.endEditing()
+        p = c.rootPosition()
         while p:
-            if p.isAtFileNode() and not p.isDirty():
+            if p.isAtFileNode():
                 p.setDirty()
-                c.setChanged(True)
+                c.setChanged()
                 p.moveToNodeAfterTree()
             else:
                 p.moveToThreadNext()
@@ -2493,13 +2512,14 @@ class Commands:
         """Mark all @file nodes in the selected tree as changed."""
         c = self
         p = c.p
-        if not p: return
+        if not p:
+            return
         c.endEditing()
         after = p.nodeAfterTree()
         while p and p != after:
-            if p.isAtFileNode() and not p.isDirty():
+            if p.isAtFileNode():
                 p.setDirty()
-                c.setChanged(True)
+                c.setChanged()
                 p.moveToNodeAfterTree()
             else:
                 p.moveToThreadNext()
@@ -2641,10 +2661,10 @@ class Commands:
         if c.import_error_nodes:
             files = '\n'.join(sorted(set(c.import_error_nodes)))
             if use_dialogs:
-                g.app.gui.runAskOkDialog(c,
-                    title='Import errors',
-                    message='The following were not imported properly. '
-                    '@ignore was inserted:\n%s' % (files))
+                message=(
+                    'The following were not imported properly. '
+                    f"Inserted @ignore in...\n{files}")
+                g.app.gui.runAskOkDialog(c, message=message, title='Import errors')
             else:
                 g.es('import errors...', color='red')
                 g.es('\n'.join(sorted(files)), color='blue')
@@ -2652,11 +2672,12 @@ class Commands:
             files = '\n'.join(sorted(set(c.ignored_at_file_nodes)))
             kind = 'read' if kind.startswith('read') else 'written'
             if use_dialogs:
-                message = 'The following were not %s because they contain @ignore:\n%s' % (kind, files)
+                message = (
+                    f"The following were not {kind} "
+                    f"because they contain @ignore:\n{files}")
                 g.app.gui.runAskOkDialog(c,
                     message=message,
-                    title='Not %s' % kind.capitalize(),
-                )
+                    title=f"Not {kind.capitalize()}")
             else:
                 g.es(f"not {kind} (@ignore)...", color='red')
                 g.es(files, color='blue')
@@ -2695,55 +2716,44 @@ class Commands:
                 message=message,
                 text="Ok")
     #@+node:ekr.20031218072017.2945: *4* c.Dragging
-    #@+node:ekr.20031218072017.2353: *5* c.dragAfter
-    def dragAfter(self, p, after):
-        c = self; u = self.undoer; undoType = 'Drag'
-        current = c.p
-        inAtIgnoreRange = p.inAtIgnoreRange()
-        if not c.checkDrag(p, after): return
-        if not c.checkMoveWithParentWithWarning(p, after.parent(), True): return
-        c.endEditing()
-        undoData = u.beforeMoveNode(current)
-        dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
-        p.moveAfter(after)
-        if inAtIgnoreRange and not p.inAtIgnoreRange():
-            # The moved nodes have just become newly unignored.
-            dirtyVnodeList2 = p.setDirty() # Mark descendent @thin nodes dirty.
-            dirtyVnodeList.extend(dirtyVnodeList2)
-        else: # No need to mark descendents dirty.
-            dirtyVnodeList2 = p.setAllAncestorAtFileNodesDirty()
-            dirtyVnodeList.extend(dirtyVnodeList2)
-        c.setChanged(True)
-        u.afterMoveNode(p, undoType, undoData, dirtyVnodeList=dirtyVnodeList)
-        c.redraw(p)
-        c.updateSyntaxColorer(p) # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2947: *5* c.dragToNthChildOf
     def dragToNthChildOf(self, p, parent, n):
         c = self; u = c.undoer; undoType = 'Drag'
         current = c.p
-        inAtIgnoreRange = p.inAtIgnoreRange()
-        if not c.checkDrag(p, parent): return
-        if not c.checkMoveWithParentWithWarning(p, parent, True): return
+        if not c.checkDrag(p, parent):
+            return
+        if not c.checkMoveWithParentWithWarning(p, parent, True):
+            return
         c.endEditing()
         undoData = u.beforeMoveNode(current)
-        dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
+        p.setDirty()
         p.moveToNthChildOf(parent, n)
-        if inAtIgnoreRange and not p.inAtIgnoreRange():
-            # The moved nodes have just become newly unignored.
-            dirtyVnodeList2 = p.setDirty() # Mark descendent @thin nodes dirty.
-            dirtyVnodeList.extend(dirtyVnodeList2)
-        else: # No need to mark descendents dirty.
-            dirtyVnodeList2 = p.setAllAncestorAtFileNodesDirty()
-            dirtyVnodeList.extend(dirtyVnodeList2)
-        c.setChanged(True)
-        u.afterMoveNode(p, undoType, undoData, dirtyVnodeList=dirtyVnodeList)
+        p.setDirty()
+        c.setChanged()
+        u.afterMoveNode(p, undoType, undoData)
+        c.redraw(p)
+        c.updateSyntaxColorer(p) # Dragging can change syntax coloring.
+    #@+node:ekr.20031218072017.2353: *5* c.dragAfter
+    def dragAfter(self, p, after):
+        c = self; u = self.undoer; undoType = 'Drag'
+        current = c.p
+        if not c.checkDrag(p, after):
+            return
+        if not c.checkMoveWithParentWithWarning(p, after.parent(), True):
+            return
+        c.endEditing()
+        undoData = u.beforeMoveNode(current)
+        p.setDirty()
+        p.moveAfter(after)
+        p.setDirty()
+        c.setChanged()
+        u.afterMoveNode(p, undoType, undoData)
         c.redraw(p)
         c.updateSyntaxColorer(p) # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2946: *5* c.dragCloneToNthChildOf
     def dragCloneToNthChildOf(self, p, parent, n):
         c = self; u = c.undoer; undoType = 'Clone Drag'
         current = c.p
-        inAtIgnoreRange = p.inAtIgnoreRange()
         clone = p.clone() # Creates clone & dependents, does not set undo.
         if (
             not c.checkDrag(p, parent) or
@@ -2754,17 +2764,11 @@ class Commands:
             return
         c.endEditing()
         undoData = u.beforeInsertNode(current)
-        dirtyVnodeList = clone.setAllAncestorAtFileNodesDirty()
+        clone.setDirty()
         clone.moveToNthChildOf(parent, n)
-        if inAtIgnoreRange and not p.inAtIgnoreRange():
-            # The moved nodes have just become newly unignored.
-            dirtyVnodeList2 = p.setDirty() # Mark descendent @thin nodes dirty.
-            dirtyVnodeList.extend(dirtyVnodeList2)
-        else: # No need to mark descendents dirty.
-            dirtyVnodeList2 = p.setAllAncestorAtFileNodesDirty()
-            dirtyVnodeList.extend(dirtyVnodeList2)
-        c.setChanged(True)
-        u.afterInsertNode(clone, undoType, undoData, dirtyVnodeList=dirtyVnodeList)
+        clone.setDirty()
+        c.setChanged()
+        u.afterInsertNode(clone, undoType, undoData)
         c.redraw(clone)
         c.updateSyntaxColorer(clone) # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2948: *5* c.dragCloneAfter
@@ -2773,20 +2777,13 @@ class Commands:
         current = c.p
         clone = p.clone() # Creates clone.  Does not set undo.
         if c.checkDrag(p, after) and c.checkMoveWithParentWithWarning(clone, after.parent(), True):
-            inAtIgnoreRange = clone.inAtIgnoreRange()
             c.endEditing()
             undoData = u.beforeInsertNode(current)
-            dirtyVnodeList = clone.setAllAncestorAtFileNodesDirty()
+            clone.setDirty()
             clone.moveAfter(after)
-            if inAtIgnoreRange and not clone.inAtIgnoreRange():
-                # The moved node have just become newly unignored.
-                dirtyVnodeList2 = clone.setDirty() # Mark descendent @thin nodes dirty.
-                dirtyVnodeList.extend(dirtyVnodeList2)
-            else: # No need to mark descendents dirty.
-                dirtyVnodeList2 = clone.setAllAncestorAtFileNodesDirty()
-                dirtyVnodeList.extend(dirtyVnodeList2)
-            c.setChanged(True)
-            u.afterInsertNode(clone, undoType, undoData, dirtyVnodeList=dirtyVnodeList)
+            clone.v.setDirty()
+            c.setChanged()
+            u.afterInsertNode(clone, undoType, undoData)
             p = clone
         else:
             clone.doDelete(newNode=p)
@@ -3579,21 +3576,23 @@ class Commands:
     selectVnode = selectPosition
     #@+node:ekr.20080503055349.1: *5* c.setPositionAfterSort
     def setPositionAfterSort(self, sortChildren):
+        """
+        Return the position to be selected after a sort.
+        """
         c = self
         p = c.p
         p_v = p.v
         parent = p.parent()
         parent_v = p._parentVnode()
         if sortChildren:
-            p = parent or c.rootPosition()
+            return parent or c.rootPosition()
+        if parent:
+            p = parent.firstChild()
         else:
-            if parent:
-                p = parent.firstChild()
-            else:
-                p = leoNodes.Position(parent_v.children[0])
-            while p and p.v != p_v:
-                p.moveToNext()
-            p = p or parent
+            p = leoNodes.Position(parent_v.children[0])
+        while p and p.v != p_v:
+            p.moveToNext()
+        p = p or parent
         return p
     #@+node:ekr.20070226113916: *5* c.treeSelectHelper
     def treeSelectHelper(self, p):
@@ -3627,11 +3626,8 @@ class Commands:
         # This handles the undo.
         body.onBodyChanged(undoType, oldSel=oldSel or newSel, oldYview=oldYview)
         # Update the changed mark and icon.
-        c.setChanged(True)
-        if p.isDirty():
-            dirtyVnodeList = []
-        else:
-            dirtyVnodeList = p.setDirty()
+        p.setDirty()
+        c.setChanged()
         c.redraw_after_icons_changed()
         # Scroll as necessary.
         if oldYview:
@@ -3640,7 +3636,6 @@ class Commands:
             body.wrapper.seeInsertPoint()
         body.wrapper.setFocus()
         c.recolor()
-        return dirtyVnodeList
     #@+node:ekr.20130823083943.12559: *3* c.recursiveImport
     def recursiveImport(self, dir_, kind,
         add_path=True,
@@ -3691,7 +3686,7 @@ class Commands:
         else:
             g.es_print(f"Does not exist: {dir_}")
     #@+node:ekr.20171124084149.1: *3* c.Scripting utils
-    #@+node:ekr.20160201072634.1: *4* c.cloneFindByPredicate
+    #@+node:ekr.20160201072634.1: *4* c.cloneFindByPredicated
     def cloneFindByPredicate(self,
         generator,     # The generator used to traverse the tree.
         predicate,     # A function of one argument p, returning True
@@ -3735,10 +3730,10 @@ class Commands:
             for p in clones:
                 clone = p.clone()
                 clone.moveToLastChildOf(root)
-            u.afterInsertNode(root, undoType, undoData, dirtyVnodeList=[])
+            u.afterInsertNode(root, undoType, undoData)
             if redraw:
                 c.selectPosition(root)
-                c.setChanged(True)
+                c.setChanged()
                 c.contractAllHeadlines()
                 root.expand()
                 c.redraw()

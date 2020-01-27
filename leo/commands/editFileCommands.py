@@ -80,7 +80,7 @@ class EditFileCommandsClass(BaseEditCommandsClass):
             if self.cleanAtCleanNode(p2, undoType):
                 n += 1
         if n > 0:
-            c.setChanged(True)
+            c.setChanged()
             c.undoer.afterChangeTree(p, undoType, bunch)
         g.es_print(f"{n} node{g.plural(n)} cleaned")
     #@+node:ekr.20170806094317.6: *3* efc.compareAnyTwoFiles & helpers
@@ -145,7 +145,7 @@ class EditFileCommandsClass(BaseEditCommandsClass):
                 if p1.h != p2.h or p1.b != p2.b:
                     changed[key] = p2 # Show the node in the *other* file.
         return inserted, deleted, changed
-    #@+node:ekr.20170806094317.11: *4* efc.createAllCompareClones & helper
+    #@+node:ekr.20170806094317.11: *4* efc.createAllCompareClones & helper (changed)
     def createAllCompareClones(self, c1, c2, inserted, deleted, changed):
         """Create the comparison trees."""
         c = self.c # Always use the visible commander
@@ -156,7 +156,7 @@ class EditFileCommandsClass(BaseEditCommandsClass):
         undoData = u.beforeInsertNode(c.p)
         parent = c.p.insertAfter()
         parent.setHeadString(undoType)
-        u.afterInsertNode(parent, undoType, undoData, dirtyVnodeList=[])
+        u.afterInsertNode(parent, undoType, undoData)
         # Use the wrapped file name if possible.
         fn1 = g.shortFileName(c1.wrappedFileName) or c1.shortFileName()
         fn2 = g.shortFileName(c2.wrappedFileName) or c2.shortFileName()
@@ -210,8 +210,8 @@ class EditFileCommandsClass(BaseEditCommandsClass):
     #@+node:ekr.20170806094317.19: *4* efc.dumpCompareNodes
     def dumpCompareNodes(self, fileName1, fileName2, inserted, deleted, changed):
         for d, kind in (
-            (inserted, 'inserted (only in %s)' % (fileName1)),
-            (deleted, 'deleted  (only in %s)' % (fileName2)),
+            (inserted, f"inserted (only in {fileName1})"),
+            (deleted, f"deleted  (only in {fileName2})"),
             (changed, 'changed'),
         ):
             g.pr('\n', kind)
@@ -581,6 +581,7 @@ class GitDiffController:
         n1, n2 = 1, 0
         while n1 <= 5:
             ok = self.diff_revs(
+                # Clearer w/o f-strings.
                 rev1 = 'HEAD@{%s}' % (n1),
                 rev2 = 'HEAD@{%s}' % (n2))
             if ok: return

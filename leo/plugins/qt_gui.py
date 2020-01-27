@@ -1883,7 +1883,7 @@ class StyleSheetManager:
                 else:
                     sheet = '\n'.join(sheet)
             if sheet and sheet.strip():
-                line0 = '\n/* ===== From %s ===== */\n\n' % (name)
+                line0 = f"\n/* ===== From {name} ===== */\n\n"
                 sheet = line0 + sheet
                 sheets.append(sheet)
         if sheets:

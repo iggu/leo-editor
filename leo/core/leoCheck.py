@@ -6,10 +6,10 @@
 # To do:
 # - Option to ignore defs without args if all calls have no args.
 # * explain typical entries
-import imp
+import importlib
 import leo.core.leoGlobals as g
 import leo.core.leoAst as leoAst
-imp.reload(leoAst)
+importlib.reload(leoAst)
 import ast
 # import glob
 import importlib
@@ -28,9 +28,9 @@ class ConventionChecker:
         g.cls()
         if c.changed: c.save()
         
-        import imp
+        import importlib
         import leo.core.leoCheck as leoCheck
-        imp.reload(leoCheck)
+        importlib.reload(leoCheck)
         
         fn = g.os_path_finalize_join(g.app.loadDir, '..', 'plugins', 'nodetags.py')
         leoCheck.ConventionChecker(c).check(fn=fn)
@@ -327,8 +327,7 @@ class ConventionChecker:
     #@+node:ekr.20171215080831.1: *3* checker.dump, format
     def dump(self, node, annotate_fields=True, level=0, **kwargs):
         """Dump the node."""
-        d = leoAst.AstDumper(annotate_fields=annotate_fields,**kwargs) 
-        return d.dump(node, level=level)
+        return leoAst.AstDumper().dump(node, level=level)
 
     def format(self, node, *args, **kwargs):
         """Format the node and possibly its descendants, depending on args."""
@@ -854,7 +853,7 @@ class Context:
             # The error indicates that scope resolution will give the wrong result.
             # e = cx.st.d.get(name)
             # if e:
-                # self.u.error('name \'%s\' used prior to global declaration' % (name))
+                # self.u.error(f"name {name!r} used prior to global declaration")
                 # # Add the name to the global_names set in *this* context.
                 # # cx.global_names.add(name)
             # # Regardless of error, bind the name in *this* context,
@@ -1170,14 +1169,18 @@ class Pass1 (leoAst.AstFullTraverser): # V2
         if not spec:
             return ''
         # This may not work for leading dots.
-        aList,path,paths = spec.split('.'),None,None
+        aList = spec.split('.')
+        path = None
+        # paths = None
         name = 'no name'
         for name in aList:
             try:
-                f,path,description = imp.find_module(name,paths)
-                if not path: break
-                paths = [path]
-                if f: f.close()
+                pass
+                ### Not ready. Old code:
+                    # f,path,description = imp.find_module(name,paths)
+                    # if not path: break
+                    # paths = [path]
+                    # if f: f.close()
             except ImportError:
                 # Important: imports can fail due to Python version.
                 # Thus, such errors are not necessarily searious.

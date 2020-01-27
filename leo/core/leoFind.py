@@ -543,7 +543,7 @@ class LeoFind:
                 p.anyAtFileNodeName() and not p.v.isDirty()
                 and any([p2.v.isDirty() for p2 in p.subtree()])
             ):
-                p.v.setDirty()
+                p.setDirty()
         c.redraw()
     #@+node:ekr.20150629072547.1: *4* find.preloadFindPattern
     def preloadFindPattern(self, w):
@@ -1608,6 +1608,7 @@ class LeoFind:
         # No redraws here: they would destroy the headline selection.
         if self.mark_changes:
             p.setMarked()
+            p.setDirty()
         if self.in_headline:
             c.frame.tree.onHeadChanged(p, 'Change')
         else:
@@ -1646,7 +1647,7 @@ class LeoFind:
         self.initInHeadline()
         if self.changeSelection():
             self.findNext(False) # don't reinitialize
-    #@+node:ekr.20160920114454.1: *4* find.cloneFindTag & helpers
+    #@+node:ekr.20160920114454.1: *4* find.cloneFindTag & helpers (changed)
     def cloneFindTag(self, tag):
         """Handle the clone-find-tag command."""
         c, u = self.c, self.c.undoer
@@ -1659,9 +1660,9 @@ class LeoFind:
             undoType = 'Clone Find Tag'
             undoData = u.beforeInsertNode(c.p)
             found = self.createCloneTagNodes(clones)
-            u.afterInsertNode(found, undoType, undoData, dirtyVnodeList=[])
+            u.afterInsertNode(found, undoType, undoData)
             assert c.positionExists(found, trace=True), found
-            c.setChanged(True)
+            c.setChanged()
             c.selectPosition(found)
             c.redraw()
         else:
@@ -1732,7 +1733,7 @@ class LeoFind:
             c.redraw()
         g.es("found", count, "matches for", self.find_text)
         return count
-    #@+node:ekr.20160422072841.1: *5* find.doCloneFindAll & helpers
+    #@+node:ekr.20160422072841.1: *5* find.doCloneFindAll & helpers (changed)
     def doCloneFindAll(self, after, data, flatten, p, undoType):
         """Handle the clone-find-all command, from p to after."""
         c, u = self.c, self.c.undoer
@@ -1749,9 +1750,9 @@ class LeoFind:
         if clones:
             undoData = u.beforeInsertNode(c.p)
             found = self.createCloneFindAllNodes(clones, flatten)
-            u.afterInsertNode(found, undoType, undoData, dirtyVnodeList=[])
+            u.afterInsertNode(found, undoType, undoData)
             assert c.positionExists(found, trace=True), found
-            c.setChanged(True)
+            c.setChanged()
             c.selectPosition(found)
         else:
             self.restore(data)
@@ -1804,7 +1805,7 @@ class LeoFind:
         else:
             p.moveToThreadNext()
         return count
-    #@+node:ekr.20160422073500.1: *5* find.doFindAll & helpers
+    #@+node:ekr.20160422073500.1: *5* find.doFindAll & helpers (changed)
     def doFindAll(self, after, data, p, undoType):
         """Handle the find-all command from p to after."""
         c, u, w = self.c, self.c.undoer, self.s_ctrl
@@ -1839,9 +1840,9 @@ class LeoFind:
                 count = len(list(self.unique_matches))
             else:
                 found = self.createFindAllNode(result)
-            u.afterInsertNode(found, undoType, undoData, dirtyVnodeList=[])
+            u.afterInsertNode(found, undoType, undoData)
             c.selectPosition(found)
-            c.setChanged(True)
+            c.setChanged()
         else:
             self.restore(data)
         return count
@@ -1952,6 +1953,7 @@ class LeoFind:
                 # Success.
                 if self.mark_finds:
                     p.setMarked()
+                    p.setDirty()
                     if not self.changeAllFlag:
                         c.frame.tree.drawIcon(p) # redraw only the icon.
                 return pos, newpos
@@ -2252,6 +2254,8 @@ class LeoFind:
             if k == -1:
                 return -1, -1
             return k, k + n
+        # For pylint:
+        return -1, -1
     #@+node:ekr.20060526093531: *6* find.plainHelper
     def plainHelper(self, s, i, j, pattern, nocase, word):
         """Do a plain search."""
@@ -2272,6 +2276,8 @@ class LeoFind:
             if k == -1:
                 return -1, -1
             return k, k + n
+        # For pylint
+        return -1, -1
     #@+node:ekr.20060526140744.1: *6* find.matchWord
     def matchWord(self, s, i, pattern):
         """Do a whole-word search."""

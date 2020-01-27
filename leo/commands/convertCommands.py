@@ -36,7 +36,7 @@ class To_Python:
         u, undoType = c.undoer, 'typescript-to-python'
         pp = leoBeautify.CPrettyPrinter(c)
         u.beforeChangeGroup(c.p, undoType)
-        changed, dirtyVnodeList = False, []
+        changed = False
         n_files, n_nodes = 0, 0
         special = ('class ', 'module ', '@file ', '@@file ')
         files = ('@file ', '@@file ')
@@ -54,16 +54,12 @@ class To_Python:
                 s = ''.join(aList)
                 if s != p.b:
                     p.b = s
-                    dirtyVnodeList2 = p.setDirty() # Was p.v.setDirty.
-                    dirtyVnodeList.extend(dirtyVnodeList2)
-                    ### p.v.setDirty()
-                    ### dirtyVnodeList.append(p.v)
+                    p.setDirty()
                     u.afterChangeNodeContents(p, undoType, bunch)
                     changed = True
         # Call this only once, at end.
         if changed:
-            u.afterChangeGroup(c.p, undoType,
-                reportFlag=False, dirtyVnodeList=dirtyVnodeList)
+            u.afterChangeGroup(c.p, undoType, reportFlag=False)
         t2 = time.time()
         g.es_print('done! %s files, %s nodes, %2.2f sec' % (n_files, n_nodes, t2 - t1))
     #@+node:ekr.20150514063305.127: *3* To_Python.convertCodeList
@@ -924,8 +920,9 @@ class ConvertCommandsClass(BaseEditCommandsClass):
             def __init__(self, c):
                 """MakeStubFile.ctor. From StandAloneMakeStubFile.ctor."""
                 self.c = c
-                self.msf = msf = g.importExtension(moduleName='make_stub_files',
-                    pluginName=None, verbose=False, required=False)
+                ### self.msf = msf = g.importExtension(moduleName='make_stub_files',
+                ###     pluginName=None, verbose=False, required=False)
+                self.msf = msf = g.import_module('make_stub_files')
                 x = msf.StandAloneMakeStubFile()
                     # x is used *only* to init ivars.
                 # Ivars set on the command line...
@@ -1083,12 +1080,14 @@ class ConvertCommandsClass(BaseEditCommandsClass):
                 # self.output_fn = None
                 self.overwrite = c.config.getBool('py2cs-overwrite', default=False)
                 # Connect to the external module.
-                self.py2cs = g.importExtension(
-                    'py2cs',
-                    pluginName=None,
-                    verbose=False,
-                    required=False,
-                )
+                self.py2cs = g.import_module('leo.external.py2cs')
+                ###
+                    # self.py2cs = g.importExtension(
+                        # 'py2cs',
+                        # pluginName=None,
+                        # verbose=False,
+                        # required=False,
+                    # )
             #@+node:ekr.20160316093019.1: *5* py2cs.main
             def main(self):
                 """Main line for Python_To_CoffeeScript class."""
@@ -1276,6 +1275,7 @@ class ConvertCommandsClass(BaseEditCommandsClass):
             #@+node:ekr.20150514063305.180: *7* handle_scope_keyword
             def handle_scope_keyword(self, aList, i):
                 i1 = i
+                # pylint: disable=undefined-loop-variable
                 for word in ('public', 'private', 'export'):
                     if self.match_word(aList, i, word):
                         i += len(word)

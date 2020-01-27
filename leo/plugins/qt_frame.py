@@ -316,7 +316,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
                 name=name)
             dock.setWidget(w)
             # Remember the dock.
-            setattr(self, '%s_dock' % (name), dock)
+            setattr(self, f"{name}_dock", dock)
             if name == central_widget:
                 self.setCentralWidget(dock)
                     # Important: the central widget should be a dock.
@@ -906,7 +906,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
             func = getattr(self, f"do_leo_spell_btn_{ivar}")
             button.clicked.connect(func)
             # This name is significant.
-            setattr(self, 'leo_spell_btn_%s' % (ivar), button)
+            setattr(self, f"leo_spell_btn_{ivar}", button)
         self.leo_spell_btn_Hide.setCheckable(False)
         spacerItem = QtWidgets.QSpacerItem(20, 40,
             QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -4050,7 +4050,7 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
             if nxt is not None:
                 src_p.doDelete()
                 src_c.selectPosition(src_c.vnode2position(nxt))
-                src_c.setChanged(True)
+                src_c.setChanged()
                 src_c.redraw()
             else:
                 g.es("Can't move last node out of outline")
@@ -4059,9 +4059,8 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
         c.validateOutline()
         c.selectPosition(pasted)
         pasted.setDirty()
-        pasted.setAllAncestorAtFileNodesDirty()
             # 2011/02/27: Fix bug 690467.
-        c.setChanged(True)
+        c.setChanged()
         back = pasted.back()
         if back and back.isExpanded():
             pasted.moveToNthChildOf(back, 0)
@@ -4104,16 +4103,14 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
             c.checkMoveWithParentWithWarning(p1, p2, True))
         if ok:
             undoData = u.beforeMoveNode(p1)
-            dirtyVnodeList = p1.setAllAncestorAtFileNodesDirty()
+            p1.setDirty()
             p1 = move(p1, p2)
             if cloneDrag:
                 # Set dirty bits for ancestors of *all* cloned nodes.
-                # Note: the setDescendentsDirty flag does not do what we want.
                 for z in p1.self_and_subtree():
-                    z.setAllAncestorAtFileNodesDirty(
-                        setDescendentsDirty=False)
-            c.setChanged(True)
-            u.afterMoveNode(p1, 'Drag', undoData, dirtyVnodeList)
+                    z.setDirty()
+            c.setChanged()
+            u.afterMoveNode(p1, 'Drag', undoData)
             if (not as_child or
                 p2.isExpanded() or
                 c.config.getBool("drag-alt-drag-expands") is not False
@@ -4134,7 +4131,7 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
                 fn = s[: i]
                 s = s[i + 1:]
         return fn, s
-    #@+node:ekr.20110605121601.18369: *5* LeoQTreeWidget.urlDrop & helpers
+    #@+node:ekr.20110605121601.18369: *5* LeoQTreeWidget.urlDrop & helpers (changed)
     def urlDrop(self, md, p):
         """Handle a drop when md.urls()."""
         c, u, undoType = self.c, self.c.undoer, 'Drag Urls'
@@ -4151,8 +4148,8 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
             elif scheme in ('http',): # 'ftp','mailto',
                 changed |= self.doHttpUrl(p, url)
         if changed:
-            c.setChanged(True)
-            u.afterChangeGroup(c.p, undoType, reportFlag=False, dirtyVnodeList=[])
+            c.setChanged()
+            u.afterChangeGroup(c.p, undoType, reportFlag=False)
             c.redraw()
     #@+node:ekr.20110605121601.18370: *6* LeoQTreeWidget.doFileUrl & helper
     def doFileUrl(self, p, url):
@@ -4380,7 +4377,6 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
             p2 = p.insertAsNthChild(0)
         else:
             p2 = p.insertAfter()
-        # p2.h,p2.b = '@url %s' % (s),''
         p2.h = '@url'
         p2.b = s
         p2.clearDirty() # Don't automatically rewrite this node.

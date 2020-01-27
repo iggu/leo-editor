@@ -417,7 +417,6 @@ class Importer:
         if not ws_ok:
             s = self.regularize_whitespace(s)
         # Generate the nodes, including directives and section references.
-        changed = c.isChanged()
         # Completely generate all nodes.
         self.generate_nodes(s, parent)
         # Check the generated nodes.
@@ -433,7 +432,11 @@ class Importer:
         # It's always useless for an an import to dirty the outline.
         for p in root.self_and_subtree():
             p.clearDirty()
-        c.setChanged(changed)
+        # #1451: The caller should be responsible for this.
+            # if changed:
+                # c.setChanged()
+            # else:
+                # c.clearChanged()
         return ok
     #@+node:ekr.20161108131153.14: *5* i.regularize_whitespace
     def regularize_whitespace(self, s):
@@ -591,6 +594,7 @@ class Importer:
             stack.append(stack[-1])
         elif len(stack) <= 1:
             return underflow(3)
+        return None
     #@+node:ekr.20161108160409.3: *5* i.end_block
     def end_block(self, line, new_state, stack):
         # The block is ending. Add tail lines until the start of the next block.

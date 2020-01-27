@@ -620,15 +620,15 @@ class LeoBody:
         if g.app.unitTesting:
             g.app.unitTestDict['colorized'] = True
         #@-<< recolor the body >>
-        if not c.changed: c.setChanged(True)
+        if not c.changed: c.setChanged()
         self.updateEditors()
         p.v.contentModified()
         #@+<< update icons if necessary >>
         #@+node:ekr.20051026083733.7: *5* << update icons if necessary >>
         redraw_flag = False
         # Update dirty bits.
-        # p.setDirty() sets all cloned and @file dirty bits.
-        if not p.isDirty() and p.setDirty():
+        if not p.isDirty():
+            p.setDirty()
             redraw_flag = True
         # Update icons. p.v.iconVal may not exist during unit tests.
         val = p.computeIcon()
@@ -1270,7 +1270,7 @@ class LeoTree:
             return
         if not w:
             return
-        ch = '\n' # New in 4.4: we only report the final keystroke.
+        ch = '\n' # We only report the final keystroke.
         if s is None: s = w.getAllText()
         #@+<< truncate s if it has multiple lines >>
         #@+node:ekr.20040803072955.94: *5* << truncate s if it has multiple lines >>
@@ -1297,14 +1297,13 @@ class LeoTree:
             return # The hook claims to have handled the event.
         if changed:
             undoData = u.beforeChangeNodeContents(p, oldHead=oldRevert)
-            if not c.changed: c.setChanged(True)
+            if not c.changed: c.setChanged()
             # New in Leo 4.4.5: we must recolor the body because
             # the headline may contain directives.
             c.frame.scanForTabWidth(p)
             c.frame.body.recolor(p)
-            dirtyVnodeList = p.setDirty()
-            u.afterChangeNodeContents(p, undoType, undoData,
-                dirtyVnodeList=dirtyVnodeList, inHead=True)
+            p.setDirty()
+            u.afterChangeNodeContents(p, undoType, undoData, inHead=True)
         if changed:
             c.redraw_after_head_changed()
             # Fix bug 1280689: don't call the non-existent c.treeEditFocusHelper

@@ -2068,7 +2068,7 @@ class VimCommands:
             g.es_print('dot repeat count:', self.n1)
         i, n = 0, 0
         while i < len(aList):
-            g.es_print('dot[%s]:' % (n), ''.join(aList[i: i + 10]))
+            g.es_print(f"dot[{n}]:", ''.join(aList[i: i + 10]))
             i += 10
             n += 1
     #@+node:ekr.20140815160132.18825: *4* vc.q/qa_command & quit_now (:q & q! & :qa)
@@ -2228,8 +2228,6 @@ class VimCommands:
                 # A benign hack: simulate an Escape for the dot.
                 self.stroke = 'Escape'
                 self.end_insert_mode()
-                if not self.j_changed:
-                    c.setChanged(False)
                 return True
             # Remember the changed state when we saw the first 'j'.
             self.j_changed = c.isChanged()
@@ -2430,7 +2428,7 @@ class VimCommands:
         #
         # This code doesn't work on Qt 5, because of a Qt bug.
         # It probably isn't coming back.
-            # selector = 'vim_%s' % (state) if focus_flag else 'vim_unfocused'
+            # selector = f"vim_{state}" if focus_flag else 'vim_unfocused'
             # w.setProperty('vim_state', selector)
             # w.style().unpolish(w)
             # w.style().polish(w)

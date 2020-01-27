@@ -544,7 +544,7 @@ class FileCommands:
         """
         fc, c = self, self.c
         t1 = time.time()
-        c.setChanged(False) # May be set when reading @file nodes.
+        c.clearChanged()  # May be set when reading @file nodes.
         fc.warnOnReadOnlyFiles(fileName)
         fc.checking = False
         fc.mFileName = c.mFileName
@@ -590,7 +590,6 @@ class FileCommands:
                 # Leo holding directory/file handles after file close?
         if c.changed:
             fc.propegateDirtyNodes()
-        c.setChanged(c.changed) # Refresh the changed marker.
         fc.initReadIvars()
         t2 = time.time()
         g.es('read outline in %2.2f seconds' % (t2 - t1))
@@ -624,10 +623,10 @@ class FileCommands:
             child.setHeadString(h)
             if b1 == b2:
                 lines = [
-                    'Headline changed...'
-                    '%s gnx: %s root: %r' % (tag, gnx, root_v and root.v),
-                    'old headline: %s' % (h1),
-                    'new headline: %s' % (h2),
+                    'Headline changed...',
+                    f"{tag} gnx: {gnx} root: {(root_v and root.v)!r}",
+                    f"old headline: {h1}",
+                    f"new headline: {h2}",
                 ]
                 child.setBodyString('\n'.join(lines))
             else:
@@ -1036,6 +1035,17 @@ class FileCommands:
         return geom
     #@+node:ekr.20031218072017.3032: *3* fc.Writing
     #@+node:ekr.20070413045221.2: *4*  fc.Top-level
+    #@+node:ekr.20070413061552: *5* fc.putSavedMessage
+    def putSavedMessage(self, fileName):
+        c = self.c
+        # #531: Optionally report timestamp...
+        if c.config.getBool('log-show-save-time', default=False):
+            format = c.config.getString('log-timestamp-format') or "%H:%M:%S"
+            timestamp = time.strftime(format) + ' '
+        else:
+            timestamp = ''
+        zipMark = '[zipped] ' if c.isZipped else ''
+        g.es(f"{timestamp} saved: {zipMark}{g.shortFileName(fileName)}")
     #@+node:ekr.20031218072017.1720: *5* fc.save
     def save(self, fileName, silent=False):
         c = self.c
@@ -1055,7 +1065,7 @@ class FileCommands:
             if ok:
                 if not silent:
                     self.putSavedMessage(fileName)
-                c.setChanged(False) # Clears all dirty bits.
+                c.clearChanged()  # Clears all dirty bits.
                 if c.config.save_clears_undo_buffer:
                     g.es("clearing undo")
                     c.undoer.clearUndoState()
@@ -1133,7 +1143,7 @@ class FileCommands:
             c.ignoreChangedPaths = True
             try:
                 if self.write_Leo_file(fileName, outlineOnlyFlag=False):
-                    c.setChanged(False) # Clears all dirty bits.
+                    c.clearChanged()  # Clears all dirty bits.
                     self.putSavedMessage(fileName)
             finally:
                 c.ignoreChangedPaths = False # #1367.
@@ -1160,17 +1170,6 @@ class FileCommands:
                 self.putSavedMessage(fileName)
             c.redraw_after_icons_changed()
         g.doHook("save2", c=c, p=p, fileName=fileName)
-    #@+node:ekr.20070413061552: *5* fc.putSavedMessage
-    def putSavedMessage(self, fileName):
-        c = self.c
-        # #531: Optionally report timestamp...
-        if c.config.getBool('log-show-save-time', default=False):
-            format = c.config.getString('log-timestamp-format') or "%H:%M:%S"
-            timestamp = time.strftime(format) + ' '
-        else:
-            timestamp = ''
-        zipMark = '[zipped] ' if c.isZipped else ''
-        g.es(f"{timestamp} saved: {zipMark}{g.shortFileName(fileName)}")
     #@+node:ekr.20050404190914.2: *4* fc.deleteFileWithMessage
     def deleteFileWithMessage(self, fileName, unused_kind):
         try:

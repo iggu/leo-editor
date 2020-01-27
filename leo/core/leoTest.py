@@ -157,13 +157,18 @@ class GeneralTestCase(unittest.TestCase):
         g.app.unitTestDict["fail"] = g.callers()
         raise self.failureException(msg)
             # Fix # 1002. Raise an exception, as in TestCase.fail()
-    #@+node:ekr.20051104075904.9: *3* tearDown
+    #@+node:ekr.20051104075904.9: *3* tearDown (GeneralTestCase)
     def tearDown(self):
         # Restore the outline.
         self.c.outerUpdate()
-    #@+node:ekr.20051104075904.8: *3* setUp
+    #@+node:ekr.20051104075904.8: *3* setUp (GeneralTestCase)
     def setUp(self):
-        self.c.selectPosition(self.p.copy()) # 2010/02/03
+        c = self.c
+        oldChanged = c.changed
+        c.selectPosition(self.p.copy())
+        if not oldChanged:
+            c.clearChanged()
+            
     #@+node:ekr.20051104075904.10: *3* runTest (generalTestCase)
     def runTest(self, define_g=True):
         """Run a Leo GeneralTestCase test."""
@@ -286,8 +291,6 @@ class ImportExportTestCase(unittest.TestCase):
             self.gui = None
         temp_p.setBodyString("")
         temp_p.clearDirty()
-        if not self.wasChanged:
-            c.setChanged(False)
         if 1: # Delete all children of temp node.
             while temp_p.firstChild():
                 temp_p.firstChild().doDelete()
@@ -589,7 +592,6 @@ class TestManager:
             if c.isChanged():
                 c.save() # Eliminate the need for ctrl-s.
         try:
-            changed = c.isChanged()
             g.unitTesting = g.app.unitTesting = True
             g.app.runningAllUnitTests = all and not marked
             self.do_tests_helper(all, marked, verbosity)
@@ -600,7 +602,6 @@ class TestManager:
                     g.trace('calling sys.exit(0) after unit test')
                 sys.exit(0)
             g.unitTesting = g.app.unitTesting = False
-            c.setChanged(changed)
             c.contractAllHeadlines()
             c.redraw(p1)
     #@+node:ekr.20170504130531.1: *5* class LoggingLog
@@ -1069,7 +1070,7 @@ class TestManager:
         finally:
             g.app.gui = old_gui
             if c2 and c2 != c:
-                c2.setChanged(False)
+                c2.clearChanged()  # Clears all dirty bits.
                 g.app.closeLeoWindow(c2.frame)
             c.frame.update() # Restored in Leo 4.4.8.
     #@+node:sps.20100531175334.10307: *4* TM.runRootFileTangleTest
@@ -1250,7 +1251,9 @@ class TestManager:
         """Called by a unit test to check the syntax of a file."""
         try:
             s = s.replace('\r', '')
-            compile(s + '\n', fileName, 'exec')
+            tree = compile(s + '\n', fileName, 'exec')
+            # #1454: To suppress -Wd ResourceWarning.
+            del tree
             return True
         except SyntaxError:
             if not suppress:
@@ -1586,13 +1589,10 @@ class TestManager:
         """Returns the total number of nodes in an outline"""
         return len([p for p in self.c.all_positions()])
     #@+node:ekr.20051104075904.103: *4* TM.safeImportModule
-    #@+at Warning: do NOT use g.importFromPath here!
-    # 
-    # g.importFromPath uses imp.load_module, and that is equivalent to reload!
-    # reloading Leo files while running will crash Leo.
-    #@@c
-
     def safeImportModule(self, fileName):
+        """
+        Safely import the given module name.
+        """
         fileName = g.os_path_finalize(fileName)
         head, tail = g.os_path_split(fileName)
         moduleName, ext = g.os_path_splitext(tail)
@@ -1602,11 +1602,6 @@ class TestManager:
                 g.unitTesting = False # Disable @test nodes!
                 g.app.unitTesting = False
                 try:
-                    # for base in ('leo.core','leo.plugins','leo.external',):
-                        # fullName = '%s.%s' % (base,moduleName)
-                        # m = __import__(fullName) # 'leo.core.%s' % moduleName)
-                        # if m is not None:
-                            # return sys.modules.get(fullName)
                     fullName = 'leo.core.%s' % (moduleName)
                     __import__(fullName)
                     return sys.modules.get(fullName)

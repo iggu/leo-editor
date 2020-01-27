@@ -99,7 +99,7 @@ class FreeMindImporter:
                 p = self.create_outline(fileName)
                 p.contract()
                 p.setDirty()
-                c.setChanged(True)
+                c.setChanged()
             c.redraw(p)
     #@+node:ekr.20160504043823.1: *3* freemind.prompt_for_files
     def prompt_for_files(self):
@@ -719,8 +719,6 @@ class LeoImportCommands:
     #@+node:ekr.20070713075352: *5* ic.scanUnknownFileType & helper
     def scanUnknownFileType(self, s, p, ext):
         """Scan the text of an unknown file type."""
-        c = self.c
-        changed = c.isChanged()
         body = ''
         if ext in ('.html', '.htm'): body += '@language html\n'
         elif ext in ('.txt', '.text'): body += '@nocolor\n'
@@ -730,8 +728,6 @@ class LeoImportCommands:
         self.setBodyString(p, body + self.rootLine + s)
         for p in p.self_and_subtree():
             p.clearDirty()
-        if not changed:
-            c.setChanged(False)
         g.app.unitTestDict = {'result': True}
         return True
     #@+node:ekr.20080811174246.1: *6* ic.languageForExtension
@@ -803,7 +799,7 @@ class LeoImportCommands:
             p.setDirty() # 2011/10/09: tell why the file is dirty!
             if command: u.afterInsertNode(p, command, undoData)
         current.expand()
-        c.setChanged(True)
+        c.setChanged()
         if command: u.afterChangeGroup(p, command)
         c.redraw(current)
         return p
@@ -841,7 +837,7 @@ class LeoImportCommands:
                         g.blue("imported", g.shortFileName(fn) if shortFn else fn)
                     p.contract()
                     p.setDirty()
-                    c.setChanged(True)
+                    c.setChanged()
             except Exception:
                 g.es_print('Exception importing', fn)
                 g.es_exception()
@@ -878,7 +874,7 @@ class LeoImportCommands:
         if p:
             c.validateOutline()
             p.setDirty()
-            c.setChanged(True)
+            c.setChanged()
             u.afterInsertNode(p, 'Import', undoData)
             c.redraw(p)
         # elif not g.unitTesting:
@@ -912,7 +908,7 @@ class LeoImportCommands:
             p = self.createOutlineFromWeb(fileName, current)
             p.contract()
             p.setDirty()
-            c.setChanged(True)
+            c.setChanged()
         c.redraw(current)
     #@+node:ekr.20031218072017.3225: *5* createOutlineFromWeb
     def createOutlineFromWeb(self, path, parent):
@@ -1286,7 +1282,6 @@ class LeoImportCommands:
         old_root = p.copy()
         self.treeType = '@file'
             # Fix #352.
-        oldChanged = c.changed
         # A hack.  Let unit tests set the kill-check flag first.
         d = g.app.unitTestDict
         if d.get('kill-check'):
@@ -1323,7 +1318,6 @@ class LeoImportCommands:
         else:
             while old_root.hasChildren():
                 old_root.firstChild().doDelete()
-            c.setChanged(oldChanged)
         c.redraw(old_root)
         if g.app.unitTesting:
             d['kill-check'] = False
@@ -1373,7 +1367,7 @@ class LeoImportCommands:
             v.setSelection(0, 0)
             p.setDirty()
             if not c.isChanged():
-                c.setChanged(True)
+                c.setChanged()
     #@+node:ekr.20031218072017.3306: *4* ic.createHeadline
     def createHeadline(self, parent, body, headline):
         """Create a new VNode as the last child of parent position."""
@@ -1513,7 +1507,7 @@ class MindMapImporter:
                 p = self.create_outline(fileName)
                 p.contract()
                 p.setDirty()
-                c.setChanged(True)
+                c.setChanged()
             c.redraw(p)
     #@+node:ekr.20160504043243.1: *3* mindmap.prompt_for_files
     def prompt_for_files(self):
@@ -1627,7 +1621,7 @@ class MORE_Importer:
                 if p:
                     p.contract()
                     p.setDirty()
-                    c.setChanged(True)
+                    c.setChanged()
                     changed = True
             if changed:
                 c.redraw(p)
@@ -1655,7 +1649,7 @@ class MORE_Importer:
                 c.endEditing()
                 c.validateOutline()
                 p.setDirty()
-                c.setChanged(True)
+                c.setChanged()
                 u.afterInsertNode(root, 'Import MORE File', undoData)
                 c.selectPosition(root)
                 c.redraw()
@@ -1739,7 +1733,7 @@ class MORE_Importer:
             assert progress < index
         if theRoot:
             theRoot.setDirty()
-            c.setChanged(True)
+            c.setChanged()
         c.redraw()
         return theRoot
     #@+node:ekr.20031218072017.3222: *3* MORE.headlineLevel
@@ -1967,7 +1961,7 @@ class RecursiveImportController:
     #@+node:ekr.20130823083943.12608: *5* ric.clear_dirty_bits
     def clear_dirty_bits(self, p):
         c = self.c
-        c.setChanged(False)
+        c.clearChanged()  # Clears *all* dirty bits.
         for p in p.self_and_subtree(copy=False):
             p.clearDirty()
     #@+node:ekr.20130823083943.12609: *5* ric.dump_headlines
@@ -2081,7 +2075,7 @@ class TabImporter:
                     p.setDirty()
                     u.afterInsertNode(p, 'Import Tabbed File', undoData)
                 if p:
-                    c.setChanged(True)
+                    c.setChanged()
                     c.redraw(p)
     #@+node:ekr.20161006071801.4: *3* tabbed.lws
     def lws(self, s):
@@ -2229,8 +2223,7 @@ class ZimImportController:
             g.es(f"not found: {pathToIndex}", color='red')
             return None
         index = open(pathToIndex).read()
-        # pylint: disable=anomalous-backslash-in-string
-        parse = re.findall('(\t*)-\s`(.+)\s<(.+)>`_', index)
+        parse = re.findall(r'(\t*)-\s`(.+)\s<(.+)>`_', index)
         if not parse:
             g.es(f"invalid index: {pathToIndex}", color='red')
             return None
