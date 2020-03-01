@@ -5187,7 +5187,7 @@ except Exception:
 <t tx="ekr.20060329101442">Missing modules can cause installation problems. If the installer doesn't work (or puts up a dialog containing no text), you may install Leo from the .zip file as described at `How to install Leo on Windows`_. However you are installing Leo, be sure to `run Leo in a console`_. because as a last resort Leo prints error messages to the console.
 </t>
 <t tx="ekr.20060430220749">.. _jEdit: http://www.jedit.org/
-.. _`jEdit's documentation`: http://www.jedit.org/42docs/users-guide/writing-modes-part.html
+.. _`jEdit's documentation`: http://www.jedit.org/users-guide/writing-modes-part.html
 
 The `jEdit`_ editor drives its syntax colorer using xml **language description files.** Rather than using the xml language description files directly, Leo uses Python **colorer control files**, created automatically from the xml files by a script called jEdit2Py.  All these files reside in the leo/modes directory.
 
