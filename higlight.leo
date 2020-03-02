@@ -9,14 +9,12 @@
 <v t="iggu.20200301152239.1"><vh>@edit leo/modes/javascript.py</vh></v>
 <v t="iggu.20200301151009.1"><vh>@edit leo/modes/php.py</vh></v>
 <v t="iggu.20200301151016.1"><vh>@clean leo/modes/js6.py</vh>
-<v t="iggu.20200302100713.1"><vh>&lt;&lt; main &gt;&gt;</vh></v>
-<v t="iggu.20200301151016.2"><vh>&lt;&lt; lang &gt;&gt;</vh>
+<v t="iggu.20200302100713.1"><vh>&lt;&lt; main &gt;&gt;</vh>
 <v t="iggu.20200301151016.5"><vh>keywords</vh></v>
 <v t="iggu.20200301151016.6"><vh>rules</vh>
 <v t="iggu.20200301151016.7"><vh>comments</vh></v>
 <v t="iggu.20200301151016.8"><vh>literals</vh></v>
 <v t="iggu.20200301151016.9"><vh>instructions</vh></v>
-<v t="iggu.20200301151016.10"><vh>js6_rule31 (javascript.py)</vh></v>
 </v>
 </v>
 <v t="iggu.20200302073636.1"><vh>&lt;&lt; template literals &gt;&gt;</vh>
@@ -25,6 +23,7 @@
 <v t="iggu.20200302073554.1"><vh>&lt;&lt; docs &gt;&gt;</vh>
 <v t="iggu.20200302073053.1"><vh>todo</vh></v>
 <v t="iggu.20200301155026.1"><vh>example</vh></v>
+<v t="iggu.20200303002858.1"><vh>testbody</vh></v>
 </v>
 </v>
 <v t="iggu.20200302121248.1"><vh>@clean leo/modes/js7.py</vh>
@@ -87,15 +86,12 @@ properties = {
 
 &lt;&lt; main &gt;&gt;
 
-&lt;&lt; lang &gt;&gt;
-
 &lt;&lt; template literals &gt;&gt;
 
 
 # Dictionary of attributes dictionaries for javascript mode.
 attributesDictDict = {
     "js6_main": js6_main_attributes_dict,
-    "js6_lang": js6_lang_attributes_dict,
     "js6_template_literals": js6_template_literals_attributes_dict
 }
 
@@ -103,7 +99,6 @@ attributesDictDict = {
 # x.rulesDictDict for javascript mode.
 rulesDictDict = {
     "js6_main": js6_main_rules_dict,
-    "js6_lang": js6_lang_rules_dict,
     "js6_template_literals": js6_template_literals_rules_dict,
 }
 
@@ -111,7 +106,6 @@ rulesDictDict = {
 # Dictionary of keywords dictionaries for javascript mode.
 keywordsDictDict = {
     "js6_main": js6_main_keywords_dict,
-    "js6_lang": js6_lang_keywords_dict,
     "js6_template_literals": js6_template_literals_keywords_dict,
 }
 
@@ -126,27 +120,8 @@ importDict = {}
 @language python
 @tabwidth -4
 </t>
-<t tx="iggu.20200301151016.10">def js6_rule31(colorer, s, i):
-    print(31)
-    return colorer.match_keywords(s, i)
-
-</t>
-<t tx="iggu.20200301151016.2">
-
-# Attributes dict for js6_lang ruleset.
-js6_lang_attributes_dict = {
-    "default": "null",
-    "digit_re": "(0x[[:xdigit:]]+[lL]?|[[:digit:]]+(e[[:digit:]]*)?[lLdDfF]?)",
-    "escape": "\\",
-    "highlight_digits": "true",
-    "ignore_case": "false",
-    "no_word_sep": "",
-}
-
-@others
-</t>
 <t tx="iggu.20200301151016.5"># Keywords dict for js6_lang ruleset.
-js6_lang_keywords_dict = {
+js6_main_keywords_dict = {
     "comment1": "comment1",
     "comment2": "comment2",
     "comment3": "comment3",
@@ -262,15 +237,19 @@ js6_lang_keywords_dict = {
 """
 </t>
 <t tx="iggu.20200301151016.6">
+def js6_main_match_keywords_rule(colorer, s, i):
+    return colorer.match_keywords(s, i)
+
 @others
 
 # Rules dict for js6_lang ruleset.
-js6_lang_rules_dict = {
+js6_main_rules_dict = {
     "!": [js6_rule7,],
-    "\"": [js6_rule1,],
+    '"': [js6_main_doublequote_rule,],
+    "'": [js6_main_singlequote_rule,],
+    "`": [js6_main_backquote_rule,],
     "%": [js6_rule16,],
     "&amp;": [js6_rule17,],
-    "'": [js6_rule2,],
     "(": [js6_rule3,],
     "*": [js6_rule13,],
     "+": [js6_rule10,],
@@ -278,78 +257,78 @@ js6_lang_rules_dict = {
     "-": [js6_rule11,],
     ".": [js6_rule21,],
     "/": [js6_rule0,js6_rule4,js6_rule12,],
-    "0": [js6_rule31,],
-    "1": [js6_rule31,],
-    "2": [js6_rule31,],
-    "3": [js6_rule31,],
-    "4": [js6_rule31,],
-    "5": [js6_rule31,],
-    "6": [js6_rule31,],
-    "7": [js6_rule31,],
-    "8": [js6_rule31,],
-    "9": [js6_rule31,],
+    "0": [js6_main_match_keywords_rule,],
+    "1": [js6_main_match_keywords_rule,],
+    "2": [js6_main_match_keywords_rule,],
+    "3": [js6_main_match_keywords_rule,],
+    "4": [js6_main_match_keywords_rule,],
+    "5": [js6_main_match_keywords_rule,],
+    "6": [js6_main_match_keywords_rule,],
+    "7": [js6_main_match_keywords_rule,],
+    "8": [js6_main_match_keywords_rule,],
+    "9": [js6_main_match_keywords_rule,],
     ":": [js6_rule29,js6_rule30,],
     ";": [js6_rule25,],
     "&lt;": [js6_rule5,js6_rule9,js6_rule15,],
     "=": [js6_rule6,],
     "&gt;": [js6_rule8,js6_rule14,],
     "?": [js6_rule28,],
-    "@": [js6_rule31,],
-    "A": [js6_rule31,],
-    "B": [js6_rule31,],
-    "C": [js6_rule31,],
-    "D": [js6_rule31,],
-    "E": [js6_rule31,],
-    "F": [js6_rule31,],
-    "G": [js6_rule31,],
-    "H": [js6_rule31,],
-    "I": [js6_rule31,],
-    "J": [js6_rule31,],
-    "K": [js6_rule31,],
-    "L": [js6_rule31,],
-    "M": [js6_rule31,],
-    "N": [js6_rule31,],
-    "O": [js6_rule31,],
-    "P": [js6_rule31,],
-    "Q": [js6_rule31,],
-    "R": [js6_rule31,],
-    "S": [js6_rule31,],
-    "T": [js6_rule31,],
-    "U": [js6_rule31,],
-    "V": [js6_rule31,],
-    "W": [js6_rule31,],
-    "X": [js6_rule31,],
-    "Y": [js6_rule31,],
-    "Z": [js6_rule31,],
+    "@": [js6_main_match_keywords_rule,],
+    "A": [js6_main_match_keywords_rule,],
+    "B": [js6_main_match_keywords_rule,],
+    "C": [js6_main_match_keywords_rule,],
+    "D": [js6_main_match_keywords_rule,],
+    "E": [js6_main_match_keywords_rule,],
+    "F": [js6_main_match_keywords_rule,],
+    "G": [js6_main_match_keywords_rule,],
+    "H": [js6_main_match_keywords_rule,],
+    "I": [js6_main_match_keywords_rule,],
+    "J": [js6_main_match_keywords_rule,],
+    "K": [js6_main_match_keywords_rule,],
+    "L": [js6_main_match_keywords_rule,],
+    "M": [js6_main_match_keywords_rule,],
+    "N": [js6_main_match_keywords_rule,],
+    "O": [js6_main_match_keywords_rule,],
+    "P": [js6_main_match_keywords_rule,],
+    "Q": [js6_main_match_keywords_rule,],
+    "R": [js6_main_match_keywords_rule,],
+    "S": [js6_main_match_keywords_rule,],
+    "T": [js6_main_match_keywords_rule,],
+    "U": [js6_main_match_keywords_rule,],
+    "V": [js6_main_match_keywords_rule,],
+    "W": [js6_main_match_keywords_rule,],
+    "X": [js6_main_match_keywords_rule,],
+    "Y": [js6_main_match_keywords_rule,],
+    "Z": [js6_main_match_keywords_rule,],
     "[": [js6_rule27,],
     "]": [js6_rule26,],
     "^": [js6_rule19,],
-    "a": [js6_rule31,],
-    "b": [js6_rule31,],
-    "c": [js6_rule31,],
-    "d": [js6_rule31,],
-    "e": [js6_rule31,],
-    "f": [js6_rule31,],
-    "g": [js6_rule31,],
-    "h": [js6_rule31,],
-    "i": [js6_rule31,],
-    "j": [js6_rule31,],
-    "k": [js6_rule31,],
-    "l": [js6_rule31,],
-    "m": [js6_rule31,],
-    "n": [js6_rule31,],
-    "o": [js6_rule31,],
-    "p": [js6_rule31,],
-    "q": [js6_rule31,],
-    "r": [js6_rule31,],
-    "s": [js6_rule31,],
-    "t": [js6_rule31,],
-    "u": [js6_rule31,],
-    "v": [js6_rule31,],
-    "w": [js6_rule31,],
-    "x": [js6_rule31,],
-    "y": [js6_rule31,],
-    "z": [js6_rule31,],
+    "a": [js6_main_match_keywords_rule,],
+    "b": [js6_main_match_keywords_rule,],
+    "c": [js6_main_match_keywords_rule,],
+    "d": [js6_main_match_keywords_rule,],
+    "e": [js6_main_match_keywords_rule,],
+    "f": [js6_main_match_keywords_rule,],
+    "g": [js6_main_match_keywords_rule,],
+    "h": [js6_main_match_keywords_rule,],
+    "i": [js6_main_match_keywords_rule,],
+    "j": [js6_main_match_keywords_rule,],
+    "k": [js6_main_match_keywords_rule,],
+    "l": [js6_main_match_keywords_rule,],
+    "m": [js6_main_match_keywords_rule,],
+    "n": [js6_main_match_keywords_rule,],
+    "o": [js6_main_match_keywords_rule,],
+    "p": [js6_main_match_keywords_rule,],
+    "q": [js6_main_match_keywords_rule,],
+    "r": [js6_main_match_keywords_rule,],
+    "s": [js6_main_match_keywords_rule,],
+    "t": [js6_main_match_keywords_rule,],
+    "u": [js6_main_match_keywords_rule,],
+    "v": [js6_main_match_keywords_rule,],
+    "w": [js6_main_match_keywords_rule,],
+    "x": [js6_main_match_keywords_rule,],
+    "y": [js6_main_match_keywords_rule,],
+    "z": [js6_main_match_keywords_rule,],
     "{": [js6_rule23,],
     "|": [js6_rule18,],
     "}": [js6_rule22,],
@@ -375,17 +354,24 @@ def js6_rule5(colorer, s, i):
 
 </t>
 <t tx="iggu.20200301151016.8">
-def js6_rule1(colorer, s, i):
+def js6_main_doublequote_rule(colorer, s, i):
+    print('"', i)
     return colorer.match_span(s, i, kind="literal1", begin="\"", end="\"",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=True, no_word_break=False)
 
-def js6_rule2(colorer, s, i):
+def js6_main_singlequote_rule(colorer, s, i):
     return colorer.match_span(s, i, kind="literal2", begin="'", end="'",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=True, no_word_break=False)
+
+def js6_main_backquote_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="literal3", begin="`", end="`",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="js6::template_literals",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
 </t>
 <t tx="iggu.20200301151016.9">
 def js6_rule3(colorer, s, i):
@@ -573,28 +559,7 @@ def js6_tmplit_match_keywords_rule(colorer, s, i):
 
 </t>
 <t tx="iggu.20200302100713.1">
-def js6_main_match_keywords_rule(colorer, s, i):
-    return colorer.match_keywords(s, i)
-
-
-def js6_main_doublequote_rule(colorer, s, i):
-    return colorer.match_span(s, i, kind="literal1", begin="\"", end="\"",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="",exclude_match=False,
-        no_escape=False, no_line_break=True, no_word_break=False)
-
-def js6_main_singlequote_rule(colorer, s, i):
-    return colorer.match_span(s, i, kind="literal2", begin="'", end="'",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="",exclude_match=False,
-        no_escape=False, no_line_break=True, no_word_break=False)
-
-def js6_main_backquote_rule(colorer, s, i):
-    return colorer.match_span(s, i, kind="literal3", begin="`", end="`",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="js6::template_literals",exclude_match=False,
-        no_escape=False, no_line_break=False, no_word_break=False)
-
+@others
 
  # Attributes dict for js6_main ruleset.
 js6_main_attributes_dict = {
@@ -604,18 +569,6 @@ js6_main_attributes_dict = {
     "highlight_digits": "true",
     "ignore_case": "false",
     "no_word_sep": "",
-}
-
-js6_main_keywords_dict = {
-    "of": "keyword1",
-}
-
-js6_main_rules_dict = {
-    "*": [print,],
-    '"': [js6_main_doublequote_rule,],
-    "'": [js6_main_singlequote_rule,],
-    "`": [js6_main_backquote_rule,],
-    "o": [js6_main_match_keywords_rule,],
 }
 </t>
 <t tx="iggu.20200302121248.1"># Leo colorizer control file for javascript mode.
@@ -1112,6 +1065,63 @@ importDict = {}
 <t tx="iggu.20200302121312.9">def js7_rule7(colorer, s, i):
     return colorer.match_seq(s, i, kind="operator", seq="!",
         at_line_start=False, at_whitespace_end=False, at_word_start=False, delegate="")
+
+</t>
+<t tx="iggu.20200303002858.1">@language js6
+
+lambda
+
+function
+
+of
+in
+
+"aaa"
+'bbb'
+`ccc in &amp;`
+
+if ( [ +- ] ) else 
+
+() =&gt; { sklcvmsklc }
+console.log 
+
+"aaa ${A} ${A+A-A} {}"
+'bbb ${B} bbb ${B+B-B} bbb {B} bbb'
+`ccc ${A} ccc ${A+A-A} ccc {cc} cc`
+"olalal"
+
+class undefined null 
+
+comment1
+comment2
+comment3
+comment4
+
+doc-part
+function
+label
+leo-keyword
+link
+markup
+name
+name-brackets
+show-invisibles-space
+tab
+trailing-whitespace
+url
+
+keyword1
+keyword2
+keyword3
+keyword4
+keyword5
+null
+operator
+
+literal1
+literal2
+literal3
+literal4
 
 </t>
 </tnodes>
