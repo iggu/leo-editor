@@ -17,12 +17,26 @@ properties = {
 }
 
 
+def js6_main_match_keywords_rule(colorer, s, i):
+    return colorer.match_keywords(s, i)
 
-def js6_main_rule_is_template_literals(colorer, s, i):
-    print(s)
-    return colorer.match_span(s, i, kind="literal3", begin="`", end="`",
+
+def js6_main_doublequote_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="literal1", begin="\"", end="\"",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
+        no_escape=False, no_line_break=True, no_word_break=False)
+
+def js6_main_singlequote_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="literal2", begin="'", end="'",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=True, no_word_break=False)
+
+def js6_main_backquote_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="literal3", begin="`", end="`",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="js6::template_literals",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 
 
@@ -41,8 +55,11 @@ js6_main_keywords_dict = {
 }
 
 js6_main_rules_dict = {
-    "`": [js6_main_rule_is_template_literals,],
     "*": [print,],
+    '"': [js6_main_doublequote_rule,],
+    "'": [js6_main_singlequote_rule,],
+    "`": [js6_main_backquote_rule,],
+    "o": [js6_main_match_keywords_rule,],
 }
 
 
@@ -406,12 +423,17 @@ js6_lang_rules_dict = {
 
 
 
-def js6_template_literal_rule0(colorer, s, i):
-    print(s)
-    return colorer.match_span(s, i, kind="literal3", begin="`", end="`",
+def js6_tmplit_param_rule(colorer, s, i):
+    print(">>", s)
+    return colorer.match_span(s, i, kind="literal4", begin="${", end="}",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
+
+def js6_tmplit_match_keywords_rule(colorer, s, i):
+    return colorer.match_keywords(s, i)
+
+
 
 # Attributes dict for php_php_literal ruleset.
 js6_template_literals_attributes_dict = {
@@ -423,34 +445,36 @@ js6_template_literals_attributes_dict = {
     "no_word_sep": "",
 }
 
-js6_template_literals_keywords_dict = {}
+js6_template_literals_keywords_dict = {
+    "in": "keyword2",
+}
 
 js6_template_literals_rules_dict = {
-    "`": [js6_template_literal_rule0,],
+    "$": [js6_tmplit_param_rule,],
 }
 
 
 # Dictionary of attributes dictionaries for javascript mode.
 attributesDictDict = {
     "js6_main": js6_main_attributes_dict,
-    #"javascript_lang": javascript_lang_attributes_dict,
-    #"javascript_template_literals": javascript_template_literals_attributes_dict
+    "js6_lang": js6_lang_attributes_dict,
+    "js6_template_literals": js6_template_literals_attributes_dict
 }
 
 
 # x.rulesDictDict for javascript mode.
 rulesDictDict = {
     "js6_main": js6_main_rules_dict,
-    #"js6_lang": js6_lang_rules_dict,
-    #"js6_template_literals": js6_template_literals_rules_dict,
+    "js6_lang": js6_lang_rules_dict,
+    "js6_template_literals": js6_template_literals_rules_dict,
 }
 
 
 # Dictionary of keywords dictionaries for javascript mode.
 keywordsDictDict = {
     "js6_main": js6_main_keywords_dict,
-    #"js6_lang": js6_lang_keywords_dict,
-    #"js6_template_literals": js6_template_literals_keywords_dict,
+    "js6_lang": js6_lang_keywords_dict,
+    "js6_template_literals": js6_template_literals_keywords_dict,
 }
 
 
@@ -459,6 +483,8 @@ importDict = {}
 
 """
 
+
+debug cliopt: --trace=coloring
 
 MODES
 
