@@ -122,119 +122,127 @@ importDict = {}
 </t>
 <t tx="iggu.20200301151016.5"># Keywords dict for js6_lang ruleset.
 js6_main_keywords_dict = {
-    "comment1": "comment1",
-    "comment2": "comment2",
-    "comment3": "comment3",
-    "comment4": "comment4",
-    "doc-part": "doc-part",
-    "function": "function",
-    "keyword1": "keyword1",
-    "keyword2": "keyword2",
-    "keyword3": "keyword3",
-    "keyword4": "keyword4",
-    "keyword5": "keyword5",
-    "label": "label",
-    "leo-keyword": "leo-keyword",
-    "link": "link",
-    "literal1": "literal1",
-    "literal2": "literal2",
-    "literal3": "literal3",
-    "literal4": "literal4",
-    "markup": "markup",
-    "name": "name",
-    "name-brackets": "name-brackets",
+    "__comment1": "comment1",
+    "__comment2": "comment2",
+    "__comment3": "comment3",
+    "__comment4": "comment4",
+    "__doc-part": "doc-part",
+    "__function": "function",
+    "__keyword1": "keyword1",
+    "__keyword2": "keyword2",
+    "__keyword3": "keyword3",
+    "__keyword4": "keyword4",
+    "__keyword5": "keyword5",
+    "__label": "label",
+    "__leo-keyword": "leo-keyword",
+    "__link": "link",
+    "__literal1": "literal1",
+    "__literal2": "literal2",
+    "__literal3": "literal3",
+    "__literal4": "literal4",
+    "__markup": "markup",
+    "__name": "name",
+    "__name-brackets": "name-brackets",
+    "__null": "null",
+    "__operator": "operator",
+    "__show-invisibles-space": "show-invisibles-space",
+    "__tab": "tab",
+    "__trailing-whitespace": "trailing-whitespace",
+    "__url": "url",
+
+    "Array": "keyword4",
+    "Boolean": "keyword4",
+    "Date": "keyword4",
+    "Function": "keyword4",
+    "Global": "keyword4",
+    "Math": "keyword4",
+    "NaN": "keyword4",
+    "Number": "keyword4",
+    "Object": "keyword4",
+    "RegExp": "keyword4",
+    "String": "keyword4",
+    "Error": "keyword4",
+
+    "let": "keyword1",
+    "var": "keyword1",
+    "const": "keyword1",
+    "new": "keyword1",
+
+    "try": "keyword2",
+    "catch": "keyword2",
+    "throw": "keyword2",
+    "finally": "keyword1",
+    "for": "keyword2",
+    "of": "keyword1",
+    "in": "keyword1",
+    "while": "keyword2",
+    "goto": "keyword2",
+    "switch": "keyword1",
+    "case": "keyword1",
+    "if": "keyword2",
+    "else": "keyword2",
+    "do": "keyword2",
+    "break": "keyword1",
+    "continue": "keyword2",
+    "class": "keyword1",
+    "function": "keyword2",
+    "return": "keyword2",
+
+    "this": "keyword5",
+    "that": "keyword5",
+    "self": "keyword5",
+    "super": "keyword5",
+
+    "constructor": "keyword4",
+
+    "void": "null",
     "null": "null",
-    "operator": "operator",
-    "show-invisibles-space": "show-invisibles-space",
-    "tab": "tab",
-    "trailing-whitespace": "trailing-whitespace",
-    "url": "url",
-}
-"""
-    "Array": "keyword3",
-    "Boolean": "keyword3",
-    "Date": "keyword3",
-    "Function": "keyword3",
-    "Global": "keyword3",
-    "Infinity": "literal2",
-    "Math": "keyword3",
-    "NaN": "literal2",
-    "Number": "keyword3",
-    "Object": "keyword3",
-    "RegExp": "keyword3",
-    "String": "keyword3",
+    "undefined": "null",
+    "false": "null",
+    "true": "null",
+    "Infinity": "null",
 
     "abstract": "keyword1",
     "boolean": "keyword3",
-    "break": "keyword1",
     "byte": "keyword3",
-    "case": "keyword1",
-    "catch": "keyword1",
     "char": "keyword3",
-    "class": "keyword1",
-    "const": "keyword1",
     "console": "keyword3",
-    "continue": "keyword1",
     "debugger": "keyword1",
     "default": "keyword1",
     "delete": "keyword1",
-    "do": "keyword1",
     "double": "keyword3",
-    "else": "keyword1",
     "enum": "keyword1",
     "escape": "literal2",
     "eval": "literal2",
     "export": "keyword2",
     "extends": "keyword1",
-    "false": "literal2",
     "final": "keyword1",
-    "finally": "keyword1",
     "float": "keyword3",
-    "for": "keyword1",
-    "function": "keyword1",
-    "goto": "keyword1",
-    "if": "keyword1",
     "implements": "keyword1",
     "import": "keyword2",
-    "in": "keyword1",
     "instanceof": "keyword1",
     "int": "keyword3",
     "interface": "keyword1",
     "isFinite": "literal2",
     "isNaN": "literal2",
-    "let": "keyword1",
     "long": "keyword3",
     "native": "keyword1",
-    "new": "keyword1",
-    "null": "literal2",
-    "of": "keyword1",
     "package": "keyword2",
     "parseFloat": "literal2",
     "parseInt": "literal2",
     "private": "keyword1",
     "protected": "keyword1",
     "public": "keyword1",
-    "return": "keyword1",
     "short": "keyword3",
     "static": "keyword1",
-    "super": "literal2",
-    "switch": "keyword1",
     "synchronized": "keyword1",
-    "this": "literal2",
-    "throw": "keyword1",
     "throws": "keyword1",
     "transient": "keyword1",
-    "true": "literal2",
-    "try": "keyword1",
     "typeof": "keyword1",
     "unescape": "literal2",
-    "var": "keyword1",
-    "void": "keyword3",
     "volatile": "keyword1",
-    "while": "keyword1",
     "with": "keyword1",
 }
-"""
 </t>
 <t tx="iggu.20200301151016.6">
 def js6_main_match_keywords_rule(colorer, s, i):
@@ -250,13 +258,15 @@ js6_main_rules_dict = {
     "`": [js6_main_backquote_rule,],
     "%": [js6_rule16,],
     "&amp;": [js6_rule17,],
-    "(": [js6_rule3,],
+    "(": [js6_openparen_rule,],
+    ")": [js6_closeparen_rule,],
     "*": [js6_rule13,],
     "+": [js6_rule10,],
     ",": [js6_rule24,],
     "-": [js6_rule11,],
     ".": [js6_rule21,],
-    "/": [js6_rule0,js6_rule4,js6_rule12,],
+    "/": [js6_jsdoc_comment_rule,js6_comment_multiline_rule,js6_comment_singleline_rule,js6_rule12,],
+    "_": [js6_main_match_keywords_rule,],
     "0": [js6_main_match_keywords_rule,],
     "1": [js6_main_match_keywords_rule,],
     "2": [js6_main_match_keywords_rule,],
@@ -269,7 +279,7 @@ js6_main_rules_dict = {
     "9": [js6_main_match_keywords_rule,],
     ":": [js6_rule29,js6_rule30,],
     ";": [js6_rule25,],
-    "&lt;": [js6_rule5,js6_rule9,js6_rule15,],
+    "&lt;": [js6_comment_html_rule,js6_rule9,js6_rule15,],
     "=": [js6_rule6,],
     "&gt;": [js6_rule8,js6_rule14,],
     "?": [js6_rule28,],
@@ -337,20 +347,28 @@ js6_main_rules_dict = {
 
 </t>
 <t tx="iggu.20200301151016.7">
-def js6_rule0(colorer, s, i):
-    return colorer.match_span(s, i, kind="comment1", begin="/*", end="*/",
+def js6_jsdoc_comment_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="comment3", begin="/**", end="*/",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 
-def js6_rule4(colorer, s, i):
-    return colorer.match_eol_span(s, i, kind="comment2", seq="//",
+def js6_comment_multiline_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="comment2", begin="/*", end="*/",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
+
+def js6_comment_singleline_rule(colorer, s, i):
+    return colorer.match_eol_span(s, i, kind="comment1", seq="//",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="", exclude_match=False)
 
-def js6_rule5(colorer, s, i):
-    return colorer.match_seq(s, i, kind="comment1", seq="&lt;!--",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False, delegate="")
+def js6_comment_html_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="comment4", begin="&lt;!--", end="--&gt;",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
 
 </t>
 <t tx="iggu.20200301151016.8">
@@ -374,6 +392,14 @@ def js6_main_backquote_rule(colorer, s, i):
         no_escape=False, no_line_break=False, no_word_break=False)
 </t>
 <t tx="iggu.20200301151016.9">
+def js6_openparen_rule(colorer, s, i):
+    return colorer.match_seq(s, i, kind="label", seq="(",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False, delegate="")
+
+def js6_closeparen_rule(colorer, s, i):
+    return colorer.match_seq(s, i, kind="label", seq=")",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False, delegate="")
+
 def js6_rule3(colorer, s, i):
     return colorer.match_mark_previous(s, i, kind="function", pattern="(",
         at_line_start=False, at_whitespace_end=False, at_word_start=False, exclude_match=True)
@@ -1092,36 +1118,36 @@ console.log
 
 class undefined null 
 
-comment1
-comment2
-comment3
-comment4
+__comment1
+__comment2
+__comment3
+__comment4
 
-doc-part
-function
-label
-leo-keyword
-link
-markup
-name
-name-brackets
-show-invisibles-space
-tab
-trailing-whitespace
-url
+__doc-part
+__function
+__label
+__leo-keyword
+__link
+__markup
+__name
+__name-brackets
+__show-invisibles-space
+__tab
+__trailing-whitespace
+__url
 
-keyword1
-keyword2
-keyword3
-keyword4
-keyword5
-null
-operator
+__keyword1
+__keyword2
+__keyword3
+__keyword4
+__keyword5
+__null
+__operator
 
-literal1
-literal2
-literal3
-literal4
+__literal1
+__literal2
+__literal3
+__literal4
 
 </t>
 </tnodes>
