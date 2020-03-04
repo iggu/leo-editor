@@ -163,85 +163,69 @@ js6_main_keywords_dict = {
     "String": "keyword4",
     "Error": "keyword4",
 
-    "let": "keyword1",
-    "var": "keyword1",
-    "const": "keyword1",
-    "new": "keyword1",
+    "class": "keyword2",
+    "extends": "keyword2",
+    "static": "keyword2",
+    "function": "keyword2",
+    "get": "keyword2",
+    "set": "keyword2",
+    "constructor": "keyword2",
+    "async": "keyword2",
+    "await": "keyword2",
 
-    "try": "keyword2",
-    "catch": "keyword2",
-    "throw": "keyword2",
+    "let": "keyword5",
+    "var": "keyword5",
+    "const": "keyword5",
+    "new": "keyword5",
+    "instanceof": "keyword5",
+    "typeof": "keyword5",
+    "delete": "keyword5",
+
+    "try": "keyword1",
+    "throw": "keyword1",
+    "catch": "keyword1",
+    "then": "keyword1",
     "finally": "keyword1",
-    "for": "keyword2",
+    "for": "keyword1",
     "of": "keyword1",
     "in": "keyword1",
-    "while": "keyword2",
-    "goto": "keyword2",
+    "while": "keyword1",
     "switch": "keyword1",
     "case": "keyword1",
-    "if": "keyword2",
-    "else": "keyword2",
-    "do": "keyword2",
-    "break": "keyword1",
-    "continue": "keyword2",
-    "class": "keyword1",
-    "function": "keyword2",
-    "return": "keyword2",
+    "default": "keyword1",
+    "if": "keyword1",
+    "else": "keyword1",
+    "do": "keyword1",
 
-    "this": "keyword5",
-    "that": "keyword5",
-    "self": "keyword5",
+    "break": "keyword2",
+    "continue": "keyword2",
+    "return": "keyword2",
+    "yield": "keyword2",
+    "debugger": "keyword2",
+
+    "this": "keyword4",
+    "that": "keyword4",
+    "self": "keyword4",
     "super": "keyword5",
 
-    "constructor": "keyword4",
+    "export": "keyword4",
+    "import": "keyword4",
+    "package": "keyword4",
+    "as": "keyword4",
+    "from": "keyword4",
 
     "void": "null",
     "null": "null",
     "undefined": "null",
     "false": "null",
     "true": "null",
+    "NaN": "null",
     "Infinity": "null",
 
-    "abstract": "keyword1",
-    "boolean": "keyword3",
-    "byte": "keyword3",
-    "char": "keyword3",
-    "console": "keyword3",
-    "debugger": "keyword1",
-    "default": "keyword1",
-    "delete": "keyword1",
-    "double": "keyword3",
-    "enum": "keyword1",
-    "escape": "literal2",
-    "eval": "literal2",
-    "export": "keyword2",
-    "extends": "keyword1",
-    "final": "keyword1",
-    "float": "keyword3",
-    "implements": "keyword1",
-    "import": "keyword2",
-    "instanceof": "keyword1",
-    "int": "keyword3",
-    "interface": "keyword1",
-    "isFinite": "literal2",
-    "isNaN": "literal2",
-    "long": "keyword3",
-    "native": "keyword1",
-    "package": "keyword2",
-    "parseFloat": "literal2",
-    "parseInt": "literal2",
-    "private": "keyword1",
-    "protected": "keyword1",
-    "public": "keyword1",
-    "short": "keyword3",
-    "static": "keyword1",
-    "synchronized": "keyword1",
-    "throws": "keyword1",
-    "transient": "keyword1",
-    "typeof": "keyword1",
-    "unescape": "literal2",
-    "volatile": "keyword1",
-    "with": "keyword1",
+    "console": "keyword4",
+    "eval": "literal4",
+    "isFinite": "literal4",
+    "isNaN": "literal4",
 }
 </t>
 <t tx="iggu.20200301151016.6">
@@ -354,13 +338,13 @@ def js6_jsdoc_comment_rule(colorer, s, i):
         no_escape=False, no_line_break=False, no_word_break=False)
 
 def js6_comment_multiline_rule(colorer, s, i):
-    return colorer.match_span(s, i, kind="comment2", begin="/*", end="*/",
+    return colorer.match_span(s, i, kind="comment1", begin="/*", end="*/",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 
 def js6_comment_singleline_rule(colorer, s, i):
-    return colorer.match_eol_span(s, i, kind="comment1", seq="//",
+    return colorer.match_eol_span(s, i, kind="comment2", seq="//",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="", exclude_match=False)
 
@@ -520,13 +504,11 @@ comment: comment1 comment2 comment3 comment4
     //
 
 keyword: keyword1 keyword2 keyword3 keyword4 keyword5
-  in of if for while finally var new function do return void else break catch
-  instanceof with throw case default try this switch continue typeof delete
-  let yield const export constructor super debugger as async await static
-  import package from as class extends
+  
+ debugger async await
 
 literal: literal1 literal2 literal3 literal4
-  true false null undefined NaN Infinity
+  
 
 built_in:
   eval isFinite isNaN parseFloat parseInt decodeURI decodeURIComponent
