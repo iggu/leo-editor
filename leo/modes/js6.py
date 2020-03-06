@@ -59,6 +59,7 @@ js6_main_keywords_dict = {
     "RegExp": "keyword4",
     "String": "keyword4",
     "Error": "keyword4",
+    "Promise": "keyword4",
 
     "class": "keyword2",
     "extends": "keyword2",
@@ -120,6 +121,10 @@ js6_main_keywords_dict = {
     "Infinity": "null",
 
     "console": "keyword4",
+    "window": "keyword4",
+    "document": "keyword4",
+    "global": "keyword4",
+    "globalThis": "keyword4",
     "eval": "literal4",
     "isFinite": "literal4",
     "isNaN": "literal4",
@@ -129,10 +134,11 @@ def js6_main_match_keywords_rule(colorer, s, i):
     return colorer.match_keywords(s, i)
 
 
+
 def js6_jsdoc_comment_rule(colorer, s, i):
     return colorer.match_span(s, i, kind="comment3", begin="/**", end="*/",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="",exclude_match=False,
+        delegate="js6::jsdocs",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 
 def js6_comment_multiline_rule(colorer, s, i):
@@ -146,15 +152,7 @@ def js6_comment_singleline_rule(colorer, s, i):
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="", exclude_match=False)
 
-def js6_comment_html_rule(colorer, s, i):
-    return colorer.match_span(s, i, kind="comment4", begin="<!--", end="-->",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="",exclude_match=False,
-        no_escape=False, no_line_break=False, no_word_break=False)
-
-
 def js6_main_doublequote_rule(colorer, s, i):
-    print('"', i)
     return colorer.match_span(s, i, kind="literal1", begin="\"", end="\"",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
@@ -314,7 +312,7 @@ js6_main_rules_dict = {
     "9": [js6_main_match_keywords_rule,],
     ":": [js6_rule29,js6_rule30,],
     ";": [js6_rule25,],
-    "<": [js6_comment_html_rule,js6_rule9,js6_rule15,],
+    "<": [js6_rule9,js6_rule15,],
     "=": [js6_rule6,],
     ">": [js6_rule8,js6_rule14,],
     "?": [js6_rule28,],
@@ -394,16 +392,10 @@ js6_main_attributes_dict = {
 
 
 def js6_tmplit_param_rule(colorer, s, i):
-    print(">>", s)
     return colorer.match_span(s, i, kind="literal4", begin="${", end="}",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
-
-def js6_tmplit_match_keywords_rule(colorer, s, i):
-    return colorer.match_keywords(s, i)
-
-
 
 # Attributes dict for php_php_literal ruleset.
 js6_template_literals_attributes_dict = {
@@ -416,7 +408,6 @@ js6_template_literals_attributes_dict = {
 }
 
 js6_template_literals_keywords_dict = {
-    "in": "keyword2",
 }
 
 js6_template_literals_rules_dict = {
@@ -424,10 +415,44 @@ js6_template_literals_rules_dict = {
 }
 
 
+
+def js6_jsdoc_match_keywords_rule(colorer, s, i):
+    r = colorer.match_keywords(s, i)
+    print(">>>>", r, s[i:])
+    return -r
+
+def js6_jsdoc_instruction_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="comment4", begin="@", end=" ",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
+
+# Attributes dict for php_php_literal ruleset.
+js6_jsdoc_attributes_dict = {
+    "default": "COMMENT3",
+    "digit_re": "",
+    "escape": "\\",
+    "highlight_digits": "true",
+    "ignore_case": "true",
+    "no_word_sep": "",
+}
+
+js6_jsdoc_keywords_dict = {
+    "FIXME": "label",
+    "TODO": "label",
+}
+
+js6_jsdoc_rules_dict = {
+    "@": [js6_jsdoc_instruction_rule,],
+    'T': [js6_jsdoc_match_keywords_rule,],
+    "F": [js6_jsdoc_match_keywords_rule,],
+}
+
 # Dictionary of attributes dictionaries for javascript mode.
 attributesDictDict = {
     "js6_main": js6_main_attributes_dict,
-    "js6_template_literals": js6_template_literals_attributes_dict
+    "js6_template_literals": js6_template_literals_attributes_dict,
+    "js6_docs": js6_jsdoc_attributes_dict,
 }
 
 
@@ -435,6 +460,7 @@ attributesDictDict = {
 rulesDictDict = {
     "js6_main": js6_main_rules_dict,
     "js6_template_literals": js6_template_literals_rules_dict,
+    "js6_jsdocs": js6_jsdoc_rules_dict,
 }
 
 
@@ -442,6 +468,7 @@ rulesDictDict = {
 keywordsDictDict = {
     "js6_main": js6_main_keywords_dict,
     "js6_template_literals": js6_template_literals_keywords_dict,
+    "js6_jsdocs": js6_jsdoc_keywords_dict,
 }
 
 

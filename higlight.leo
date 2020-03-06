@@ -20,6 +20,9 @@
 <v t="iggu.20200302073636.1"><vh>&lt;&lt; template literals &gt;&gt;</vh>
 <v t="iggu.20200302075656.1"><vh>rules</vh></v>
 </v>
+<v t="iggu.20200305072006.1"><vh>&lt;&lt; jsdocs &gt;&gt;</vh>
+<v t="iggu.20200305072006.2"><vh>rules</vh></v>
+</v>
 <v t="iggu.20200302073554.1"><vh>&lt;&lt; docs &gt;&gt;</vh>
 <v t="iggu.20200302073053.1"><vh>todo</vh></v>
 <v t="iggu.20200301155026.1"><vh>example</vh></v>
@@ -88,11 +91,13 @@ properties = {
 
 &lt;&lt; template literals &gt;&gt;
 
+&lt;&lt; jsdocs &gt;&gt;
 
 # Dictionary of attributes dictionaries for javascript mode.
 attributesDictDict = {
     "js6_main": js6_main_attributes_dict,
-    "js6_template_literals": js6_template_literals_attributes_dict
+    "js6_template_literals": js6_template_literals_attributes_dict,
+    "js6_docs": js6_jsdoc_attributes_dict,
 }
 
 
@@ -100,6 +105,7 @@ attributesDictDict = {
 rulesDictDict = {
     "js6_main": js6_main_rules_dict,
     "js6_template_literals": js6_template_literals_rules_dict,
+    "js6_jsdocs": js6_jsdoc_rules_dict,
 }
 
 
@@ -107,6 +113,7 @@ rulesDictDict = {
 keywordsDictDict = {
     "js6_main": js6_main_keywords_dict,
     "js6_template_literals": js6_template_literals_keywords_dict,
+    "js6_jsdocs": js6_jsdoc_keywords_dict,
 }
 
 
@@ -162,6 +169,7 @@ js6_main_keywords_dict = {
     "RegExp": "keyword4",
     "String": "keyword4",
     "Error": "keyword4",
+    "Promise": "keyword4",
 
     "class": "keyword2",
     "extends": "keyword2",
@@ -223,6 +231,10 @@ js6_main_keywords_dict = {
     "Infinity": "null",
 
     "console": "keyword4",
+    "window": "keyword4",
+    "document": "keyword4",
+    "global": "keyword4",
+    "globalThis": "keyword4",
     "eval": "literal4",
     "isFinite": "literal4",
     "isNaN": "literal4",
@@ -263,7 +275,7 @@ js6_main_rules_dict = {
     "9": [js6_main_match_keywords_rule,],
     ":": [js6_rule29,js6_rule30,],
     ";": [js6_rule25,],
-    "&lt;": [js6_comment_html_rule,js6_rule9,js6_rule15,],
+    "&lt;": [js6_rule9,js6_rule15,],
     "=": [js6_rule6,],
     "&gt;": [js6_rule8,js6_rule14,],
     "?": [js6_rule28,],
@@ -331,10 +343,11 @@ js6_main_rules_dict = {
 
 </t>
 <t tx="iggu.20200301151016.7">
+
 def js6_jsdoc_comment_rule(colorer, s, i):
     return colorer.match_span(s, i, kind="comment3", begin="/**", end="*/",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="",exclude_match=False,
+        delegate="js6::jsdocs",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 
 def js6_comment_multiline_rule(colorer, s, i):
@@ -347,17 +360,9 @@ def js6_comment_singleline_rule(colorer, s, i):
     return colorer.match_eol_span(s, i, kind="comment2", seq="//",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="", exclude_match=False)
-
-def js6_comment_html_rule(colorer, s, i):
-    return colorer.match_span(s, i, kind="comment4", begin="&lt;!--", end="--&gt;",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False,
-        delegate="",exclude_match=False,
-        no_escape=False, no_line_break=False, no_word_break=False)
-
 </t>
 <t tx="iggu.20200301151016.8">
 def js6_main_doublequote_rule(colorer, s, i):
-    print('"', i)
     return colorer.match_span(s, i, kind="literal1", begin="\"", end="\"",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
@@ -546,7 +551,6 @@ js6_template_literals_attributes_dict = {
 }
 
 js6_template_literals_keywords_dict = {
-    "in": "keyword2",
 }
 
 js6_template_literals_rules_dict = {
@@ -555,16 +559,10 @@ js6_template_literals_rules_dict = {
 </t>
 <t tx="iggu.20200302075656.1">
 def js6_tmplit_param_rule(colorer, s, i):
-    print("&gt;&gt;", s)
     return colorer.match_span(s, i, kind="literal4", begin="${", end="}",
         at_line_start=False, at_whitespace_end=False, at_word_start=False,
         delegate="",exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
-
-def js6_tmplit_match_keywords_rule(colorer, s, i):
-    return colorer.match_keywords(s, i)
-
-
 </t>
 <t tx="iggu.20200302100713.1">
 @others
@@ -1131,6 +1129,42 @@ __literal2
 __literal3
 __literal4
 
+</t>
+<t tx="iggu.20200305072006.1">
+@others
+
+# Attributes dict for php_php_literal ruleset.
+js6_jsdoc_attributes_dict = {
+    "default": "COMMENT3",
+    "digit_re": "",
+    "escape": "\\",
+    "highlight_digits": "true",
+    "ignore_case": "true",
+    "no_word_sep": "",
+}
+
+js6_jsdoc_keywords_dict = {
+    "FIXME": "label",
+    "TODO": "label",
+}
+
+js6_jsdoc_rules_dict = {
+    "@": [js6_jsdoc_instruction_rule,],
+    'T': [js6_jsdoc_match_keywords_rule,],
+    "F": [js6_jsdoc_match_keywords_rule,],
+}
+</t>
+<t tx="iggu.20200305072006.2">
+def js6_jsdoc_match_keywords_rule(colorer, s, i):
+    r = colorer.match_keywords(s, i)
+    print("&gt;&gt;&gt;&gt;", r, s[i:])
+    return -r
+
+def js6_jsdoc_instruction_rule(colorer, s, i):
+    return colorer.match_span(s, i, kind="comment4", begin="@", end=" ",
+        at_line_start=False, at_whitespace_end=False, at_word_start=False,
+        delegate="",exclude_match=False,
+        no_escape=False, no_line_break=False, no_word_break=False)
 </t>
 </tnodes>
 </leo_file>
