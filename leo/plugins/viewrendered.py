@@ -154,6 +154,13 @@ contain a filename.  If relative, the filename is resolved relative to Leo's loa
   See http://en.wikipedia.org/wiki/Scalable_Vector_Graphics
   **Note**: if the first character of the body text is ``<`` after removing Leo directives,
   the contents of body pane is taken to be an svg image.
+  
+Relative file names
+===================
+
+vr.convert_to_html resolves relative paths using whatever @path directive
+is in effect for a particular node. It also does `os.chdir(path)` for that
+path.
 
 Settings
 ========
@@ -178,11 +185,12 @@ Settings
 Acknowledgments
 ================
 
-Terry Brown created this initial version of this plugin,
-and the free_layout and NestedSplitter plugins used by viewrendered.
+Terry Brown created this initial version of this plugin, and the
+free_layout and NestedSplitter plugins used by viewrendered.
 
-Edward K. Ream generalized this plugin and added communication
-and coordination between the free_layout, NestedSplitter and viewrendered plugins.
+Edward K. Ream generalized this plugin and added communication and
+coordination between the free_layout, NestedSplitter and viewrendered
+plugins.
 
 Jacob Peck added markdown support to this plugin.
 
@@ -670,7 +678,7 @@ if QtWidgets: # NOQA
     class ViewRenderedController(QtWidgets.QWidget):
         '''A class to control rendering in a rendering pane.'''
         #@+others
-        #@+node:ekr.20110317080650.14380: *3* vr.ctor & helpers
+        #@+node:ekr.20110317080650.14380: *3*  vr.ctor & helpers
         def __init__(self, c, parent=None):
             '''Ctor for ViewRenderedController class.'''
             self.c = c
@@ -761,13 +769,33 @@ if QtWidgets: # NOQA
                 # Create a stand-alone dockable area.
                 dock.setWidget(self)
                 dw.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-            else:
-                # Split the body dock.
-                dw.leo_docks.append(dock)
+            elif g.app.dock:
+                # Split the body dock. Don't register the new dock as an editor doc.
+                ### dw.leo_docks.append(dock)
                 dock.setWidget(self)
                 dw.splitDockWidget(dw.body_dock, dock, QtCore.Qt.Horizontal)
             if g.app.init_docks:
                 dock.show()
+        #@+node:ekr.20110317080650.14381: *3* vr.activate
+        def activate(self):
+            '''Activate the vr-window.'''
+            pc = self
+            if pc.active: return
+            pc.inited = True
+            pc.active = True
+            g.registerHandler('select2', pc.update)
+            g.registerHandler('idle', pc.update)
+        #@+node:vitalije.20170712183051.1: *3* vr.adjust_layout (legacy only)
+        def adjust_layout(self, which):
+            global layouts
+            c = self.c
+            splitter = self.splitter
+            deflo = c.db.get('viewrendered_default_layouts', (None, None))
+            loc, loo = layouts.get(c.hash(), deflo)
+            if which == 'closed' and loc and splitter:
+                splitter.load_layout(loc)
+            elif which == 'open' and loo and splitter:
+                splitter.load_layout(loo)
         #@+node:tbrown.20110621120042.22676: *3* vr.closeEvent
         def closeEvent(self, event):
             '''Close the vr window.'''
@@ -792,15 +820,6 @@ if QtWidgets: # NOQA
                     else:
                         sizes[j] = max(0, size - int(delta / (n - 1)))
                 splitter.setSizes(sizes)
-        #@+node:ekr.20110317080650.14381: *3* vr.activate
-        def activate(self):
-            '''Activate the vr-window.'''
-            pc = self
-            if pc.active: return
-            pc.inited = True
-            pc.active = True
-            g.registerHandler('select2', pc.update)
-            g.registerHandler('idle', pc.update)
         #@+node:ekr.20110317080650.14382: *3* vr.deactivate
         def deactivate(self):
             '''Deactivate the vr window.'''
@@ -819,6 +838,13 @@ if QtWidgets: # NOQA
             '''Unlock the vr pane.'''
             g.note('rendering pane unlocked')
             self.locked = False
+        #@+node:ekr.20200304133109.1: *3* vr.onContextMenuCallback
+        def onContextMenuCallback(self, point):
+            """LeoQtTree: Callback for customContextMenuRequested events."""
+            # #1286.
+            c = self.c
+            w = self
+            g.app.gui.onContextMenu(c, w, point)
         #@+node:ekr.20160921071239.1: *3* vr.set_html
         def set_html(self, s, w):
             '''Set text in w to s, preserving scroll position.'''
@@ -840,6 +866,37 @@ if QtWidgets: # NOQA
                 # Restore the scrollbars
                 assert pos is not None
                 sb.setSliderPosition(pos)
+        #@+node:ekr.20190614133401.1: *3* vr.show_dock_or_pane
+        def show_dock_or_pane(self):
+
+            c, vr = self.c, self
+            if g.app.dock:
+                dock = vr.leo_dock
+                if dock:
+                    dock.show()
+                    dock.raise_()
+                        # #1230.
+            else:
+                vr.activate()
+                vr.show()
+                vr.adjust_layout('open')
+            c.bodyWantsFocusNow()
+        #@+node:vitalije.20170712183618.1: *3* vr.store_layout
+        def store_layout(self, which):
+            global layouts
+            c = self.c; h = c.hash()
+            splitter = self.splitter
+            deflo = c.db.get('viewrendered_default_layouts', (None, None))
+            (loc, loo) = layouts.get(c.hash(), deflo)
+            if which == 'closed' and splitter:
+                loc = splitter.get_saveable_layout()
+                loc = json.loads(json.dumps(loc))
+                layouts[h] = loc, loo
+            elif which == 'open' and splitter:
+                loo = splitter.get_saveable_layout()
+                loo = json.loads(json.dumps(loo))
+                layouts[h] = loc, loo
+            c.db['viewrendered_default_layouts'] = layouts[h]
         #@+node:ekr.20110319143920.14466: *3* vr.underline
         def underline(self, s):
             '''Generate rST underlining for s.'''
@@ -1508,6 +1565,9 @@ if QtWidgets: # NOQA
                 # Instantiate a new QTextBrowser.
                 # Allow non-ctrl clicks to open url's.
                 w = QtWidgets.QTextBrowser()
+                # #1286.
+                w.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+                w.customContextMenuRequested.connect(self.onContextMenuCallback)
 
                 def handleClick(url, w=w):
                     import leo.plugins.qt_text as qt_text
@@ -1605,48 +1665,6 @@ if QtWidgets: # NOQA
                         continue
                 result.append(s)
             return ''.join(result)
-        #@+node:vitalije.20170712183051.1: *3* vr.adjust_layout (legacy only)
-        def adjust_layout(self, which):
-            global layouts
-            c = self.c
-            splitter = self.splitter
-            deflo = c.db.get('viewrendered_default_layouts', (None, None))
-            loc, loo = layouts.get(c.hash(), deflo)
-            if which == 'closed' and loc and splitter:
-                splitter.load_layout(loc)
-            elif which == 'open' and loo and splitter:
-                splitter.load_layout(loo)
-        #@+node:ekr.20190614133401.1: *3* vr.show_dock_or_pane
-        def show_dock_or_pane(self):
-
-            c, vr = self.c, self
-            if g.app.dock:
-                dock = vr.leo_dock
-                if dock:
-                    dock.show()
-                    dock.raise_()
-                        # #1230.
-            else:
-                vr.activate()
-                vr.show()
-                vr.adjust_layout('open')
-            c.bodyWantsFocusNow()
-        #@+node:vitalije.20170712183618.1: *3* vr.store_layout
-        def store_layout(self, which):
-            global layouts
-            c = self.c; h = c.hash()
-            splitter = self.splitter
-            deflo = c.db.get('viewrendered_default_layouts', (None, None))
-            (loc, loo) = layouts.get(c.hash(), deflo)
-            if which == 'closed' and splitter:
-                loc = splitter.get_saveable_layout()
-                loc = json.loads(json.dumps(loc))
-                layouts[h] = loc, loo
-            elif which == 'open' and splitter:
-                loo = splitter.get_saveable_layout()
-                loo = json.loads(json.dumps(loo))
-                layouts[h] = loc, loo
-            c.db['viewrendered_default_layouts'] = layouts[h]
         #@-others
 #@-others
 #@@language python

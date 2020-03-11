@@ -2131,7 +2131,7 @@ class Commands:
             if 'root' in d:
                 return 'doc' if start_in_doc else 'code'
         return None
-    #@+node:ekr.20190921130036.1: *3* c.expand_path_expression (new)
+    #@+node:ekr.20190921130036.1: *3* c.expand_path_expression
     def expand_path_expression(self, s):
         """Expand all {{anExpression}} in c's context."""
         c = self
@@ -2166,7 +2166,9 @@ class Commands:
         if g.isWindows:
             val = val.replace('\\', '/')
         return val
-    #@+node:ekr.20190921130036.2: *4* c.replace_path_expression (new)
+    #@+node:ekr.20190921130036.2: *4* c.replace_path_expression
+    replace_errors = []
+
     def replace_path_expression(self, expr):
         """ local function to replace a single path expression."""
         c = self
@@ -2182,10 +2184,16 @@ class Commands:
         # #1338: Don't report errors when called by g.getUrlFromNode.
         try:
             # pylint: disable=eval-used
-            val = eval(expr, d)
-            return g.toUnicode(val, encoding='utf-8')
+            path = eval(expr, d)
+            return g.toUnicode(path, encoding='utf-8')
         except Exception as e:
-            g.trace(f"{c.shortFileName()}: {e.__class__.__name__} in {c.p.h}: {expr!r}")
+            message = (
+                f"{c.shortFileName()}: {c.p.h}\n"
+                f"expression: {expr!s}\n"
+                f"     error: {e!s}")
+            if message not in self.replace_errors:
+                self.replace_errors.append(message)
+                g.trace(message)
             return expr
     #@+node:ekr.20171123201514.1: *3* c.Executing commands & scripts
     #@+node:ekr.20110605040658.17005: *4* c.check_event
@@ -2378,6 +2386,32 @@ class Commands:
             path = None
         return path
     #@+node:ekr.20171124101444.1: *3* c.File
+    #@+node:ekr.20200305104646.1: *4* c.archivedPositionToPosition (new)
+    def archivedPositionToPosition(self, s):
+        """Convert an archived position (a string) to a position."""
+        c = self
+        s = g.toUnicode(s)
+        aList = s.split(',')
+        try:
+            aList = [int(z) for z in aList]
+        except Exception:
+            aList = None
+        if not aList:
+            return None
+        p = c.rootPosition()
+        level = 0
+        while level < len(aList):
+            i = aList[level]
+            while i > 0:
+                if p.hasNext():
+                    p.moveToNext()
+                    i -= 1
+                else:
+                    return None
+            level += 1
+            if level < len(aList):
+                p.moveToFirstChild()
+        return p
     #@+node:ekr.20150422080541.1: *4* c.backup
     def backup(self, fileName=None, prefix=None, silent=False, useTimeStamp=True):
         """

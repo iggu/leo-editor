@@ -466,7 +466,7 @@ class LeoQtTree(leoFrame.LeoTree):
         """Draw the node p."""
         c = self.c
         v = p.v
-        # Allocate the item.
+        # Allocate the QTreeWidgetItem.
         item = self.createTreeItem(p, parent_item)
         #
         # Update the data structures.
@@ -483,6 +483,8 @@ class LeoQtTree(leoFrame.LeoTree):
         self.setItemText(item, p.h)
         if self.use_declutter:
             self.declutter_node(c, p, item)
+        # #1310: Add a tool tip.
+        item.setToolTip(0, p.h)
         # Draw the icon.
         if p:
             # Expand self.drawItemIcon(p, item).
@@ -714,27 +716,10 @@ class LeoQtTree(leoFrame.LeoTree):
         c.outerUpdate()
     #@+node:ekr.20110605121601.18437: *4* qtree.onContextMenu
     def onContextMenu(self, point):
-        c = self.c
-        w = self.treeWidget
-        handlers = g.tree_popup_handlers
-        menu = QtWidgets.QMenu()
-        menuPos = w.mapToGlobal(point)
-        if not handlers:
-            menu.addAction("No popup handlers")
-        p = c.p.copy()
-        done = set()
-        for handler in handlers:
-            # every handler has to add it's QActions by itself
-            if handler in done:
-                # do not run the same handler twice
-                continue
-            try:
-                handler(c, p, menu)
-            except Exception:
-                g.es_print('Exception executing right-click handler')
-                g.es_exception()
-        menu.popup(menuPos)
-        self._contextmenu = menu
+        """LeoQtTree: Callback for customContextMenuRequested events."""
+        # #1286.
+        c, w = self.c, self.treeWidget
+        g.app.gui.onContextMenu(c, w, point)
     #@+node:ekr.20110605121601.17912: *4* qtree.onHeadChanged
     # Tricky code: do not change without careful thought and testing.
 
@@ -777,6 +762,8 @@ class LeoQtTree(leoFrame.LeoTree):
             #@-<< truncate s if it has multiple lines >>
             p.initHeadString(s)
             item.setText(0, s)  # Required to avoid full redraw.
+            # #1310: update the tooltip.
+            item.setToolTip(0, p.h)
             undoData = u.beforeChangeNodeContents(p, oldHead=oldHead)
             if not c.changed: c.setChanged()
             # We must recolor the body because
@@ -1181,7 +1168,7 @@ class LeoQtTree(leoFrame.LeoTree):
         wrapper = self.connectEditorWidget(e, item)
         self.sizeTreeEditor(self.c, e)
         return e, wrapper
-    #@+node:ekr.20110605121601.18421: *4* qtree.createTreeItem (changed)
+    #@+node:ekr.20110605121601.18421: *4* qtree.createTreeItem
     def createTreeItem(self, p, parent_item):
 
         w = self.treeWidget

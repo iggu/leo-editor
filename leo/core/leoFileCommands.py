@@ -58,6 +58,8 @@ class FastRead:
         with open(path, 'rb') as f:
             s = f.read()
         v, g_element = self.readWithElementTree(path, s)
+        if not v:  # #1510.
+            return None
         self.scanGlobals(g_element)
             # Fix #1047: only this method changes splitter sizes.
         #
@@ -75,6 +77,8 @@ class FastRead:
         Unlike readFile above, this does not affect splitter sizes.
         """
         v, g_element = self.readWithElementTree(path=None, s=s)
+        if not v:  # #1510.
+            return None
         #
         # Fix bug #1111: ensure that all outlines have at least one node.
         if not v.children:
@@ -83,18 +87,18 @@ class FastRead:
             v.children = [new_vnode]
         return v
     #@+node:ekr.20180602062323.7: *4* fast.readWithElementTree & helpers
-    translate_table = b''.join([
-        g.toEncodedString(chr(z)) for z in range(20) if chr(z) not in '\t\r\n'])
-        # See https://en.wikipedia.org/wiki/Valid_characters_in_XML.
+    # #1510: https://en.wikipedia.org/wiki/Valid_characters_in_XML.
+    translate_table = {z: None for z in range(20) if chr(z) not in '\t\r\n'}
 
     def readWithElementTree(self, path, s):
 
-        s = s.translate(None, self.translate_table)
-            # Fix #1036 and #1046.
         contents = g.toUnicode(s)
+        contents = contents.translate(self.translate_table)
+            # Fix #1036 and #1046.
         try:
             xroot = ElementTree.fromstring(contents)
         except Exception as e:
+            # #970: Just report failure here.
             if path:
                 message = f"bad .leo file: {g.shortFileName(path)}"
             else:
@@ -102,8 +106,8 @@ class FastRead:
             g.es_print('\n' + message, color='red')
             g.es_print(g.toUnicode(e))
             print('')
-            # #970: Just report failure here.
-            return None
+            # #1510: Return a tuple.
+            return None, None
         g_element = xroot.find('globals')
         v_elements = xroot.find('vnodes')
         t_elements = xroot.find('tnodes')
@@ -190,7 +194,7 @@ class FastRead:
         else:
             ro = ob
         return ro
-    #@+node:ekr.20180605062300.1: *5* fast.scanGlobals & helper (changed)
+    #@+node:ekr.20180605062300.1: *5* fast.scanGlobals & helper
     def scanGlobals(self, g_element):
         """Get global data from the cache, with reasonable defaults."""
         c = self.c
@@ -688,6 +692,9 @@ class FileCommands:
         theDir = g.os_path_dirname(fileName)
         if theDir:
             c.openDirectory = c.frame.openDirectory = theDir
+        # Fix #1437 when opening completely new outline
+        # there is no sense in keeping the old values in gnxDict
+        self.gnxDict = {}
         # Get the file.
         ok, ratio = self.getLeoFile(
             theFile, fileName,
@@ -1832,28 +1839,8 @@ class FileCommands:
     #@+node:ekr.20080805114146.2: *3* fc.Utils
     #@+node:ekr.20061006104837.1: *4* fc.archivedPositionToPosition
     def archivedPositionToPosition(self, s):
-
-        c = self.c
-        s = g.toUnicode(s)
-        aList = s.split(',')
-        try:
-            aList = [int(z) for z in aList]
-        except Exception:
-            aList = None
-        if not aList: return None
-        p = c.rootPosition(); level = 0
-        while level < len(aList):
-            i = aList[level]
-            while i > 0:
-                if p.hasNext():
-                    p.moveToNext()
-                    i -= 1
-                else:
-                    return None
-            level += 1
-            if level < len(aList):
-                p.moveToFirstChild()
-        return p
+        """Convert an archived position (a string) to a position."""
+        return self.c.archivedPositionToPosition(s)
     #@+node:ekr.20031218072017.1570: *4* fc.assignFileIndices & compactFileIndices
     def assignFileIndices(self):
         """Assign a file index to all tnodes"""

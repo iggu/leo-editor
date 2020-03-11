@@ -89,6 +89,9 @@ globalDirectiveList = [
 #@@nobeautify
 #@@language rest
 #@+at
+# *Don't even think about removing the @cmd decorators!*
+# See https://github.com/leo-editor/leo-editor/issues/325
+#
 # The cmd_instance_dict supports the @cmd decorators in various files. For
 # example, the following appears in leo.commands.
 #
@@ -96,9 +99,11 @@ globalDirectiveList = [
 #         """Command decorator for the abbrevCommands class."""
 #         return g.new_cmd_decorator(name, ['c', 'abbrevCommands',])
 #
-# **Important**: All *new* commands should be defined using @g.command, but
-# this dict will remain forever so as not to break existing code.  See this
-# discussion https://github.com/leo-editor/leo-editor/issues/325
+# **Important**
+#
+# All *new* commands should be defined using @g.command, but
+# this dict will remain forever so as not to break existing code.
+#
 #@@c
 #@@language python
 
@@ -280,6 +285,9 @@ def new_cmd_decorator(name, ivars):
     """
     Return a new decorator for a command with the given name.
     Compute the class *instance* using the ivar string or list.
+    
+    Don't even think about removing the @cmd decorators!
+    See https://github.com/leo-editor/leo-editor/issues/325
     """
 
     def _decorator(func):
@@ -2450,10 +2458,10 @@ class TestLeoGlobals(unittest.TestCase):
     #@-others
 #@+node:ekr.20140904112935.18526: *3* g.isTextWrapper & isTextWidget
 def isTextWidget(w):
-    return w and g.app.gui.isTextWidget(w)
+    return g.app.gui.isTextWidget(w)
 
 def isTextWrapper(w):
-    return w and g.app.gui.isTextWrapper(w)
+    return g.app.gui.isTextWrapper(w)
 #@+node:ekr.20140711071454.17649: ** g.Debugging, GC, Stats & Timing
 #@+node:ekr.20031218072017.3104: *3* g.Debugging
 #@+node:ekr.20031218072017.3105: *4* g.alert (deprecated)
@@ -4211,38 +4219,30 @@ def recursiveUNLSearch(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
         return True, maxdepth, maxp
 
     def moveToP(c, p, unlList):
-
-        def focus_callback(timer, c=c, p=p.copy(), unlList=unlList):
-            """Idle-time handler for g.recursiveUNLSearch"""
-            c.expandAllAncestors(p)
-            c.selectPosition(p)
-            nth_sib, nth_same, nth_line_no, nth_col_no = recursiveUNLParts(unlList[-1])
-            if nth_line_no:
-                if nth_line_no < 0:
-                    c.goToLineNumber(-nth_line_no)
-                    if nth_col_no:
-                        pos = c.frame.body.wrapper.getInsertPoint() + nth_col_no
-                        c.frame.body.wrapper.setInsertPoint(pos)
-                else:
-                    pos = sum(len(i) + 1 for i in p.b.split('\n')[: nth_line_no - 1])
-                    if nth_col_no:
-                        pos += nth_col_no
+        # Process events, to calculate new sizes.
+        g.app.gui.qtApp.processEvents()
+        c.expandAllAncestors(p)
+        c.selectPosition(p)
+        nth_sib, nth_same, nth_line_no, nth_col_no = recursiveUNLParts(unlList[-1])
+        if nth_line_no:
+            if nth_line_no < 0:
+                c.goToLineNumber(-nth_line_no)
+                if nth_col_no:
+                    pos = c.frame.body.wrapper.getInsertPoint() + nth_col_no
                     c.frame.body.wrapper.setInsertPoint(pos)
-            if p.hasChildren():
-                p.expand()
-                # n = min(3, p.numberOfChildren())
-            c.redraw()
-            c.frame.bringToFront()
-            c.bodyWantsFocusNow()
-            timer.stop()
-
-        timer = g.IdleTime(focus_callback, delay=0.1, tag='g.recursiveUNLSearch')
-        if timer: timer.start()
-
+            else:
+                pos = sum(len(i) + 1 for i in p.b.split('\n')[: nth_line_no - 1])
+                if nth_col_no:
+                    pos += nth_col_no
+                c.frame.body.wrapper.setInsertPoint(pos)
+        if p.hasChildren():
+            p.expand()
+        c.redraw()
+        c.frame.bringToFront()
+        c.bodyWantsFocusNow()
+    
     found, maxdepth, maxp = recursiveUNLFind(
-        unlList, c, depth, p, maxdepth, maxp,
-        soft_idx=soft_idx, hard_idx=hard_idx
-    )
+        unlList, c, depth, p, maxdepth, maxp, soft_idx=soft_idx, hard_idx=hard_idx)
     if maxp:
         moveToP(c, maxp, unlList)
     return found, maxdepth, maxp
@@ -7573,7 +7573,9 @@ def run_unit_test_in_separate_process(command):
         print('traces...')
         print(out.rstrip())
     print(err.rstrip())
-    assert err.strip().endswith('OK')
+    # There may be skipped tests...
+    err_lines = g.splitLines(err.rstrip())
+    assert err_lines[-1].startswith('OK')
 #@+node:ekr.20080919065433.2: *3* g.toEncodedStringWithErrorCode (for unit testing)
 def toEncodedStringWithErrorCode(s, encoding, reportErrors=False):
     """For unit testing: convert s to an encoded string and return (s,ok)."""

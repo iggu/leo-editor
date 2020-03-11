@@ -98,7 +98,7 @@ class AtFile:
         at.startSentinelComment = ""
         at.tab_width = c.tab_width or -4
         at.writing_to_shadow_directory = False
-    #@+node:ekr.20041005105605.13: *4* at.initReadIvars (changed)
+    #@+node:ekr.20041005105605.13: *4* at.initReadIvars
     def initReadIvars(self, root, fileName,
         importFileName=None,
         perfectImportRoot=None,
@@ -166,6 +166,7 @@ class AtFile:
         atShadow=False,
         defaultDirectory=None,
         forcePythonSentinels=False,
+        kind=None,
         sentinels=True,
     ):
         """
@@ -179,6 +180,7 @@ class AtFile:
         assert at.underindentEscapeString is not None
         #
         # Copy args
+        at.kind = kind
         at.atEdit = atEdit
             # Used only by putBody.
         at.atShadow = atShadow
@@ -324,7 +326,7 @@ class AtFile:
         # This method is the gateway to the shadow algorithm.
         x.updatePublicAndPrivateFiles(at.root, fn, shadow_fn)
         return shadow_fn
-    #@+node:ekr.20041005105605.21: *5* at.read & helpers (changed)
+    #@+node:ekr.20041005105605.21: *5* at.read & helpers
     def read(self, root, importFileName=None,
         fromString=None, atShadow=False, force=False
     ):
@@ -559,9 +561,9 @@ class AtFile:
     def readOneAtAutoNode(self, fileName, p):
         '''Read an @auto file into p. Return the *new* position.'''
         at, c, ic = self, self.c, self.c.importCommands
-        at.default_directory = g.setDefaultDirectory(c, p, importing=True)
-        at.default_directory = c.expand_path_expression(at.default_directory)  # #1341.
-        fileName = g.os_path_finalize_join(at.default_directory, fileName)  # #1341.
+        # #1521 & #1341.
+        fileName = g.fullPath(c, p)
+        at.default_directory = g.os_path_dirname(fileName)
         if not g.os_path_exists(fileName):
             g.error(f"not found: {p.h!r}", nodeLink=p.get_UNL(with_proto=True))
             return p
@@ -604,9 +606,9 @@ class AtFile:
         at = self
         c = at.c
         ic = c.importCommands
-        at.default_directory = g.setDefaultDirectory(c, p, importing=True)
-        at.default_directory = c.expand_path_expression(at.default_directory)  # #1341.
-        fn = g.os_path_finalize_join(at.default_directory, fn)  # #1341.
+        # #1521
+        fn = g.fullPath(c, p)
+        at.default_directory = g.os_path_dirname(fn)
         junk, ext = g.os_path_splitext(fn)
         # Fix bug 889175: Remember the full fileName.
         at.rememberReadPath(fn, p)
@@ -633,9 +635,9 @@ class AtFile:
     def readOneAtAsisNode(self, fn, p):
         '''Read one @asis node. Used only by refresh-from-disk'''
         at, c = self, self.c
-        at.default_directory = g.setDefaultDirectory(c, p, importing=True)
-        at.default_directory = c.expand_path_expression(at.default_directory)  # #1341.
-        fn = g.os_path_finalize_join(at.default_directory, fn)  # #1341.
+        # #1521 & #1341.
+        fn = g.fullPath(c, p)
+        at.default_directory = g.os_path_dirname(fn)
         junk, ext = g.os_path_splitext(fn)
         # Remember the full fileName.
         at.rememberReadPath(fn, p)
@@ -722,12 +724,11 @@ class AtFile:
                 f"can not happen: fn: {fn} != atShadowNodeName: "
                 f"{p.atShadowFileNodeName()}")
             return
-        # Fix bug 889175: Remember the full fileName.
-        fn = c.expand_path_expression(fn)  # #1341.
+        # #1521 & #1341.
+        fn = g.fullPath(c, p)
+        at.default_directory = g.os_path_dirname(fn)
+        # #889175: Remember the full fileName.
         at.rememberReadPath(fn, p)
-        at.default_directory = g.setDefaultDirectory(c, p, importing=True)
-        at.default_directory = c.expand_path_expression(at.default_directory)  # #1341.
-        fn = g.os_path_finalize_join(at.default_directory, fn)
         shadow_fn = x.shadowPathName(fn)
         shadow_exists = g.os_path_exists(shadow_fn) and g.os_path_isfile(shadow_fn)
         # Delete all children.
@@ -736,7 +737,6 @@ class AtFile:
         if shadow_exists:
             at.read(p, atShadow=True, force=force)
         else:
-            # if not g.unitTesting: g.es("reading:", p.h)
             ok = at.importAtShadowNode(fn, p)
             if ok:
                 # Create the private file automatically.
@@ -1194,14 +1194,16 @@ class AtFile:
         elif p.isAtAutoNode():
             at.writeOneAtAutoNode(p)
             # Do *not* clear the dirty bits the entries in @persistence tree here!
-        elif p.isAtCleanNode() or p.isAtNoSentFileNode():
-            at.write(p, sentinels=False)
+        elif p.isAtCleanNode():
+            at.write('@clean', p, sentinels=False)
+        elif p.isAtNoSentFileNode():
+            at.write('@nosent', p, sentinels=False)
         elif p.isAtEditNode():
             at.writeOneAtEditNode(p)
         elif p.isAtShadowFileNode():
             at.writeOneAtShadowNode(p)
         elif p.isAtThinFileNode() or p.isAtFileNode():
-            at.write(p)
+            at.write('@file', p)
         #
         # Clear the dirty bits in all descendant nodes.
         # The persistence data may still have to be written.
@@ -1219,9 +1221,9 @@ class AtFile:
             return
         oldPath = g.os_path_normcase(at.getPathUa(p))
         newPath = g.os_path_normcase(g.fullPath(c, p))
-        try:  # #1367: samefile can throw IOError!
+        try:  # #1367: samefile can throw an exception.
             changed = oldPath and not os.path.samefile(oldPath, newPath)
-        except IOError:
+        except Exception:
             changed = True
         if not changed:
             return
@@ -1310,7 +1312,7 @@ class AtFile:
         if s:
             put(s)
     #@+node:ekr.20041005105605.144: *6* at.write
-    def write(self, root, sentinels=True):
+    def write(self, kind, root, sentinels=True):
         """Write a 4.x derived file.
         root is the position of an @<file> node.
         sentinels will be False for @clean and @nosent nodes.
@@ -1319,7 +1321,7 @@ class AtFile:
         try:
             c.endEditing()
             fileName = at.initWriteIvars(
-                root, root.anyAtFileNodeName(), sentinels=sentinels)
+                root, root.anyAtFileNodeName(), kind=kind, sentinels=sentinels)
             if not fileName or not at.precheck(fileName, root):
                 if sentinels:
                     # Raise dialog warning of data loss.
@@ -1382,9 +1384,9 @@ class AtFile:
         if p.isAtAsisFileNode():
             at.asisWrite(p)
         elif p.isAtNoSentFileNode():
-            at.write(p, sentinels=False)
+            at.write('@nosent', p, sentinels=False)
         elif p.isAtFileNode():
-            at.write(p)
+            at.write('@file', p)
         elif p.isAtAutoNode() or p.isAtAutoRstNode():
             g.es('Can not write missing @auto node', p.h, color='red')
         else:
@@ -1546,9 +1548,10 @@ class AtFile:
             at.initWriteIvars(root, None,
                 atShadow=True,
                 defaultDirectory=g.os_path_dirname(full_path),
-                forcePythonSentinels=True)
+                forcePythonSentinels=True,
                     # Force python sentinels to suppress an error message.
                     # The actual sentinels will be set below.
+            )
             at.default_directory = g.os_path_dirname(full_path)
                 # Override.
             # Make sure we can compute the shadow directory.
@@ -1699,8 +1702,12 @@ class AtFile:
         at, c = self, self.c
         try:
             c.endEditing()
-            at.initWriteIvars(root, "<string-file>",
-                forcePythonSentinels=forcePythonSentinels, sentinels=sentinels)
+            at.initWriteIvars(
+                root,
+                targetFileName="<string-file>",
+                forcePythonSentinels=forcePythonSentinels,
+                sentinels=sentinels,
+            )
             at.openOutputStream()
             at.putFile(root, fromString=s, sentinels=sentinels)
             result = at.closeOutputStream()
@@ -1982,10 +1989,18 @@ class AtFile:
         # Write the lead-in sentinel only once.
         at.putLeadInSentinel(s, i, n1, delta)
         self.putRefAt(name, ref, delta)
+        n_refs = 0
         while 1:
             progress = i
             i = n2
+            n_refs += 1
             name, n1, n2 = at.findSectionName(s, i)
+            if self.kind == '@clean' and n_refs > 1:
+                # #1232: allow only one section reference per line in @clean.
+                i1, i2 = g.getLine(s, i)
+                line = s[i1:i2].rstrip()
+                at.writeError(f"Too many section references:\n{line!s}")
+                break
             if name:
                 ref = at.findReference(name, p)
                     # Issues error if not found.
@@ -1993,7 +2008,8 @@ class AtFile:
                     middle_s = s[i:n1]
                     self.putAfterMiddleRef(middle_s, delta)
                     self.putRefAt(name, ref, delta)
-            else: break
+            else:
+                break
             assert progress < i
         self.putAfterLastRef(s, i, delta)
     #@+node:ekr.20131224085853.16443: *7* at.findReference
@@ -3090,8 +3106,10 @@ class AtFile:
             d = p.v.at_read
             for k in d:
                 # Fix bug # #1469: make sure k still exists.
-                if os.path.exists(
-                    k) and os.path.samefile(k, fn) and p.h in d.get(k, set()):
+                if (
+                    os.path.exists(k) and os.path.samefile(k, fn)
+                    and p.h in d.get(k, set())
+                ):
                     d[fn] = d[k]
                     if trace: g.trace('Return False: in p.v.at_read:', sfn)
                     return False
@@ -3383,7 +3401,7 @@ class FastAtRead:
             #@afterref
  # clears in_doc
             #@+<< 4. handle section refs >>
-            #@+node:ekr.20180602103135.18: *4* << 4. handle section refs >>
+            #@+node:ekr.20180602103135.18: *4* << 4. handle section refs >> (changed)
             m = ref_pat.match(line)
             if m:
                 in_doc = False
@@ -3392,11 +3410,15 @@ class FastAtRead:
                     body.append(m.group(1) + g.angleBrackets(m.group(3)) + '\n')
                     stack.append((gnx, indent, body))
                     indent += m.end(1)
-                else:
+                    continue
+                elif stack:
+                    # #1232: Only if the stack exists.
                     # close sentinel.
                     # m.group(2) is '-' because the pattern matched.
                     gnx, indent, body = stack.pop()
-                continue
+                    continue
+                else:
+                    g.trace('=====', repr(line))
             #@-<< 4. handle section refs >>
             #@afterref
  # clears in_doc.

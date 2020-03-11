@@ -28,7 +28,7 @@ class To_Python:
         self.p = self.c.p.copy()
         aList = g.get_directives_dict_list(self.p)
         self.tab_width = g.scanAtTabwidthDirectives(aList) or 4
-    #@+node:ekr.20150514063305.126: *3* To_Python.go (changed)
+    #@+node:ekr.20150514063305.126: *3* To_Python.go
     def go(self):
         import time
         t1 = time.time()
@@ -921,8 +921,6 @@ class ConvertCommandsClass(BaseEditCommandsClass):
             def __init__(self, c):
                 """MakeStubFile.ctor. From StandAloneMakeStubFile.ctor."""
                 self.c = c
-                ### self.msf = msf = g.importExtension(moduleName='make_stub_files',
-                ###     pluginName=None, verbose=False, required=False)
                 self.msf = msf = g.import_module('make_stub_files')
                 x = msf.StandAloneMakeStubFile()
                     # x is used *only* to init ivars.

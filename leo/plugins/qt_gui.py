@@ -40,7 +40,7 @@ def init():
 class LeoQtGui(leoGui.LeoGui):
     """A class implementing Leo's Qt gui."""
     #@+others
-    #@+node:ekr.20110605121601.18477: *3*  qt_gui.__init__ (sets qtApp) (changed)
+    #@+node:ekr.20110605121601.18477: *3*  qt_gui.__init__ (sets qtApp)
     def __init__(self):
         """Ctor for LeoQtGui class."""
         super().__init__('qt')
@@ -223,7 +223,6 @@ class LeoQtGui(leoGui.LeoGui):
             c.ftm = g.app.globalFindTabManager
             fn = c.shortFileName() or 'Untitled'
             d.setWindowTitle(f"Find in {fn}")
-            c.frame.top.find_status_edit.setText('')
         c.inCommand = False
         if d.isVisible():
             # The order is important, and tricky.
@@ -238,11 +237,8 @@ class LeoQtGui(leoGui.LeoGui):
     def createFindDialog(self, c):
         """Create and init a non-modal Find dialog."""
         g.app.globalFindTabManager = c.findCommands.ftm
-        top = c.frame.top
-            # top is the DynamicWindow class.
+        top = c.frame.top  # top is the DynamicWindow class.
         w = top.findTab
-        top.find_status_label.setText('Find Status:')
-
         d = QtWidgets.QDialog()
         # Fix #516: Hide the dialog. Never delete it.
 
@@ -768,7 +764,9 @@ class LeoQtGui(leoGui.LeoGui):
         c.in_qt_dialog = False
         #@-<< emergency fallback >>
     #@+node:ekr.20190819135820.1: *3* qt_gui.Docks
-    #@+node:ekr.20190819091950.1: *4* qt_gui.create_dock_widget (changed)
+    #@+node:ekr.20190819091950.1: *4* qt_gui.create_dock_widget
+    total_docks = 0
+
     def create_dock_widget(self, closeable, moveable, height, name):
         """Make a new dock widget in the main window"""
         dock = QtWidgets.QDockWidget(parent=self.main_window)
@@ -781,13 +779,17 @@ class LeoQtGui(leoGui.LeoGui):
             features |= dock.DockWidgetClosable
         dock.setFeatures(features)
         dock.setMinimumHeight(height)
-        dock.setObjectName(f"dock.{name.lower()}")
-        dock.setWindowTitle(name.capitalize())
+        dock.setObjectName(f"dock-{self.total_docks}")
+        self.total_docks += 1
+        if name:
+            dock.setWindowTitle(name.capitalize())
+        else:
+            # #1527. Suppress the title.
+            w = QtWidgets.QWidget()
+            dock.setTitleBarWidget(w)
         # #1327: frameFactory.createFrame now ensures that the main window is visible.
-            # g.app.use_global_docks:
-                # dock.show() # Essential!
         return dock
-    #@+node:ekr.20190822113212.1: *4* qt_gui.make_global_outlines_dock (new)
+    #@+node:ekr.20190822113212.1: *4* qt_gui.make_global_outlines_dock
     def make_global_outlines_dock(self):
         """
         Create the top-level Outlines (plural) dock,
@@ -801,15 +803,23 @@ class LeoQtGui(leoGui.LeoGui):
             closeable=not is_central,
             moveable=not is_central,
             height=50,  # was 100: #1339.
-            name="Leo Outlines")
+            name='',  # #1527: was 'Leo Outlines'
+        )
         if is_central:
             main_window.setCentralWidget(dock)
         else:
             area = QtCore.Qt.BottomDockWidgetArea
             main_window.addDockWidget(area, dock)
         return dock
+    #@+node:ekr.20200305075130.1: *4* qt_gui.find_dock
+    def find_dock(self, w):
+        """return the QDockWidget containing w, or None"""
+        dock = w
+        while dock and not isinstance(dock, QtWidgets.QDockWidget):
+            dock = dock.parent()
+        return dock
     #@+node:ekr.20110607182447.16456: *3* qt_gui.Event handlers
-    #@+node:ekr.20190824094650.1: *4* qt_gui.close_event (new)
+    #@+node:ekr.20190824094650.1: *4* qt_gui.close_event
     def close_event(self, event):
 
         noclose = False
@@ -1165,7 +1175,7 @@ class LeoQtGui(leoGui.LeoGui):
                 # return False, indicating that the widget must handle
                 # qevent, which *presumably* is the best that can be done.
                 g.app.gui.insert_char_flag = True
-    #@+node:ekr.20190819072045.1: *3* qt_gui.make_main_window (new)
+    #@+node:ekr.20190819072045.1: *3* qt_gui.make_main_window
     def make_main_window(self):
         """Make the *singleton* QMainWindow."""
         window = QtWidgets.QMainWindow()
@@ -1189,6 +1199,7 @@ class LeoQtGui(leoGui.LeoGui):
             c = commanders[0]
             ssm = c.styleSheetManager
             ssm.set_style_sheets(w=self.main_window)
+            self.main_window.setWindowTitle(c.frame.title)  # #1506.
         else:
             g.trace("No open commanders!")
     #@+node:ekr.20110605121601.18528: *3* qt_gui.makeScriptButton
@@ -1330,7 +1341,30 @@ class LeoQtGui(leoGui.LeoGui):
             g.es_exception()
             print('can not init leo.core.leoIPython.py')
             sys.exit(1)
-    #@+node:ekr.20190822174038.1: *3* qt_gui.set_top_geometry (new)
+    #@+node:ekr.20200304125716.1: *3* qt_gui.onContextMenu
+    def onContextMenu(self, c, w, point):
+        """LeoQtGui: Common context menu handling."""
+        # #1286.
+        handlers = g.tree_popup_handlers
+        menu = QtWidgets.QMenu()
+        menuPos = w.mapToGlobal(point)
+        if not handlers:
+            menu.addAction("No popup handlers")
+        p = c.p.copy()
+        done = set()
+        for handler in handlers:
+            # every handler has to add it's QActions by itself
+            if handler in done:
+                # do not run the same handler twice
+                continue
+            try:
+                handler(c, p, menu)
+            except Exception:
+                g.es_print('Exception executing right-click handler')
+                g.es_exception()
+        menu.popup(menuPos)
+        self._contextmenu = menu
+    #@+node:ekr.20190822174038.1: *3* qt_gui.set_top_geometry
     already_sized = False
 
     def set_top_geometry(self, w, h, x, y):
@@ -1465,8 +1499,11 @@ class LeoQtGui(leoGui.LeoGui):
 
     def isTextWrapper(self, w):
         """Return True if w is a Text widget suitable for text-oriented commands."""
-        return w and hasattr(
-            w, 'supportsHighLevelInterface') and w.supportsHighLevelInterface
+        if w is None:
+            return False
+        if isinstance(w, (g.NullObject, g.TracingNullObject)):
+            return True
+        return getattr(w, 'supportsHighLevelInterface', None)
     #@+node:ekr.20110605121601.18527: *4* qt_gui.widget_name
     def widget_name(self, w):
         # First try the widget's getName method.
