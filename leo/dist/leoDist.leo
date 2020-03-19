@@ -156,15 +156,15 @@
 </v>
 </v>
 <v t="ekr.20180405171433.1"><vh>Distribution checklist (GitHub Only)</vh>
+<v t="ekr.20200313063940.1"><vh>Create the release branch *first*</vh></v>
 <v t="ekr.20180405171433.4"><vh>Pre-testing</vh></v>
 <v t="ekr.20180405171433.2"><vh>Files</vh></v>
 <v t="ekr.20180405171433.3"><vh>Web docs</vh></v>
-<v t="ekr.20180828095749.1"><vh>Create a -rel *branch* late.</vh></v>
-<v t="ekr.20180828095843.1"><vh>Update versions.py in the -rel branch</vh></v>
-<v t="ekr.20190618104430.1"><vh>Merge -rel branch into master</vh></v>
+<v t="ekr.20180828095843.1"><vh>Update versions.py in the release branch</vh></v>
+<v t="ekr.20190618104430.1"><vh>Merge release branch into master</vh></v>
 <v t="ekr.20190802115604.1"><vh>After-merge testing</vh></v>
 <v t="ekr.20180405171433.7"><vh>Create git tag in master</vh></v>
-<v t="ekr.20190618104609.1"><vh>Merge git *tag* into devel</vh></v>
+<v t="ekr.20190618104609.1"><vh>Merge master into devel</vh></v>
 <v t="ekr.20181001112218.1"><vh>Update version in devel branch</vh></v>
 <v t="ekr.20190618104622.1"><vh>Publish release</vh></v>
 <v t="ekr.20190618104704.1"><vh>Announcements</vh></v>
@@ -186,7 +186,7 @@
 </t>
 <t tx="EKR.20040519090846.1">MIT License
 
-Copyright (c) 1997-2019 by Edward K. Ream.
+Copyright (c) 1997-2020 by Edward K. Ream.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -219,7 +219,7 @@ These parts are are clearly marked in Leo's code as follows:
     
 Portions of Leo's pyzo interface uses code from pyzo:
 
-    Copyright (C) 2013-2019, the Pyzo development team
+    Copyright (C) 2013-2020, the Pyzo development team
     
     Pyzo is distributed under the terms of the (new) BSD License.
     The full license can be found in 'license.txt'.
@@ -230,7 +230,7 @@ Portions of Leo's pyzo interface uses code from pyzo:
 </t>
 <t tx="EKR.20040519090846.8">Metadata-Version: 1.0
 Name: leo
-Version: 6.1
+Version: 6.2
 Summary: An IDE, PIM and Outliner. See leoeditor.com/preface.html.
 Description: See users own descriptions of Leo at leoeditor.com/testimonials.html.
 Home-page: http://leoeditor.com/
@@ -249,24 +249,21 @@ Classifier: Topic :: Software Development
 Classifier: Topic :: Text Processing
 Download-URL: http://sourceforge.net/projects/leo/files/
 </t>
-<t tx="EKR.20040519090846.9">Leo 6.1, http://leoeditor.com, is now available on
-[GitHub](https://github.com/leo-editor/leo-editor).
+<t tx="EKR.20040519090846.9">Leo 6.2, http://leoeditor.com, is now available on [GitHub](https://github.com/leo-editor/leo-editor).
 
-Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
+Leo is an [IDE, outliner and PIM](http://leoeditor.com/preface.html).
 
-**The highlights of Leo 6.1**
+**The highlights of Leo 6.2**
 
-- Pyzo in Leo: Pyzo can optionally run *within* Leo.
-- Added support for asciidoc and asciidoctor.
-- Added support for pandoc and sphinx.
-- Added support for black.
-- The history_tracer plugin animates git commits.
-- Integration of Leo with VS code.
-- New command-line arguments: --global-docks and --window-spot.
-- New cursor-movement commands.
-
-Special thanks to Vitalije Milosevic, Brian Theado, and Matt Wilkie for
-their contributions to Leo 6.1.
+- Added the fstringify-files and diff-fstringify-files commands.
+- Improved the beautify-files command. Added the diff-beautify-files commands.
+- Added the TokenOrderGenerator and TokenOrderTraverser classes in leoAst.py.
+  Leo's fstringify and beautify commands use these classes.
+- Added an importer for todo.txt files
+- Leo's legacy layout is now the default.
+- Fixed all known bugs, including some notable, long-standing bugs.
+- Fixed several "fit and finish" issues.
+- Removed unused settings from leoSettings.leo.
 
 **Links**
 
@@ -598,7 +595,7 @@ leo/test/unittest/.leo_shadow/  export-ignore
 
 2. Search for copyright
 
-    Latest copyright date: 2019.
+    Latest copyright date: 2020.
 
     Note: install.txt file embeds a copyright message in the nsi installer.</t>
 <t tx="ekr.20150416081546.1"></t>
@@ -1629,9 +1626,18 @@ g.es_print('done')
 
 Overview:
 
-1. Do as much work as possible in "devel".
-2. Update leoVersion.py *after* creating -rel branch.
-</t>
+1. Create a **release branch**, called 6.2.
+   This branch should be based on devel.
+   This branch will hold all work for 6.2-b1 and 6.2 (final).
+
+2. *Never* merge devel into the release branch.
+   It's fine to merge the release branch into devel.
+   
+3. Fix last-minute bugs in a **bug-fix branch**.
+   Base bug-fix branches on the *release* branch, not devel.
+   After fixing the bug, merge the bug-fix branch into both devel and the release branch.
+   
+4. Update leoVersion.py (in devel) after merging the release branch into devel.</t>
 <t tx="ekr.20180405171433.2" __bookmarks="7d7100580700000069735f6475706571014930300a732e">LeoDocs.leo:
 - Make sure copyright dates are correct.
 - Update the "last updated" text in index.html.
@@ -1664,7 +1670,8 @@ LeoPyRef.leo and LeoPluginsRef.leo:
 <t tx="ekr.20180405171433.4" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Make sure Leo looks good without myLeoSettings.leo.
 - Run the "check-bindings" button in leoSettings.leo.
 - Run all unit tests with Python 3.
-- Run ll -a with with Python 3.</t>
+- Run pylint (EKR's ll -a script) with with Python 3.
+</t>
 <t tx="ekr.20180405171433.7" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Create a git tag **last**
 
 - Create a full (annotated) tag:
@@ -1677,18 +1684,15 @@ LeoPyRef.leo and LeoPluginsRef.leo:
 git tag -a v5.9.x -m "Added v5.9.x tag"
 git push --follow-tags
 </t>
-<t tx="ekr.20180828095749.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">git checkout -b x.y-final-rel
-git push origin x.y-final-rel
-</t>
 <t tx="ekr.20180828095843.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">leoVersion.py:
 - Update version constant.
 </t>
-<t tx="ekr.20181001112218.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Matt: After merge create dev tag that matches
+<t tx="ekr.20181001112218.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Matt: After merge, create dev tag that matches
     static version added to leoversion.py earlier.
-    #static version = '6.0-b2-devel'
+    #static version = '6.3-devel'
 
 git checkout devel
-git tag -a v6.0-b2-dev -m "Added v6.0-b2-dev tag"
+git tag -a v6.3-dev -m "Added v6.3-dev tag"
 git push --follow-tags
 update version in leoVersion.py.
 </t>
@@ -2186,6 +2190,9 @@ There is a "Draft New Release" button at the top-right of the page.
 <t tx="ekr.20190802115604.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Run all unit tests.
 - Run pylint on all files.
 </t>
+<t tx="ekr.20200313063940.1">git checkout -b 6.2
+git push origin 6.2
+</t>
 <t tx="maphew.20180128212042.1">@language md
 @wrap
 
@@ -2352,7 +2359,7 @@ build-backend = 'setuptools.build_meta'
 # This flag says that the code is written to work on both Python 2 and Python
 # 3. If at all possible, it is good practice to do this. If you cannot, you
 # will need to generate wheels for each Python version that you support.
-universal=1
+universal=0
 </t>
 <t tx="maphew.20190208142757.1">@language python
 # A list of pip installable tools and libraries in the Requirements File Format
@@ -2421,10 +2428,8 @@ git:
     ## Clone depth, must be big enough to include a tag
     depth: 500
 install:
-    ## Using PEP-518 (pypoject.toml) requires pip &gt;v10 
-    - python -m pip install --upgrade pip
     - pip --version
-    - pip install setupext-janitor
+    - pip install setupext-janitor asttokens
 script:
     ## Test: Unit tests
     - python run_travis_unit_tests.py

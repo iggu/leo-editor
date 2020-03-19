@@ -621,6 +621,7 @@
 </v>
 <v t="ekr.20050830115714.26"><vh>Customizing Leo</vh>
 <v t="ekr.20050830115714.29"><vh>How can I add support for a new language?</vh></v>
+<v t="ekr.20200227061507.1"><vh>How can I arrange Qt docks?</vh></v>
 <v t="ekr.20141108064630.18"><vh>How can I create a pane for matplotlib charts?</vh></v>
 <v t="ekr.20190731085747.1"><vh>How can I customize settings for a particular external file?</vh></v>
 <v t="ekr.20060915112109"><vh>How can I enable and disable support for psyco?</vh></v>
@@ -1574,6 +1575,7 @@
 <v t="ekr.20060620094033"><vh>What's New...</vh>
 <v t="ekr.20101025080245.5791"><vh>@rst html/what-is-new.html</vh>
 <v t="ekr.20071116062917.2"><vh>@rst-no-head links</vh></v>
+<v t="ekr.20200313060126.1"><vh>What's new in Leo 6.2</vh></v>
 <v t="ekr.20191003051240.1"><vh>What's new in Leo 6.1</vh></v>
 <v t="ekr.20190616175854.1"><vh>What's new in Leo 6.0</vh></v>
 <v t="ekr.20190122044116.1"><vh>What's new in Leo 5.9</vh></v>
@@ -1735,6 +1737,34 @@
 </v>
 </v>
 <v t="ekr.20180125034510.1"><vh>Release Notes</vh>
+<v t="ekr.20200225075435.1"><vh>Leo 6.2 release notes</vh>
+<v t="ekr.20200313052138.1"><vh>6.2: Code</vh></v>
+<v t="ekr.20200313054557.1"><vh>6.2: Commands</vh></v>
+<v t="ekr.20200313051859.1"><vh>6.2: Features</vh></v>
+<v t="ekr.20200313051926.1"><vh>6.2: Bugs</vh></v>
+<v t="ekr.20200313053803.1"><vh>6.2: Settings and command-line options</vh></v>
+</v>
+<v t="ekr.20191003050703.1"><vh>Leo 6.1 release notes</vh>
+<v t="ekr.20191003050703.3"><vh>6.1: Major features</vh>
+<v t="ekr.20191003060551.1"><vh>#1093: pyzo_in_leo plugin</vh></v>
+<v t="ekr.20191003061844.1"><vh>#1315: The history_tracer plugin animates git commits</vh></v>
+<v t="ekr.20191004072604.1"><vh>Support for asciidoc and asciidoctor</vh></v>
+<v t="ekr.20191007104843.1"><vh>Support for pandoc, including @language pandoc</vh></v>
+<v t="ekr.20191003055249.1"><vh>Support for black</vh></v>
+<v t="ekr.20191026191805.1"><vh>Support for sphinx</vh></v>
+</v>
+<v t="ekr.20191003050703.6"><vh>6.1: Bugs</vh>
+<v t="ekr.20191003052014.1"><vh>Minor bugs</vh></v>
+<v t="ekr.20191003051510.1696"><vh>#1338: {{ conflicts</vh></v>
+</v>
+<v t="ekr.20191003051809.1"><vh>6.1: Code features</vh></v>
+<v t="ekr.20191003050703.11"><vh>6.1: Features</vh></v>
+<v t="ekr.20191003050703.15"><vh>6.1: Settings, directives, command-line arguments</vh>
+<v t="ekr.20191003051510.14"><vh>#1263: --window-spot</vh></v>
+<v t="ekr.20191003051510.1274"><vh>#1289: --global-docks</vh></v>
+<v t="ekr.20191003051510.1626"><vh>#1306: @nopyflakes</vh></v>
+</v>
+</v>
 <v t="ekr.20191003062919.1"><vh>Leo 6.0 release notes</vh>
 <v t="ekr.20191003062919.2"><vh>Acknowledgements</vh></v>
 <v t="ekr.20191003062919.3"><vh>6.0: Major features</vh>
@@ -2328,32 +2358,9 @@
 </v>
 </v>
 </v>
-<v t="ekr.20191003051240.1"></v>
-<v t="ekr.20191003050703.1"><vh>Leo 6.1 release notes</vh>
-<v t="ekr.20191003050703.3"><vh>6.1: Major features</vh>
-<v t="ekr.20191003060551.1"><vh>#1093: pyzo_in_leo plugin</vh></v>
-<v t="ekr.20191003061844.1"><vh>#1315: The history_tracer plugin animates git commits</vh></v>
-<v t="ekr.20191004072604.1"><vh>Support for asciidoc and asciidoctor</vh></v>
-<v t="ekr.20191007104843.1"><vh>Support for pandoc, including @language pandoc</vh></v>
-<v t="ekr.20191003055249.1"><vh>Support for black</vh></v>
-<v t="ekr.20191026191805.1"><vh>Support for sphinx</vh></v>
-</v>
-<v t="ekr.20191003050703.6"><vh>6.1: Bugs</vh>
-<v t="ekr.20191003052014.1"><vh>Minor bugs</vh></v>
-<v t="ekr.20191003051510.1696"><vh>#1338: {{ conflicts</vh></v>
-</v>
-<v t="ekr.20191003051809.1"><vh>6.1: Code features</vh></v>
-<v t="ekr.20191003050703.11"><vh>6.1: Features</vh></v>
-<v t="ekr.20191003050703.15"><vh>6.1: Settings, directives, command-line arguments</vh>
-<v t="ekr.20191003051510.14"><vh>#1263: --window-spot</vh></v>
-<v t="ekr.20191003051510.1274"><vh>#1289: --global-docks</vh></v>
-<v t="ekr.20191003051510.1626"><vh>#1306: @nopyflakes</vh></v>
-</v>
-</v>
-<v t="ekr.20200225075435.1"><vh>Leo 6.2 release notes</vh>
-<v t="ekr.20191006113015.1"><vh>#1281: Integrate Leo with Visual Studio Code</vh></v>
-</v>
-<v t="ekr.20200227061507.1"><vh>FAQ: how to customize window layout</vh></v>
+<v t="ekr.20200313060126.1"></v>
+<v t="ekr.20200225075435.1"></v>
+<v t="ekr.20200313051805.1"><vh>TOG Stuff</vh>
 <v t="ekr.20191118115949.1"><vh>TokenOrder classes: Theory of operation</vh>
 <v t="ekr.20191206062224.1"><vh>Token-order classes</vh></v>
 <v t="ekr.20200113232354.1"><vh>Other classes</vh></v>
@@ -2381,6 +2388,8 @@
 <v t="ekr.20200107113403.1"><vh>Notable methods</vh>
 <v t="ekr.20200107142833.1"><vh>TokenOrderGenerator.init_from_file</vh></v>
 </v>
+</v>
+<v t="ekr.20200312084115.1"><vh>Token Order Classes.md</vh></v>
 </v>
 </vnodes>
 <tnodes>
@@ -7622,7 +7631,7 @@ Leo's MIT license
 
 All parts of Leo are distributed under the following copyright. This is intended to be the same as the MIT license, namely that Leo is absolutely free, even for commercial use, including resale. There is no GNU-like "copyleft" restriction. This license is compatible with the GPL.
 
-**Copyright 1997-2019 by Edward K. Ream. All Rights Reserved.**
+**Copyright 1997-2020 by Edward K. Ream. All Rights Reserved.**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -7643,7 +7652,7 @@ These parts are are clearly marked in Leo's code as follows:
     
 Portions of Leo's pyzo interface uses code from pyzo:
 
-    Copyright (C) 2013-2019, the Pyzo development team
+    Copyright (C) 2013-2020, the Pyzo development team
     
     Pyzo is distributed under the terms of the (new) BSD License.
     The full license can be found in 'license.txt'.
@@ -11827,7 +11836,7 @@ At present, the file leo/plugins/leo_to_html.ini contains configuration settings
 | name = Leo: Leonine Editor with Outlines
 | logo = LEO-Leonine Editor Outliner-icon.png
 | developer = Edward K. Ream, et al.
-| latest_release_version = 6.1
+| latest_release_version = 6.2
 | latest_release_date = {{Start date and age|2019|06|18}}
 | size = ~9 MB
 | programming_language = [[Python (programming language)|Python]]
@@ -20937,11 +20946,11 @@ wget --no-check-certificate https://bitbucket.org/pypa/setuptools/raw/bootstrap/
 
 py3-pyqt5/bin/python ez_setup.py --insecure
 
-wget --no-check-certificate https://pypi.python.org/packages/source/p/pip/pip-6.1.tar.gz#md5=2332e6f97e75ded3bddde0ced01dbda3
+wget --no-check-certificate https://pypi.python.org/packages/source/p/pip/pip-6.2.tar.gz#md5=2332e6f97e75ded3bddde0ced01dbda3
 
-tar xzvf pip-6.1.tar.gz
+tar xzvf pip-6.2.tar.gz
 
-cd pip-6.1
+cd pip-6.2
 
 ../py3-pyqt5/bin/python setup.py install
 
@@ -22544,7 +22553,7 @@ Then run::
 
 You may `download Leo's sources`_ in one of three ways. If the sources
 are zipped, unzip them into a folder in your home directory, say
-~/leo-6.1.
+~/leo-6.2.
 
 You now have several choices.
 
@@ -22552,7 +22561,7 @@ You now have several choices.
 
 2. You can install leo into /usr/local/lib and /usr/local/bin with:
 
-    cd ~/leo-6.1
+    cd ~/leo-6.2
     sudo python setup.py install
 
 See `Running Leo`_ for how to run Leo after installing it.
@@ -30983,7 +30992,6 @@ Runs the adoc command, then shows the resulting html in the default browser.
     
 ``adoc``
      Converts @adoc nodes to asciidoc text. This command automatically creates markup for asciidoctor sections. To reorganize a document, just reorganize the corresponding Leo outline: you don't have to change markup by hand.</t>
-<t tx="ekr.20191006113015.1">https://github.com/leo-editor/leo-editor/issues/1281</t>
 <t tx="ekr.20191007104843.1">**Background**
 
 pandoc is a tool for converting pandoc markup (a variant of markdown) to html, and many other formats.
@@ -31256,7 +31264,7 @@ The following functions declare that commas, semicolons, whitespace and parenthe
             kind == 'op' and value not in ',;()')
     
     def is_significant_token(token):
-        """Return True if the given token is a syncronizing token"""
+        """Return True if the given token is a synchronizing token"""
         return is_significant(token.kind, token.value)
 
 @language rest
@@ -31302,15 +31310,22 @@ portable solution I've come across is:
 - Press arrow cursor keys to move the outline centrally on active screen.
   (usually right- and down-arrow)
 - Press [enter] when it's moved on-screen enough to nab the Title bar with the mouse cursor.</t>
-<t tx="ekr.20200225075435.1">Leo 6.2, http://leoeditor.com, is now available on
-[GitHub](https://github.com/leo-editor/leo-editor).
+<t tx="ekr.20200225075435.1">Leo 6.2-b1, http://leoeditor.com, is now available on [GitHub](https://github.com/leo-editor/leo-editor).
 
-Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
+Leo is an [IDE, outliner and PIM](http://leoeditor.com/preface.html).
 
 **The highlights of Leo 6.2**
 
-
-
+- Added the fstringify-files and diff-fstringify-files commands.
+- Improved the beautify-files command. Added the diff-beautify-files commands.
+- Added the TokenOrderGenerator and TokenOrderTraverser classes in leoAst.py.
+  Leo's fstringify and beautify commands use these classes.
+- Added an importer for todo.txt files.
+- Added an importer for rust.
+- Leo's legacy layout is now the default.
+- Fixed all known bugs, including some notable, long-standing bugs.
+- Fixed several "fit and finish" issues.
+- Removed unused settings from leoSettings.leo.
 
 **Links**
 
@@ -31357,6 +31372,97 @@ When I was working my way through this, I got the panes into some arrangement th
 Yes, you can type that directly into the address bar of Windows Explorer, or into a command window.  On Linux, it's usually at
 
 ~/.leo
+</t>
+<t tx="ekr.20200312084115.1"></t>
+<t tx="ekr.20200313051805.1"></t>
+<t tx="ekr.20200313051859.1">Persistent body editors:
+https://github.com/leo-editor/leo-editor/issues/1268
+
+Improve alt-click popups:
+https://github.com/leo-editor/leo-editor/issues/1286
+
+Add tool tips for headlines:
+https://github.com/leo-editor/leo-editor/issues/1310
+
+Add an importer for todo.txt files
+https://github.com/leo-editor/leo-editor/issues/1499</t>
+<t tx="ekr.20200313051926.1">For a list of all bugs fixed in Leo 6.2 see:
+https://github.com/leo-editor/leo-editor/issues?q=is%3Aissue+milestone%3A6.2+label%3Abug
+The first comment in each bug contains a summary of the bug and its fix.
+
+Notable bugs:
+
+Leo-Bridge can be wrong about an outline read from a file:
+https://github.com/leo-editor/leo-editor/issues/1437
+The fix is due to Vitalije Milosevic.
+
+Possible problems with marks:
+https://github.com/leo-editor/leo-editor/issues/1484
+
+execute_shell_commands creates zombie processes:
+https://github.com/leo-editor/leo-editor/issues/1489
+</t>
+<t tx="ekr.20200313052138.1">Convert Leo's code to fstrings:
+https://github.com/leo-editor/leo-editor/issues/1421
+
+Unify the ast and token worlds:
+https://github.com/leo-editor/leo-editor/issues/1440
+This was a major project:
+- Add TokenOrderGenerator and TokenOrderTraverser classes.
+- Add the Fstringify and Orange classes.
+
+Simplify startup logic:
+https://github.com/leo-editor/leo-editor/issues/1472
+
+Retire @doc file convention:
+https://github.com/leo-editor/leo-editor/issues/1496
+
+Add ivars for command1/2 event handlers:
+https://github.com/leo-editor/leo-editor/issues/1508
+
+Replace idle-time handlers with QApplication.processEvents:
+https://groups.google.com/d/msg/leo-editor/EvBDDCybV2E/tnRAZDqXCgAJ
+Changed g.recursiveUNLSearch and QtIconBarClass.goto_command.
+
+Rewrote c.deletePositionsInList:
+https://github.com/leo-editor/leo-editor/issues/1539</t>
+<t tx="ekr.20200313053803.1">Leo's legacy layout is now the default:
+https://github.com/leo-editor/leo-editor/issues/1514
+- Add --use-docks option.
+- Deprecate --no-dock option.
+- The--global-docks command-line option implies --use-docks.
+- The default for @string initial-split-orientation is horizontal.
+
+Retired the @bool beautify-autobeautify setting.
+
+Removed many unused settings from leoSettings.leo.
+</t>
+<t tx="ekr.20200313054557.1">Added fstringify-files and diff-fstringify-files commands.
+
+Improved beautify-files command and add diff-beautify-files command.
+
+Removed beautify-node and beautify-tree commands.
+
+Restored Leo's pane commands:
+https://github.com/leo-editor/leo-editor/issues/1518
+At present, they work only w/o docks.</t>
+<t tx="ekr.20200313060126.1">Commands
+- Added the fstringify-files and diff-fstringify-files commands.
+- Improved the beautify-files command. Added the diff-beautify-files commands.
+
+Code
+- Added the TokenOrderGenerator and TokenOrderTraverser classes in leoAst.py.
+- This is a major project. See https://github.com/leo-editor/leo-editor/issues/1440
+- Rewrote c.deletePositionsInList. New code by Виталије Милошевић, (Vitalije Milosevic).
+ 
+Features and settings
+- Added an importer for todo.txt files.
+- Leo's legacy layout is now the default.
+- Removed unused settings from leoSettings.leo.
+- Added an importer for rust.
+
+Bugs
+- Fixed all known bugs, including some notable, long-standing bugs.
 </t>
 <t tx="matt.20180826201749.1">**Problem**
 
