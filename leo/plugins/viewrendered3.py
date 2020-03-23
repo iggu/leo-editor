@@ -354,7 +354,10 @@ import webbrowser
 from contextlib import redirect_stdout
 from pygments import cmdline
 
-QWebView = QtWebKitWidgets.QWebView
+try:
+    QWebView = QtWebKitWidgets.QWebView
+except Exception:
+    QWebView = QtWidgets.QTextBrowser  # #1542.
 #@-<< imports >>
 #@+<< declarations >>
 #@+node:TomP.20191231111412.1: ** << declarations >>
@@ -1280,9 +1283,11 @@ class ViewRenderedController3(QtWidgets.QWidget):
         s = g.toUnicode(s)
         url_base = QtCore.QUrl('file:///' + path + '/')
         try:
+            # A QWebView.
             w.setHtml(s, url_base)
-        except AttributeError:
-            w.setSource(s, url_base)
+        except Exception:
+            # A QTextBrowser.
+            w.setHtml(s)  # #1543.
         w.show()
     #@+node:TomP.20191215195433.48: *3* vr3.underline
     def underline(self, s):
@@ -1412,8 +1417,6 @@ class ViewRenderedController3(QtWidgets.QWidget):
                     pc.deactivate()
     #@+node:TomP.20191215195433.50: *4* vr3.create_base_text_widget
     def create_base_text_widget(self):
-        #return VrC.create_base_text_widget(self)
-
         '''Create a QWebView or a QTextBrowser.'''
         c = self.c
         w = BaseTextWidget()
@@ -2528,8 +2531,6 @@ class ViewRenderedController3(QtWidgets.QWidget):
     #@+node:TomP.20191227101625.1: *5* vr3.ensure_web_widget
     def ensure_web_widget(self):
         '''Swap a webengineview widget into the rendering pane if necessary.'''
-
-        #c, pc = self.c, self
         pc = self
         if pc.must_change_widget(QWebView):
             try:
