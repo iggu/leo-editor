@@ -1164,8 +1164,8 @@
 </v>
 <v t="ekr.20180403104558.1"><vh>@menu &amp;Beautify Text</vh>
 <v t="ekr.20170316105542.1"><vh>@item beautify-&amp;c</vh></v>
-<v t="ekr.20131213135427.22267"><vh>@item &amp;beautify-node</vh></v>
-<v t="ekr.20131213135427.22268"><vh>@item beautify-&amp;tree</vh></v>
+<v t="ekr.20131213135427.22267"><vh>@item &amp;beautify-files</vh></v>
+<v t="ekr.20131213135427.22268"><vh>@item &amp;diff-beautify-files</vh></v>
 </v>
 <v t="ekr.20180403104751.1"><vh>@menu &amp;Capitalize Text</vh>
 <v t="ekr.20131213135427.22273"><vh>@item &amp;capitalize-word</vh></v>
@@ -12582,15 +12582,24 @@ a single @data contextmenu_commands node. </t>
 # for these settings to take effect.
 
 # Add commands to contextmenu
-# The format is &lt;command&gt; SPACE &lt;description&gt;
+# The format is *either*:
+#   &lt;command&gt; SPACE &lt;description&gt;
+# *or( a single "-" giving a menu separator.
 
-# stickynote Create a sticky note
-# read-at-file-nodes Read in file nodes
-
+undo Undo
+redo Redo
+-
+copy-text Copy Text
+cut-text Cut Text
+paste-text Paste Text
+select-all Select All Text
+-
 copy-node Copy Node
 cut-node Cut Node
+delete-node Delete Node
 paste-node Paste Node
-paste-retaining-clones Paste Node As Clone</t>
+paste-retaining-clones Paste Node As Clone
+-</t>
 <t tx="vitalije.20100306144625.8944"></t>
 <t tx="vitalije.20100306144625.8945"></t>
 <t tx="vitalije.20100306144625.8946"># Time between saves in seconds</t>

@@ -157,8 +157,8 @@
 </v>
 <v t="ekr.20180405171433.1"><vh>Distribution checklist (GitHub Only)</vh>
 <v t="ekr.20200313063940.1"><vh>Create the release branch *first*</vh></v>
-<v t="ekr.20180405171433.4"><vh>Pre-testing</vh></v>
 <v t="ekr.20180405171433.2"><vh>Files</vh></v>
+<v t="ekr.20180405171433.4"><vh>Pre-testing</vh></v>
 <v t="ekr.20180405171433.3"><vh>Web docs</vh></v>
 <v t="ekr.20180828095843.1"><vh>Update versions.py in the release branch</vh></v>
 <v t="ekr.20190618104430.1"><vh>Merge release branch into master</vh></v>
@@ -266,19 +266,31 @@ Leo is an [IDE, outliner and PIM](http://leoeditor.com/preface.html).
 - Fixed several "fit and finish" issues.
 - Removed unused settings from leoSettings.leo.
 
+**Quick Install**
+
+- Install python3
+- if not using git:  
+    `pip install leo`
+
+- If using git:  
+    `git clone https://github.com/leo-editor/leo-editor.git`  
+    `pip install --editable leo-editor`
+
+See [Getting Started](http://leoeditor.com/getting-started.html) for more. 
+
 **Links**
 
-- Leo's home page: http://leoeditor.com
-- [Documentation](http://leoeditor.com/leo_toc.html)
-- [Tutorials](http://leoeditor.com/tutorial.html)
-- [Video tutorials](http://leoeditor.com/screencasts.html)
-- [Forum](http://groups.google.com/group/leo-editor)
-- [Download](http://sourceforge.net/projects/leo/files/)
+- Leo's home page: https://leoeditor.com
+- [Documentation](https://leoeditor.com/leo_toc.html)
+- [Tutorials](https://leoeditor.com/tutorial.html)
+- [Video tutorials](https://leoeditor.com/screencasts.html)
+- [Forum](https://groups.google.com/group/leo-editor)
+- [Download](https://leoeditor.com/download.html)
 - [Leo on GitHub](https://github.com/leo-editor/leo-editor)
 - [LeoVue](https://github.com/kaleguy/leovue#leo-vue)
-- [What people are saying about Leo](http://leoeditor.com/testimonials.html)
-- [A web page that displays .leo files](http://leoeditor.com/load-leo.html)
-- [More links](http://leoeditor.com/leoLinks.html)
+- [What people are saying about Leo](https://leoeditor.com/testimonials.html)
+- [A web page that displays .leo files](https://leoeditor.com/load-leo.html)
+- [More links](https://leoeditor.com/leoLinks.html)
 </t>
 <t tx="EKR.20040519091259.1">5.1:        setup: 1,114    zip: 2,912
 5.0:        setup: 552      zip: 1,617
@@ -568,12 +580,9 @@ editing ``.leoID.txt``.
 
 git-manifest.txt                export-ignore
 MakeFile                        export-ignore
-MANIFEST.in                     export-ignore
 
 leoStandAloneGlobals.py         export-ignore
 stand_alone_globals.leo         export-ignore
-# setup.cfg                     export-ignore
-# setup.py                      export-ignore
 
 # Do not include the top-level docs folder in distributions
 docs/                           export-ignore
@@ -1627,9 +1636,9 @@ g.es_print('done')
 
 Overview:
 
-1. Create a **release branch**, called 6.2.
+1. Create a **release branch**, called 6.3.
    This branch should be based on devel.
-   This branch will hold all work for 6.2-b1 and 6.2 (final).
+   This branch will hold all work for 6.3-b1 and 6.3 final.
 
 2. *Never* merge devel into the release branch.
    It's fine to merge the release branch into devel.
@@ -1669,20 +1678,17 @@ LeoPyRef.leo and LeoPluginsRef.leo:
 - tools/webroot/*  go to top of website, e.g.
       tools/webroot/load-leo.html --&gt; http://leoeditor.com/load-leo.html</t>
 <t tx="ekr.20180405171433.4" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Make sure Leo looks good without myLeoSettings.leo.
-- Run the "check-bindings" button in leoSettings.leo.
-- Run all unit tests with Python 3.
-- Run pylint (EKR's ll -a script) with with Python 3.
+- Run all "check" buttons in leoSettings.leo.
+- Run all unit tests, on Windows and Linux.
+- Run pylint (EKR's ll -a script).
 </t>
 <t tx="ekr.20180405171433.7" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Create a git tag **last**
 
 - Create a full (annotated) tag:
   - Do not use the -f option.
-  - Make sure the tag does not conflict with the release branch.
-    Release *branches* should end with "-rel"
-    Tags should start with "v".
-    Tags should *not* end with "-rel"
+  - Tags should start with "v"
 
-git tag -a v5.9.x -m "Added v5.9.x tag"
+git tag -a v6.3-b1 -m "Added v6.3-b1 tag"
 git push --follow-tags
 </t>
 <t tx="ekr.20180828095843.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">leoVersion.py:
@@ -1693,7 +1699,7 @@ git push --follow-tags
     #static version = '6.3-devel'
 
 git checkout devel
-git tag -a v6.3-dev -m "Added v6.3-dev tag"
+git tag -a v6.4-devel -m "Added v6.4.devel tag"
 git push --follow-tags
 update version in leoVersion.py.
 </t>
@@ -2153,7 +2159,7 @@ zipFile2 =      abspath(join(rootDir,'Leo-%s-temp.zip' % (version)))
             if exists(src_path) and exists(dst_path):
                 shutil.copyfile(src_path,dst_path)
 </t>
-<t tx="ekr.20190618104430.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">From rel branch:
+<t tx="ekr.20190618104430.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">From 6.3 branch:
     
 - git merge master
 - Fix any conflicts and push.
@@ -2169,10 +2175,14 @@ git push</t>
 This must be done *soon* after the release's actual commit.
 There is a "Draft New Release" button at the top-right of the page.
 </t>
-<t tx="ekr.20190618104704.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Announce to SourceForge:  http://sourceforge.net/projects/leo/
+<t tx="ekr.20190618104704.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Announce to leo-editor first.
+
+Public announcements, after Matt creates a package:
+
+- Update version number on Wikipedia: https://en.wikipedia.org/wiki/Leo_(text_editor)
+
+- Announce to SourceForge:  http://sourceforge.net/projects/leo/
    **Markdown accepted, so paste release notes in LeoDocs.leo.**.
-   
-- Announce to leo-editor.
 
 - Announce to Python-announce-list using email:
    python-announce-list@python.org
@@ -2191,8 +2201,8 @@ There is a "Draft New Release" button at the top-right of the page.
 <t tx="ekr.20190802115604.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Run all unit tests.
 - Run pylint on all files.
 </t>
-<t tx="ekr.20200313063940.1">git checkout -b 6.2
-git push origin 6.2
+<t tx="ekr.20200313063940.1">git checkout -b 6.3
+git push origin 6.3
 </t>
 <t tx="maphew.20180128212042.1">@language md
 @wrap
@@ -2399,6 +2409,7 @@ git:
     ## Clone depth, must be big enough to include a tag
     depth: 500
 install:
+    - python -m pip install --upgrade pip
     - pip --version
     - pip install setupext-janitor asttokens
 script:
@@ -2429,6 +2440,7 @@ git:
     ## Clone depth, must be big enough to include a tag
     depth: 500
 install:
+    - python -m pip install --upgrade pip
     - pip --version
     - pip install setupext-janitor asttokens
 script:
