@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20110110105526.5463: * @file ftp.py
+#@+node:ekr.20110110105526.5463: * @file ../plugins/ftp.py
 '''Uploading of file by ftp.'''
 
 # 0.1 05.01.2011 by Ivanov Dmitriy.
@@ -41,9 +41,6 @@ class pluginController:
     #@+node:ekr.20110110105526.5470: *3* __init__(pluginController, ftp.py)
     def __init__ (self,c):
         self.c = c
-        # c.k.registerCommand('upload',self.upload)
-        # script = "c.k.simulateCommand('upload')"
-        # g.app.gui.makeScriptButton(c,script=script,buttonText='Upload')
         ib_w = self.c.frame.iconBar.w
         action = QAction('Upload', ib_w)
         self.c.frame.iconBar.add(qaction = action, command = self.upload)

@@ -1001,7 +1001,7 @@ class ActiveSettingsOutline:
         fileName = f"{old_c.fileName()}-active-settings"
         g.es(fileName, color='red')
         c = g.app.newCommander(fileName=fileName)
-        # Restore the layout of docks, if we have ever saved this file.
+        # Restore the layout, if we have ever saved this file.
         if not old_c:
             c.frame.setInitialWindowGeometry()
         # #1340: Don't do this. It is no longer needed.
@@ -2155,7 +2155,7 @@ class LocalConfigManager:
         - [D] default settings.
         - [F] indicates the file being loaded,
         - [M] myLeoSettings.leo,
-
+        - [T] theme .leo file.
         """
         legend = '''\
     legend:
@@ -2164,6 +2164,7 @@ class LocalConfigManager:
     [D] default settings
     [F] loaded .leo File
     [M] myLeoSettings.leo
+    [T] theme .leo file.
     '''
         c = self.c
         legend = g.adjustTripleString(legend, c.tab_width)
@@ -2179,7 +2180,11 @@ class LocalConfigManager:
             g.es_print('', ''.join(result), tabName='Settings')
     #@+node:ekr.20120215072959.12475: *3* c.config.set
     def set(self, p, kind, name, val, warn=True):
-        """Init the setting for name to val."""
+        """
+        Init the setting for name to val.
+        
+        The "p" arg is not used.
+        """
         c = self.c
         # Note: when kind is 'shortcut', name is a command name.
         key = g.app.config.munge(name)

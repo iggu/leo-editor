@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:peckj.20140804114520.9427: * @file nodetags.py
+#@+node:peckj.20140804114520.9427: * @file ../plugins/nodetags.py
 #@+<< docstring >>
 #@+node:peckj.20140804103733.9242: ** << docstring >>
 '''Provides node tagging capabilities to Leo
@@ -444,7 +444,6 @@ if QtWidgets:
                 self.tc.initialize_taglist()
                 self.update_all()
         #@+node:tbnorth.20170313095036.1: *5* tag_w.sf.find_setting
-        #Plugins:2-->User interface:21-->@file settings_finder.py:11-->class SettingsFinder:2-->sf.find_setting:5
         #@-others
 #@-others
 #@@language python

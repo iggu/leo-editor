@@ -62,11 +62,15 @@ class BaseColorizer:
             # set by scanLanguageDirectives.
         self.showInvisibles = False
         #
-        # Statistics...
+        # Statistics....
         self.count = 0
         self.full_recolor_count = 0
             # For unit tests.
         self.recolorCount = 0
+        #
+        # For traces...
+        self.matcher_name = ''
+        self.delegate_name = ''
     #@+node:ekr.20190324045134.1: *3* bc.init
     def init(self, p):
         """May be over-ridden in subclasses."""
@@ -78,8 +82,6 @@ class BaseColorizer:
         # self.language = 'python'
     #@+node:ekr.20170127142001.1: *3* bc.updateSyntaxColorer & helpers
     # Note: these are used by unit tests.
-
-    at_language_pattern = re.compile(r'^@language\s+([\w-]+)', re.MULTILINE)
 
     def updateSyntaxColorer(self, p):
         """
@@ -94,17 +96,17 @@ class BaseColorizer:
             except Exception:
                 g.es_print('unexpected exception in updateSyntaxColorer')
                 g.es_exception()
-    #@+node:ekr.20170127142001.2: *4* bjc.scanLanguageDirectives & helpers
+    #@+node:ekr.20170127142001.2: *4* bjc.scanLanguageDirectives
     def scanLanguageDirectives(self, p, use_default=True):
         """Return language based on the directives in p's ancestors."""
         c = self.c
         root = p.copy()
         # Look for the first @language directive only in p itself.
-        language = self.findFirstValidAtLanguageDirective(p)
+        language = g.findFirstValidAtLanguageDirective(p)
         if language:
             return language
         for p in root.parents():
-            languages = self.findAllValidLanguageDirectives(p)
+            languages = g.findAllValidLanguageDirectives(p)
             if len(languages) == 1:  # An unambiguous language
                 language = languages[0]
                 return language
@@ -113,28 +115,6 @@ class BaseColorizer:
         if not language and use_default:
             language = c.target_language
         return language
-    #@+node:ekr.20170201150505.1: *5* bjc.findAllValidLanguageDirectives
-    def findAllValidLanguageDirectives(self, p):
-        """Return list of all valid @language directives in p.b"""
-        languages = set()
-        for m in self.at_language_pattern.finditer(p.b):
-            language = m.group(1)
-            if self.isValidLanguage(language):
-                languages.add(language)
-        return list(sorted(languages))
-    #@+node:ekr.20170127142001.5: *5* bjc.findFirstAtLanguageDirective
-    def findFirstValidAtLanguageDirective(self, p):
-        """Return the first *valid* @language directive in p.b."""
-        for m in self.at_language_pattern.finditer(p.b):
-            language = m.group(1)
-            if self.isValidLanguage(language):
-                return language
-        return None
-    #@+node:ekr.20170127142001.6: *5* bjc.isValidLanguage
-    def isValidLanguage(self, language):
-        """True if language exists in leo/modes."""
-        fn = g.os_path_join(g.app.loadDir, '..', 'modes', f"{language}.py")
-        return g.os_path_exists(fn)
     #@+node:ekr.20170127142001.7: *4* bjc.useSyntaxColoring & helper
     def useSyntaxColoring(self, p):
         """True if p's parents enable coloring in p."""
@@ -338,9 +318,9 @@ class BaseJEditColorizer(BaseColorizer):
         """
         Return the font for the given setting name.
         """
+        trace = 'zoom' in g.app.debug
         c, get = self.c, self.c.config.get
         default_size = c.config.defaultBodyFontSize
-        trace = False and not g.unitTesting  # and setting_name.startswith('php')
         for name in (setting_name, setting_name.rstrip('_font')):
             size_error = False
             family = get(name + '_family', 'family')
@@ -355,8 +335,6 @@ class BaseJEditColorizer(BaseColorizer):
                 else:
                     # It's a good idea to set size explicitly.
                     old_size = size or default_size
-                    if trace: g.trace(
-                        "STARTING SIZE", old_size, repr(size), default_size)
                 if isinstance(old_size, str):
                     # All settings should be in units of points.
                     try:
@@ -383,9 +361,10 @@ class BaseJEditColorizer(BaseColorizer):
                 font = g.app.gui.getFontFromParams(family, size, slant, weight)
                 # A good trace: the key shows what is happening.
                 if font:
-                    if trace: g.trace(
-                        f"key: {key:30} family: {family or 'None'} "
-                        f"size: {size or 'None'} {slant} {weight}")
+                    if trace:
+                        g.trace(
+                            f"key: {key:>35} family: {family or 'None'} "
+                            f"size: {size or 'None'} {slant} {weight}")
                     return font
         return None
     #@+node:ekr.20110605121601.18579: *4* bjc.configure_variable_tags
@@ -957,6 +936,9 @@ class BaseJEditColorizer(BaseColorizer):
     def report_changes(self):
         """Report changes to pygments settings"""
         c = self.c
+        use_pygments = c.config.getBool('use-pygments', default=False)
+        if not use_pygments:  # 1696.
+            return
         trace = 'coloring' in g.app.debug and not g.unitTesting
         if trace:
             g.es_print('\nreport changes...')
@@ -968,8 +950,6 @@ class BaseJEditColorizer(BaseColorizer):
         #
         # Set self.use_pygments only once: it can't be changed later.
         # There is no easy way to re-instantiate classes created by make_colorizer.
-
-        use_pygments = c.config.getBool('use-pygments', default=False)
         if self.prev_use_pygments is None:
             self.use_pygments = self.prev_use_pygments = use_pygments
             show('@bool use-pygments', use_pygments)
@@ -987,11 +967,6 @@ class BaseJEditColorizer(BaseColorizer):
             # This setting is used only in the LeoHighlighter class
         show('@bool use-pytments-styles', self.use_pygments_styles)
         show('@string pygments-style-name', style_name)
-        #
-        # Report other changes only if we are using pygments.
-        if not use_pygments:
-            if trace: print('')
-            return
         #
         # Report changes to @bool use-pygments-style
         if self.prev_use_styles is None:
@@ -1036,9 +1011,6 @@ class BaseJEditColorizer(BaseColorizer):
         colorName = colorName.replace(
             ' ', '').replace('-', '').replace('_', '').lower().strip()
         colorName = leo_color_database.get(colorName, colorName)
-        # This is weird, so I'll leave it here.
-            # if colorName[-1].isdigit() and colorName[0] != '#':
-                # colorName = colorName[: -1]
         # Get the actual color.
         color = self.actualColorDict.get(colorName)
         if not color:
@@ -1071,16 +1043,21 @@ class BaseJEditColorizer(BaseColorizer):
         self.tagCount += 1
         if trace:
             # A superb trace.
-            p = self.c and self.c.p
-            if p and p.v != self.last_v:
-                print(f'\n{p.h}\n')
-                self.last_v = p.v
+            ###
+                # p = self.c and self.c.p
+                # if p and p.v != self.last_v:
+                    # print(f'\nsetTag: NEW NODE: {p.h}\n')
+                    # self.last_v = p.v
             if len(repr(s[i:j])) <= 20:
                 s2 = repr(s[i:j])
             else:
                 s2 = repr(s[i : i + 17 - 2] + '...')
             kind_s = f"{self.language}.{tag}"
-            print(f"set_tag: {kind_s:25} {i:3} {j:3} {s2:>20} {g.callers(2)}")
+            kind_s2 = f"{self.delegate_name}:" if self.delegate_name else ''
+            print(
+                f"setTag: {kind_s:25} {i:3} {j:3} {s2:>20} "
+                f"{self.rulesetName}:{kind_s2}{self.matcher_name}"
+            )
         self.highlighter.setFormat(i, j - i, format)
     #@-others
 #@+node:ekr.20110605121601.18569: ** class JEditColorizer(BaseJEditColorizer)
@@ -1151,7 +1128,7 @@ class JEditColorizer(BaseJEditColorizer):
     def reloadSettings(self):
         """Complete the initialization of all settings."""
         if 'coloring' in g.app.debug and not g.unitTesting:
-            print('reloading jEdit settings.')
+            print('jedit.reloadSettings.')
         # Do the basic inits.
         BaseJEditColorizer.reloadSettings(self)
         # Init everything else.
@@ -1423,9 +1400,13 @@ class JEditColorizer(BaseJEditColorizer):
         return 0
     #@+node:ekr.20110605121601.18605: *5* jedit.match_section_ref
     def match_section_ref(self, s, i):
+        p = self.c.p
         if self.trace_leo_matches:
             g.trace()
-        p = self.c.p
+        #
+        # Special case for @language patch: section references are not honored.
+        if self.language == 'patch':
+            return 0
         if not g.match(s, i, '<<'):
             return 0
         k = g.find_on_line(s, i + 2, '>>')
@@ -1895,6 +1876,7 @@ class JEditColorizer(BaseJEditColorizer):
         no_escape, no_line_break, no_word_break
     ):
         """Remain in this state until 'end' is seen."""
+        self.matcher_name = 'restart:' + self.matcher_name.replace('restart:','')
         i = 0
         j = self.match_span_helper(s, i, end, no_escape, no_line_break, no_word_break)
         if j == -1:
@@ -2179,16 +2161,17 @@ class JEditColorizer(BaseJEditColorizer):
             # Do *not* check x.flag here. It won't work.
             if trace: g.trace('not in color state')
             return
+        self.delegate_name = delegate
         if delegate:
             if trace:
                 if len(repr(s[i:j])) <= 20:
                     s2 = repr(s[i:j])
                 else:
                     s2 = repr(s[i : i + 17 - 2] + '...')
-                kind_s = f"{delegate}.{tag}"
+                kind_s = f"{delegate}:{tag}"
                 print(
-                    f"colorRangeWithTag: {kind_s:25} {i:3} {j:3} "
-                    f"{s2:>20} {g.callers(2)}")
+                    f"\ncolorRangeWithTag: {kind_s:25} {i:3} {j:3} "
+                    f"{s2:>20} {self.matcher_name}\n")
             self.modeStack.append(self.modeBunch)
             self.init_mode(delegate)
             while 0 <= i < j and i < len(s):
@@ -2199,7 +2182,9 @@ class JEditColorizer(BaseJEditColorizer):
                     if n is None:
                         g.trace('Can not happen: delegate matcher returns None')
                     elif n > 0:
-                        i += n; break
+                        self.matcher_name = f.__name__
+                        i += n
+                        break
                 else:
                     # Use the default chars for everything else.
                     # Use the *delegate's* default characters if possible.
@@ -2210,10 +2195,6 @@ class JEditColorizer(BaseJEditColorizer):
             bunch = self.modeStack.pop()
             self.initModeFromBunch(bunch)
         elif not exclude_match:
-            # if trace:
-                # s2 = repr(s[i: j]) if len(repr(s[i: j])) <= 20 else repr(s[i: i + 17 - 2] + '...')
-                # g.trace('%25s %3s %3s %-20s %s' % (
-                    # ('%s.%s' % (self.language, tag)), i, j, s2, g.callers(2)))
             self.setTag(tag, s, i, j)
         if tag != 'url':
             # Allow UNL's and URL's *everywhere*.
@@ -2233,19 +2214,27 @@ class JEditColorizer(BaseJEditColorizer):
 
     def mainLoop(self, n, s):
         """Colorize a *single* line s, starting in state n."""
+        trace = 'coloring' in g.app.debug
         t1 = time.process_time()
         f = self.restartDict.get(n)
+        if trace:
+            p = self.c and self.c.p
+            if p and p.v != self.last_v:
+                self.last_v = p.v
+                f_name = f.__name__ if f else 'None'
+                print('')
+                g.trace(f"NEW NODE: state {n} = {f_name} {p.h}\n")
         i = f(s) if f else 0
         while i < len(s):
             progress = i
             functions = self.rulesDict.get(s[i], [])
-            # g.printList(functions)
             for f in functions:
                 n = f(self, s, i)
                 if n is None:
                     g.trace('Can not happen: n is None', repr(f))
                     break
                 elif n > 0:  # Success. The match has already been colored.
+                    self.matcher_name = f.__name__  # For traces.
                     i += n
                     break
                 elif n < 0:  # Total failure.
@@ -2258,7 +2247,7 @@ class JEditColorizer(BaseJEditColorizer):
             assert i > progress
         # Don't even *think* about changing state here.
         self.tot_time += time.process_time() - t1
-    #@+node:ekr.20110605121601.18640: *3* jedit.recolor
+    #@+node:ekr.20110605121601.18640: *3* jedit.recolor & helpers
     def recolor(self, s):
         """
         jEdit.recolor: Recolor a *single* line, s.
@@ -2268,16 +2257,16 @@ class JEditColorizer(BaseJEditColorizer):
         self.recolorCount += 1
         block_n = self.currentBlockNumber()
         n = self.prevState()
-        if p.v != self.old_v:
-            self.updateSyntaxColorer(p)  # Force a full recolor
-            assert self.language
-            self.init_all_state(p.v)
-            self.init(p)
-        else:
+        if p.v == self.old_v:
             new_language = self.n2languageDict.get(n)
             if new_language != self.language:
                 self.language = new_language
                 self.init(p)
+        else:
+            self.updateSyntaxColorer(p)  # Force a full recolor
+            assert self.language
+            self.init_all_state(p.v)
+            self.init(p)
         if block_n == 0:
             n = self.initBlock0()
         n = self.setState(n)  # Required.
@@ -2863,7 +2852,7 @@ class QScintillaColorizer(BaseColorizer):
         c = self.c
         root = p.copy()
         for p in root.self_and_parents(copy=False):
-            language = self.findFirstValidAtLanguageDirective(p)
+            language = g.findFirstValidAtLanguageDirective(p)
             if language:
                 return language
         #  Get the language from the nearest ancestor @<file> node.

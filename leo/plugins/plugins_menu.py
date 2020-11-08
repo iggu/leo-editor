@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:EKR.20040517080555.2: * @file plugins_menu.py
+#@+node:EKR.20040517080555.2: * @file ../plugins/plugins_menu.py
 #@+<< docstring >>
 #@+node:ekr.20050101090207.9: ** << docstring >>
 ''' Creates a Plugins menu and adds all actives plugins to it.
@@ -88,10 +88,7 @@ def addPluginMenuItem(p, c):
                 p.about()
 
         table = ((plugin_name, None, callback),)
-        c.frame.menu.createMenuEntries(
-            PluginDatabase.getMenu(p),
-            table,
-            dynamicMenu=True)
+        c.frame.menu.createMenuEntries(PluginDatabase.getMenu(p), table)
     elif p.hasconfig or p.othercmds:
         #@+<< Get menu location >>
         #@+node:pap.20050305153147: *4* << Get menu location >>
@@ -113,10 +110,10 @@ def addPluginMenuItem(p, c):
                 items.append((cmd, None, fn),)
                     # No need for a callback.
             table.extend(sorted(items))
-        c.frame.menu.createMenuEntries(m, table, dynamicMenu=True)
+        c.frame.menu.createMenuEntries(m, table)
     else:
-        table = ((plugin_name, None, p.about),)
-        c.frame.menu.createMenuEntries(PluginDatabase.getMenu(p), table, dynamicMenu=True)
+        table = [(plugin_name, None, p.about)]
+        c.frame.menu.createMenuEntries(PluginDatabase.getMenu(p), table)
 #@+node:EKR.20040517080555.23: *3* createPluginsMenu & helper
 def createPluginsMenu(tag, keywords):
     '''Create the plugins menu: calld from create-optional-menus hook.'''

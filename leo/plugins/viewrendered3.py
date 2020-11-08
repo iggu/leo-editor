@@ -1,48 +1,56 @@
 #@+leo-ver=5-thin
-#@+node:TomP.20191215195433.1: * @file viewrendered3.py
+#@+node:TomP.20191215195433.1: * @file ../plugins/viewrendered3.py
 #@@tabwidth -4
 #@@language python
 """
 #@+<< vr3 docstring >>
 #@+node:TomP.20191215195433.2: ** << vr3 docstring >>
 #@@language rest
-Creates a window for *live* rendering of reSTructuredText, 
-markdown text, images, movies, sounds, rst, html, jupyter notebooks, etc.
+Creates a window for live rendering of reSTructuredText, 
+Markdown and Asciidoc text, images, movies, sounds, rst, html, jupyter notebooks, etc.
 
 #@+others
 #@+node:TomP.20200308230224.1: *3* About
-About Viewrendered3 V3.0b9
-==========================
+About Viewrendered3 V3.0
+===========================
 
 The ViewRendered3 plugin (hereafter "VR3") duplicates the functionalities of the
-ViewRendered plugin and enhances the display of Restructured Text (RsT) and
-Markdown (MD) nodes and subtrees.  For RsT and MD, the plugin can:
+ViewRendered plugin and enhances the display of Restructured Text (RsT),
+Markdown (MD), asnd Asciidoc (nodes and subtrees.  For RsT, MD, and Asciidoc
+the plugin can:
 
-    #. Display entire subtrees starting at the selected node;
-    #. Display code and literal blocks in a visually distinct way;
-    #. Any number of code blocks and be intermixed with RsT ot MD in a single node.
+    #. Render entire subtrees starting at the selected node;
+    #. Render code and literal blocks in a visually distinct way;
+    #. Any number of code blocks can be intermixed with RsT, MD, or Asciidoc in
+       a single node.
     #. Display just the code blocks;
     #. Colorize code blocks;
     #. Execute Python code in the code blocks;
     #. Insert the print() output of an execution at the bottom of the rendered display;
     #. Identify code blocks by either an @language directive or by the code block
-       syntax normally used by RsT or MD (e.g., code fences for MD);
+       syntax normally used by RsT, MD, or Asciidoc (e.g., code fences for MD);
     #. Honor "@" and "@c" directives to ignore all lines between them;
+    #. Insert an image using the ``@image`` directive in addition to the image
+       syntax for the structured text in use.
     #. Export the rendered node or subtree to the system browser;
-    #. Optionally render mathematics symbols and equations using MathJax;
-    #. Correctly handle RsT or MD in a docstring;
+    #. Optionally render mathematics symbols and equations using MathJax (not in
+       Asciidoc yet);
+    #. Correctly handle RsT or MD (not tested for Asciidoc as yet) in a docstring;
     #. While an entire subtree rendering is visible, the display can be locked
        so that the entire tree shows even while a single node is being edited.
     #. When an entire subtree is rendered, and editing is being done in one
        node, the display can be frozen (no changes will be displayed) if
        necessary to avoid excessive delay in re-rendering, or visual anomalies.
     #. The default rendering language for a node can be selected to by one of
-       "RsT", "MD", or "TEXT".  This setting applies when the node or subtree
-       has no @rst or @md headline.
-    #. Displays a node's headline text as the overall heading for the rendering.
+       "RsT", "MD", "Asciidoc", or "TEXT".  This setting applies when the node 
+       or subtree has no @rst or @md headline.
+    #. Display a node's headline text as the overall heading for the rendering.
        However, if the first line of a node exactly equals the headline text
        (not counting a directive like "@rst"), only one copy of that heading
        will be displayed.
+
+A number of other special types of nodes can be rendered (see the 
+section *Special Renderings*)
 
 @setting nodes in an @settings tree can modify the behavior of the plugin.
 #@+node:TomP.20200309205046.1: *3* Compatibility
@@ -75,10 +83,6 @@ Limitations and Quirks
        within a single node.  But only Python blocks can be executed.  Blocks
        intended for another language (such as javascript) will cause syntax
        errors if an attempt is made to execute the node.
-
-    #. The Viewrendered2 plugin, now obsolete, could be set to display execution
-       output as RsT.  This was useful for code that would print RsT.  The
-       current VR3 plugin cannot be set to render the output as RsT.
 
     #. Text nodes and subtrees that have no language specified are rendered as
        preformated text.  They cannot be executed.
@@ -116,19 +120,26 @@ Settings and Configuration
 Settings
 ========
 
-Settings are put into nodes with the headlines ``@setting ....``.  They must be
-placed into an ``@settings`` tree, preferably in the myLeoSettings file.
+Settings are put into nodes with the headlines ``@setting ....``.  
+They must be placed into an ``@settings`` tree, preferably 
+in the myLeoSettings file.
 
-.. csv-table:: String Settings
+All settings are of type @string unless shown as ``@bool``
+
+.. csv-table:: VR3 Settings
    :header: "Setting", "Default", "Values", "Purpose"
    :widths: 18, 5, 5, 30
 
-   "vr3-default-kind", "rst", "rst, md", "Default for rendering type"
-   "vr3-math-output", "False", "True, False", "RsT MathJax math rendering"
-   "vr3-md-math-output", "False", "True, False", "MD MathJax math rendering"
+   "vr3-default-kind", "rst", "rst, md, asciidoc", "Default for rendering type"
+   "@bool vr3-math-output", "False", "True, False", "RsT MathJax math rendering"
+   "@bool vr3-md-math-output", "False", "True, False", "MD MathJax math rendering"
    "vr3-mathjax-url", "''", "url string", "MathJax script URL (both RsT and MD)"
    "vr3-rst-stylesheet", "''", "url string", "URL for RsT Stylesheet"
    "vr3-md-stylesheet", "''", "url string", "URL for MD stylesheet"
+   "vr3-asciidoc-path", "''", "string", "Path to ``asciidoc`` directory"
+   "@bool vr3-prefer-asciidoc3", "False", "True, False", "Use ``asciidoc3`` if available, else use ``asciidoc``"
+   "@string vr3-prefer-external", "''", "Name of external asciidoctor processor", "Use Ruby ``asciidoctor`` program"
+   "@bool vr3-insert-headline-from-node", "True", "True, False", "Render node headline as top heading if True"
 
 .. csv-table:: Int Settings (integer only, do not use any units)
    :header: "Setting", "Default", "Values", "Purpose"
@@ -143,8 +154,7 @@ placed into an ``@settings`` tree, preferably in the myLeoSettings file.
     @string vr3-md-math-output = True
     @int qweb-view-font-size = 16
 
-**Note** The font size setting, *qweb-view-font-size*, will probably not be needed. 
-Useful values will generally be from 8 - 20.
+**Note** The font size setting, *qweb-view-font-size*, will probably not be needed.  Useful values will generally be from 8 - 20.
 
 Stylesheets
 ===========
@@ -186,46 +196,91 @@ viewrendered3.py- specific commands all start with a "vr3-" prefix.  There is
 rarely a reason to invoke any of them, except for ``vr3-toggle``, which shows
 or hides the VR3 pane. This is best bound to a hot key (see above).
 
-#@+node:TomP.20200115200601.1: *3* Rendering reStructuredText
+#@+node:TomP.20200902222012.1: *3* Structured Text
+Structured Text
+---------------
+
+VR3 renders three kinds of structured text: reStructured Text (RsT), Markdown (MD),
+and Asciidoc.  Normally the currently selected node is rendered, but a menu item
+can be selected to render an entire subtree, or just the code blocks.
+#@+node:TomP.20200902222226.1: *4* Special Directives
+Special Directives
+------------------
+
+For all structured text types, VR3 recognizes certain special Leo directives.
+Each of these directives must begin with an "@" character at the start of a line.
+
+Omit Text
+=========
+All lines between the pair "@" and "@c" will be omitted.
+
+Set Language Type For Node Or Block
+===================================
+If a node or the top of a subtree begins with `@rst`, `@md`, or `asciidoc`,
+that language will be the default language of the node or subtree.  If the
+node or subtree is not marked with one of these `@xxx` types, then the
+default language is given by the setting `@string vr3-default-kind = xxx`.
+This can be overiden by the ``Default Kind`` menu.
+
+Within a node, the ``@language`` directive will set the language to be used
+until another ``@language`` directive or the end of the node.
+
+Current languages are `rst`, `rest`, `md`, `asciidoc`, `text`, `python`,
+`javascript`, `java`, `css`, and `xml`.
+
+A directive line must be blank except for the elements of the directive.
+Examplesof ``@language`` directives::
+
+    Python:
+    @language python
+    def f(x):
+        return 2*x
+
+    @language rest
+    Javascript:
+    @language javascript
+    function f(x) {
+        return 2*x;
+    }
+
+    @language rest
+    Java:
+    @language java
+    function f(x) {
+        return 2*x;
+    }
+
+Alternate Directive For Inserting an Image
+==========================================
+In addition to the image syntax of the structured text in use, the `@image`
+directive can be used::
+
+    @image url-or-file_url
+
+
+#@+node:TomP.20200115200601.1: *4* Rendering reStructuredText
 Rendering reStructuredText
 ==========================
 
 The VR3 plugin will render a node using RsT if its headline, or the headline of
 a parent, starts with ``@rst``. The type of rendering is called its "kind". If
 no kind is known, then RsT rendering will be used unless the ``vr3-default-kind``
-setting is set to ``@md``.  The default kind can also be changed using the
-``Default Kind`` menu.
+setting is set to another allowed value.  The default kind can also be changed 
+using the ``Default Kind`` menu.
 
-Besides the normal RsT method of declaring a code block::
-
-    .. code:: python
-
-        # This will be some Python code
-        def f(x):
-            return 2*x
-
-A code block can be started with an ``@language directive``::
-
-    @language python
-    def f(x):
-        return 2*x
-
-Return to RsT rendering with an ``@language rest`` directive at the start of a
-line (the code block must end with a blank line before the new directive).
-``@language rst`` is also accepted
-
-Any number of code blocks can be used in a node, but do not try to split a
+Any number of code blocks can be used in a node, but do not split a
 code block across two nodes.
 
 Other languages are supported besides python.  See the list of languages below
 at **Colorized Languages**.  Only Python can be successfully executed.
 
-VR3 can render both RsT and MD, but do not mix the two in any one node or subtree.
+VR3 can render RsT, MD, and Asciidoc, but do not include more than one in any
+one node or subtree.
 
 **Note**: reStructuredText errors and warnings will appear in red in the
 rendering pane.
 
-#@+node:TomP.20200115200634.1: *3* Rendering Markdown
+#@+node:TomP.20200115200634.1: *4* Rendering Markdown
 Rendering Markdown
 ==================
 
@@ -241,7 +296,7 @@ rendering must be specified by putting it in a ``@md`` node.
 A literal block is declared using backtick "fences"::
 
 
-    ``` text
+    ```text
     this should be a literal block.
     ```
 
@@ -252,32 +307,107 @@ fence by itself without it. Fences must begin at the start of a line.
 A code block is indicated with the same fence, but the name of
 the language instead::
 
-    ``` python
+    ```python
     def f(x):
         return 2*x
     ```
 
-Code blocks can be also be started with an ``@language directive``::
+.. note::
+    No space is allowed between the fence characters and the language.
 
-    @language python
-    def f(x):
-        return 2*x
+As with RsT rendering, do not mix multiple structured languages in a single 
+node or subtree.
 
-After a code block, MD rendering can specified with a ``@language md``
-directive.
+#@+node:TomP.20200820170225.1: *4* Rendering Asciidoc
+Rendering Asciidoc
+------------------
 
-Other languages are supported besides python.  See the
-list of languages below at **Colorized Languages**.  Only Python
-can be successfully executed.
+The VR3 plugin will render a node using Asciidoc if
+an Asciidoc or Asciidoc3 processor has been installed and the node type 
+is ``@asciidoc`` or if the node starts with ``@language asciidoc``.
 
-As with RsT rendering, do not mix MD and RsT in a single node or subtree.
+If an Python Asciidoc processor is used (as opposed to Asciidoc3), 
+The asciidoc processor must be in a directory directory pointed 
+to by the system setting named ``vr3-asciidoc-path``.  As an
+alternative, VR3 will use an executable processor named ``asciidoc``
+if it is on the system path.
 
+It is also possible to use the Ruby ``asciidoctor.rb`` program as an external 
+processor.  This will render the Asciidoc much faster than
+
+.. note:: The Asciidoc processors are quite slow at rendering
+          long documents, as can happen when the "Entire Tree"
+          setting is used.  Restructured Text or Markdown are
+          recommended in those cases, or the Ruby version
+          ``asciidoctor`` (see below).
+
+The asciidoc processor must be one of:
+
+    1. ``asciidoctor``, which requires a Ruby environment to be
+       installed on your computer;
+
+    2. ``asciidoc`` from https://asciidoc.org/index.html.
+       This may be available pre-installed or as a package
+       in some Linux distributions;
+
+    3. ``asciidoc3``, which is available as a python installable
+       package but may be hard to get working on Windows;  or
+
+    4. Other external asciidoc processors may work if they can be
+       launched from the system path (either directly or by
+       an external batch file), but they will need to have the same 
+       command line parameters as 1. or 2. above.
+
+Asciidoc can be imported into VR3 instead of being run as an external file 
+by specifying its folder location in the ``@vr3-asciidoc-path`` setting.
+This will only work for ``asciidoc`` from the source stated in 1. above.
+This *may* provide faster rendering.
+
+If both ``asciidoc`` and ``asciidoc3`` are found, then which one will 
+be used can be set by the setting
+
+    ``@bool vr3-prefer-asciidoc3``
+
+Its default setting is False, meaning that Asciidoc will be preferred
+over Asciidoc3.
+
+Installing the ``asciidoctor`` Ruby Program
+===========================================
+First install the Ruby code environment.  It is not necessary to install 
+the entire development system. A minimal install will be enough.
+Next, run the following commands in a terminal or Windows console::
+
+    gem install asciidoctor
+    gem install pygments.rb
+
+Specifying a Preference for the External Processor
+==================================================
+To specify that VR3 should use the ``asciidoctor`` external program, add a
+setting to the @settings tree in MyLeoSettings.leo or
+in an outline you wish to render, then reload the settings. This
+setting is::
+
+    @string vr3-prefer-external = asciidoctor
+
+You can use another program of the same name as long as it accepts the same commandline parameters as asciidoctor.  This program must be on the system path.  Ruby and its ``gem`` installer set this up for you.  You can also use a different name for the external program, and you can include the complete path to the processor.
+
+.. note::
+
+    If a different program name is used, source highlighting may not work.
+
+Asciidoc Dialects
+=================
+Asciidoc dialects vary somewhat.  The dialect used by the 
+asciidoc processors described above does not use the 
+syntactical form ``[.xxx]``, e.g., ``[.big.]``.  Instead, 
+the leading period must be omitted: ``[big]``. There may be
+other differences.
 #@+node:TomP.20200309191519.1: *3* Colorized Languages
 Colorized Languages
 ===================
 
 Currently the languages that can be colorized are Python, Javascript,
-Java, and CSS.
+Java, CSS, and XML.
 
 #@+node:TomP.20200115200704.1: *3* Special Renderings
 Special Renderings
@@ -339,9 +469,9 @@ relative to Leo's load directory.
 
 - ``@svg`` renders the file as a (possibly animated) svg (Scalable Vector Image).
   See http://en.wikipedia.org/wiki/Scalable_Vector_Graphics
-  
+
   .. note:: if the first character of the body text is ``<`` after removing
-            Leo directives, the contents of body pane is taken to be an svg image.
+            Leo directives, the contents of body pane is taken to svg code.
 
 #@+node:TomP.20200115200833.1: *3* Acknowledgments
 Acknowledgments
@@ -357,8 +487,8 @@ any printed output into the node.  Thomas B. Passin enhanced Viewrendered2,
 adding the ability to change from RsT to Python and back within a node.
 
 Viewrendered3 was created by Thomas B. Passin to provide VR2 functionality with
-Python 3/QT5 .  VR3 brings more enhancements to ReStructured Text and Markdown
-rendering.  Other functionality is the same as for the Viewrendered plugin.
+Python 3/QT5. VR3 brings more enhancements to ReStructured Text and Markdown
+rendering, and adds Asciidoc rendering.  Other functionality is the same as for the Viewrendered plugin.
 
 Enhancements to the RsT stylesheets were adapted from Peter Mills' stylesheet.
 
@@ -366,11 +496,9 @@ Enhancements to the RsT stylesheets were adapted from Peter Mills' stylesheet.
 
 #@-<< vr3 docstring >>
 """
-# pylint: disable=no-else-break
-    # This warning looks wrong!
 
 #@+<< imports >>
-#@+node:TomP.20191215195433.4: ** << imports >> (v3)
+#@+node:TomP.20191215195433.4: ** << imports >>
 #
 # Stdlib...
 from contextlib import redirect_stdout
@@ -386,18 +514,24 @@ import string
 import sys
 import webbrowser
 from urllib.request import urlopen
-if 0:
-    import warnings
-    # Ignore *all* warnings.
-    warnings.simplefilter("ignore")
-#
+#@+at
+#     import warnings
+#     # Ignore *all* warnings.
+#     warnings.simplefilter("ignore")
+#@@c
+
 # Leo imports...
 import leo.core.leoGlobals as g
-import leo.plugins.qt_text as qt_text
-import leo.plugins.free_layout as free_layout
-from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets
-from leo.core.leoQt import phonon, QtMultimedia, QtSvg, QtWebKitWidgets
-#
+try:
+    import leo.plugins.qt_text as qt_text
+    import leo.plugins.free_layout as free_layout
+    from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets
+    from leo.core.leoQt import phonon, QtMultimedia, QtSvg, QtWebKitWidgets
+except ImportError:
+    g.es('Viewrendered3: cannot import QT modules')
+    raise ImportError from None
+    #QtWidgets = False
+
 # Optional imports...
 try:
     import docutils
@@ -419,7 +553,9 @@ else:
     got_docutils = False
     print('VR3: *** no docutils')
 try:
-    from markdown import markdown
+    #from markdown import markdown
+    import markdown
+    Markdown = markdown.Markdown(extensions=['fenced_code', 'codehilite', 'def_list'])
     got_markdown = True
 except ImportError:
     got_markdown = False
@@ -457,9 +593,12 @@ except Exception:
 #@-<< imports >>
 #@+<< declarations >>
 #@+node:TomP.20191231111412.1: ** << declarations >>
-if 1:
-    # pylint: disable=invalid-name
-    C = 'c'
+# pylint: disable=invalid-name
+C = 'c'
+VR3_NS_ID = '_leo_viewrendered3'
+VR3_DEF_LAYOUT = 'viewrendered3_default_layouts'
+
+ASCIIDOC = 'asciidoc'
 CODE = 'code'
 CSS = 'css'
 ENCODING = 'utf-8'
@@ -473,6 +612,7 @@ REST = 'rest'
 RST = 'rst'
 TEXT = 'text'
 VR3_TEMP_FILE = 'leo_rst_html.html'
+XML = 'xml'
 ZOOM_FACTOR = 1.2
 
 MD_STYLESHEET_APPEND = '''pre {
@@ -494,20 +634,22 @@ TEXT_HTML_HEADER = f'''<html>
 </head>
 '''
 
-RST_DEFAULT_STYLESHEET_NAME = 'vr3_rst.css'
 MD_BASE_STYLESHEET_NAME = 'md_styles.css'
-
-#VR3_TOOLBAR_NAME = 'vr3-toolbar-label'
+RST_DEFAULT_STYLESHEET_NAME = 'vr3_rst.css'
 
 # For code rendering
-LANGUAGES = (PYTHON, JAVASCRIPT, JAVA, CSS)
+LANGUAGES = (PYTHON, JAVASCRIPT, JAVA, CSS, XML)
 TRIPLEQUOTES = '"""'
 TRIPLEAPOS = "'''"
 RST_CODE_INTRO = '.. code::'
 MD_CODE_FENCE = '```'
+ASCDOC_CODE_LANG_MARKER = '[source,'
+ASCDOC_FENCE_MARKER = '----'
 
 RST_INDENT = '    '
 SKIPBLOCKS = ('.. toctree::', '.. index::')
+ASCDOC_PYGMENTS_ATTRIBUTE = ':source-highlighter: pygments'
+
 #@-<< declarations >>
 
 trace = False
@@ -578,9 +720,9 @@ def find_exe(exename):
 
     return exe
 #@+node:TomP.20200508125029.1: ** Find External Executables
-asciidoctor_exec = find_exe('asciidoctor')
-asciidoc3_exec = find_exe('asciidoc3')
-pandoc_exec = find_exe('pandoc')
+asciidoctor_exec = find_exe('asciidoc') or None
+asciidoc3_exec = find_exe('asciidoc3') or None
+pandoc_exec = find_exe('pandoc') or None
 #@+node:TomP.20191215195433.7: ** vr3.Top-level
 #@+node:TomP.20191215195433.8: *3* vr3.decorate_window
 def decorate_window(w):
@@ -619,7 +761,7 @@ def init():
 #@+node:TomP.20191215195433.10: *3* vr3.isVisible
 def isVisible():
     """Return True if the VR pane is visible."""
-    pass
+    return
 #@+node:TomP.20191215195433.11: *3* vr3.onCreate
 def onCreate(tag, keys):
     c = keys.get('c')
@@ -627,9 +769,6 @@ def onCreate(tag, keys):
         return
     provider = ViewRenderedProvider3(c)
     free_layout.register_provider(c, provider)
-    if g.app.dock:
-        # Instantiate immediately.
-        viewrendered(event={'c': c})
 
 #@+node:TomP.20191215195433.12: *3* vr3.onClose
 def onClose(tag, keys):
@@ -710,47 +849,42 @@ def viewrendered(event):
     vr3 = controllers.get(h)
     if not vr3:
         controllers[h] = vr3 = ViewRenderedController3(c)
-    if g.app.dock:
-        dock = vr3.leo_dock
-        if not c.mFileName:
-            # #1318 and #1332: Tricky init code for new windows.
-            g.app.restoreWindowState(c)
-            dock.hide()
-            dock.raise_()
-        return vr3
-    #
-    # Legacy code: add the pane to the splitter.
-    layouts[h] = c.db.get('viewrendered3_default_layouts', (None, None))
-    vr3._ns_id = '_leo_viewrendered3' # for free_layout load/save
+
+    layouts[h] = c.db.get(VR3_DEF_LAYOUT, (None, None))
+    vr3._ns_id = VR3_NS_ID # for free_layout load/save
     vr3.splitter = splitter = c.free_layout.get_top_splitter()
+
     if splitter:
         vr3.store_layout('closed')
         sizes = split_last_sizes(splitter.sizes())
-        ok = splitter.add_adjacent(vr3, 'bodyFrame', 'right-of')
+        ok = splitter.add_adjacent(vr3, '_leo_pane:bodyFrame', 'right-of')
         if not ok:
             splitter.insert(0, vr3)
         elif splitter.orientation() == QtCore.Qt.Horizontal:
             splitter.setSizes(sizes)
         vr3.adjust_layout('open')
+
     c.bodyWantsFocusNow()
     return vr3
 #@+node:TomP.20191215195433.21: *3* g.command('vr3-hide')
 @g.command('vr3-hide')
 def hide_rendering_pane(event):
     """Close the rendering pane."""
-    vr3 = getVr3(event)
-    if not vr3: return
+    global controllers, layouts
+    if g.app.gui.guiName() != 'qt':
+        return
+
+#    vr3 = getVr3(event)
+#    if not vr3: return
 
     c = event.get('c')
-    if g.app.dock:
-        if vr3.external_dock:
-            return # Can't hide a top-level dock.
-        dock = vr3.leo_dock
-        if dock:
-            dock.hide()
+    if not c:
         return
-    #
-    # Legacy code.
+
+    vr3 = controllers.get(c.hash())
+    if not vr3:
+        vr3 = viewrendered(event)
+
     if vr3.pyplot_active:
         g.es_print('can not close vr3 pane after using pyplot')
         return
@@ -776,7 +910,7 @@ close_rendering_pane = hide_rendering_pane
 #@+node:TomP.20191215195433.22: *3* g.command('vr3-lock')
 @g.command('vr3-lock')
 def lock_rendering_pane(event):
-    """Lock the rendering pane."""
+    """Lock the rendering pane to prevent updates."""
     vr3 = getVr3(event)
     if not vr3: return
 
@@ -824,20 +958,13 @@ def toggle_rendering_pane(event):
         vr3 = viewrendered(event)
         vr3.hide() # So the toggle below will work.
 
-    if g.app.dock:
-        if vr3.external_dock:
-            return # Can't hide a top-level dock.
-        dock = vr3.leo_dock
-        if dock:
-            f = dock.show if dock.isHidden() else dock.hide
-            f()
-            if not dock.isHidden():
-                vr3.update(tag='view', keywords={'c': c, 'force': True})
-
-    elif vr3.isHidden():
+    if vr3.isHidden():
         show_rendering_pane(event)
     else:
         hide_rendering_pane(event)
+
+    c.bodyWantsFocusNow()
+
 #@+node:TomP.20191215195433.26: *3* g.command('vr3-unlock')
 @g.command('vr3-unlock')
 def unlock_rendering_pane(event):
@@ -904,37 +1031,88 @@ def lock_unlock_tree(event):
         vr3.lock()
     else:
         vr3.unlock()
-#@+node:TomP.20191215195433.32: ** class ViewRenderedProvider3 (vr3)
+#@+node:TomP.20200923123015.1: *3* g.command('vr3-use-default-layout')
+@g.command('vr3-use-default-layout')
+def open_with_layout(event):
+    vr3 = getVr3(event)
+    c = vr3.c
+    layout = {'orientation': 1,
+              'content': [{'orientation': 2,
+	                      'content': ['_leo_pane:outlineFrame', '_leo_pane:logFrame'],
+	                      'sizes': [200,200]
+	                      },
+                           '_leo_pane:bodyFrame', VR3_NS_ID
+                         ],
+              'sizes': [200,200,200]
+             }
+
+    vr3.splitter = c.free_layout.get_top_splitter()
+    if vr3.splitter:
+        # Make it work with old and new layout code
+        try:
+            vr3.splitter.load_layout(layout)
+        except TypeError:
+            vr3.splitter.load_layout(c, layout)
+    else:
+        g.es('=== No splitter')
+    c.k.simulateCommand('vr3-update')
+    c.bodyWantsFocusNow()
+
+#@+node:TomP.20201003182436.1: *3* g.command('vr3-zoom-view')
+@g.command('vr3-zoom-view')
+def zoom_view(event):
+    vr3 = getVr3(event)
+    vr3.zoomView()
+#@+node:TomP.20201003182453.1: *3* g.command('vr3-shrink-view')
+@g.command('vr3-shrink-view')
+def shrink_view(event):
+    vr3 = getVr3(event)
+    vr3.shrinkView()
+#@+node:ekr.20200918085543.1: ** class ViewRenderedProvider3
 class ViewRenderedProvider3:
     #@+others
-    #@+node:TomP.20191215195433.33: *3* vr3.__init__
+    #@+node:ekr.20200918085543.2: *3* vr3.__init__
     def __init__(self, c):
         self.c = c
         # Careful: we may be unit testing.
+        self.vr3_instance = None
         if hasattr(c, 'free_layout'):
             splitter = c.free_layout.get_top_splitter()
             if splitter:
                 splitter.register_provider(self)
-    #@+node:TomP.20191215195433.34: *3* vr3.ns_provides
-    def ns_provides(self):
-        return [('Viewrendered3', '_leo_viewrendered3')]
-    #@+node:TomP.20191215195433.35: *3* vr3.ns_provide
+    #@+node:ekr.20200918085543.3: *3* vr3.ns_provide
     def ns_provide(self, id_):
         global controllers, layouts
-        if id_ == '_leo_viewrendered3':
+        # #1678: duplicates in Open Window list
+        if id_ == self.ns_provider_id():
             c = self.c
-            vr3 = controllers.get(c.hash()) or ViewRenderedController3(c)
             h = c.hash()
+            vr3 = controllers.get(h) or ViewRenderedController3(c)
             controllers[h] = vr3
             if not layouts.get(h):
-                layouts[h] = c.db.get('viewrendered_default_layouts', (None, None))
-            # return ViewRenderedController(self.c)
+                layouts[h] = c.db.get(VR3_DEF_LAYOUT, (None, None))
             return vr3
         return None
+    #@+node:ekr.20200918085543.4: *3* vr3.ns_provider_id
+    def ns_provider_id(self):
+        return VR3_NS_ID
+    #@+node:ekr.20200918085543.5: *3* vr3.ns_provides
+    def ns_provides(self):
+        # #1671: Better Window names.
+        # #1678: duplicates in Open Window list
+        return [('Viewrendered 3', self.ns_provider_id())]
+    #@+node:ekr.20200918085543.6: *3* vr3.ns_title
+    def ns_title(self, id_):
+        if id_ != self.ns_provider_id():
+            return None
+        filename = self.c.shortFileName() or 'Unnamed file'
+        return f"Viewrendered 3: {filename}"
     #@-others
 #@+node:TomP.20191215195433.36: ** class ViewRenderedController3 (QWidget)
 class ViewRenderedController3(QtWidgets.QWidget):
     """A class to control rendering in a rendering pane."""
+
+    # pylint: disable=too-many-public-methods
     #@+others
     #@+node:TomP.20200329223820.1: *3* vr3.ctor & helpers
     def __init__(self, c, parent=None):
@@ -989,6 +1167,10 @@ class ViewRenderedController3(QtWidgets.QWidget):
         self.create_dispatch_dict()
         self.activate()
         self.zoomed = False
+
+        self.asciidoc3_internal_ok = True
+        self.asciidoc_internal_ok = True
+        self.using_ext_proc_msg_shown = False
     #@+node:TomP.20200329223820.2: *4* vr3.create_base_text_widget
     def create_base_text_widget(self):
         """
@@ -1007,6 +1189,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
     def create_dispatch_dict(self):
         pc = self
         pc.dispatch_dict = {
+            'asciidoc': pc.update_asciidoc,
             'big': pc.update_rst,
             'html': pc.update_html,
             'graphics-script': pc.update_graphics_script,
@@ -1064,10 +1247,8 @@ class ViewRenderedController3(QtWidgets.QWidget):
     '''
     #@+node:TomP.20200329223820.5: *4* vr3.create_pane
     def create_pane(self, parent):
-        """Create the vr3 pane or dock."""
-        c = self.c
-        dw = c.frame.top
-        self.leo_dock = None # May be set below.
+        """Create the vr3 pane."""
+
         if g.app.unitTesting:
             return
         # Create the inner contents.
@@ -1075,25 +1256,6 @@ class ViewRenderedController3(QtWidgets.QWidget):
         self.setLayout(QtWidgets.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.create_toolbar()
-        if not g.app.dock:
-            return
-        # Allow the VR dock to move only in special circumstances.
-        central_body = g.app.get_central_widget(c) == 'body'
-        moveable = g.app.init_docks or central_body
-        self.leo_dock = dock = g.app.gui.create_dock_widget(
-            closeable=True, moveable=moveable, height=50, name='ViewRendered3')
-        if central_body:
-            # Create a stand-alone dockable area.
-            dock.setWidget(self)
-            dw.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-        else:
-            # Split the body dock.
-            # Removed per @ekr- see https://groups.google.com/forum/#!topic/leo-editor/AeHYnVqrQCU:
-            #dw.leo_docks.append(dock)
-            dock.setWidget(self)
-            dw.splitDockWidget(dw.body_dock, dock, QtCore.Qt.Horizontal)
-        if g.app.init_docks:
-            dock.show()
     #@+node:TomP.20200329223820.6: *4* vr3.create_toolbar & helper functions
     def create_toolbar(self):
         """Create toolbar and attach to the VR3 widget.
@@ -1211,6 +1373,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
         set_group_action('RsT', RST)
         set_group_action('MD', MD)
         set_group_action('Text', TEXT)
+        set_group_action('Asciidoc', ASCIIDOC)
         _default_type_button.setMenu(menu)
         #@-<< vr3: create menus >>
         #@+<< vr3: finish toolbar >>
@@ -1238,20 +1401,30 @@ class ViewRenderedController3(QtWidgets.QWidget):
         c = self.c
         c.registerReloadSettings(self)
         self.default_kind = c.config.getString('vr3-default-kind') or 'rst'
-        self.external_dock = c.config.getBool('use-vr3-dock', default=False)
         self.rst_stylesheet = c.config.getString('vr3-rst-stylesheet') or ''
+        self.set_rst_stylesheet()
 
         self.math_output = c.config.getBool('vr3-math-output', default=False)
         self.mathjax_url = c.config.getString('vr3-mathjax-url') or ''
         self.rst_math_output = 'mathjax ' + self.mathjax_url
 
-        self.set_rst_stylesheet()
+        self.use_node_headline = c.config.getBool('vr3-insert-headline-from-node', default=True)
 
         self.md_math_output = c.config.getBool('vr3-md-math-output', default=False)
         self.md_stylesheet = c.config.getString('vr3-md-stylesheet') or ''
-
         self.set_md_stylesheet()
         self.create_md_header()
+
+        self.asciidoc_path = c.config.getString('vr3-asciidoc-path') or ''
+        self.set_asciidoc_import()
+
+        self.prefer_asciidoc3 = c.config.getBool('vr3-prefer-asciidoc3', False)
+        self.prefer_external = c.config.getString('vr3-prefer-external') or ''
+
+        if self.prefer_asciidoc3:
+            self.asciidoc_proc = asciidoc3_exec or asciidoctor_exec or None
+        else:
+            self.asciidoc_proc = asciidoctor_exec or asciidoc3_exec or None
     #@+node:TomP.20200329223820.16: *4* vr3.set_md_stylesheet
     def set_md_stylesheet(self):
         """Verify or create css stylesheet for Markdown node.
@@ -1325,6 +1498,20 @@ class ViewRenderedController3(QtWidgets.QWidget):
         # what OS is being used.  Apparently, the g.os_path methods do this.
         vr_style_dir = g.os_path_join(g.app.leoDir, 'plugins', 'viewrendered3')
         self.rst_stylesheet = g.os_path_join(vr_style_dir, RST_DEFAULT_STYLESHEET_NAME)
+    #@+node:TomP.20200820112350.1: *4* vr3.set_asciidoc_import
+    def set_asciidoc_import(self):
+        # pylint: disable=import-outside-toplevel
+        global AsciiDocAPI, AsciiDocError
+        if self.asciidoc_path:
+            if os.path.exists(self.asciidoc_path):
+                try:
+                    sys.path.append(self.asciidoc_path)
+                    from asciidocapi import AsciiDocAPI, AsciiDocError #pylint disable=import-outside-toplevel
+                except ImportError:
+                    self.asciidoc_path = ''
+            else:
+                self.asciidoc_path = ''
+
     #@+node:TomP.20191215195433.49: *3* vr3.update & helpers
     # Must have this signature: called by leoPlugins.callTagHandler.
     def update(self, tag, keywords):
@@ -1348,7 +1535,9 @@ class ViewRenderedController3(QtWidgets.QWidget):
             keywords['tag'] = tag
         else:
             _kind = pc.get_kind(p) or self.default_kind
-        f = pc.dispatch_dict.get(_kind)
+            if _kind in ('edit', 'file', 'clean', 'auto'):
+                _kind = RST
+            f = pc.dispatch_dict.get(_kind)
         # if f in (pc.update_rst, pc.update_md, pc.update_text):
             # self.show_toolbar()
         # else:
@@ -1366,14 +1555,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
             s = keywords.get('s') if 's' in keywords else p.b
             s = pc.remove_directives(s)
 
-            # Use plain text if we are hidden.
-            # This avoids annoying messages with rst.
-            dock = pc.leo_dock or pc
-            if dock.isHidden():
-                #w = pc.ensure_text_widget()
-                return
-
-            # For rst, md handler
+            # For rst, md, asciidoc handler
             self.rst_html = ''
 
             # Dispatch based on the computed kind.
@@ -1402,13 +1584,13 @@ class ViewRenderedController3(QtWidgets.QWidget):
                 except UnboundLocalError as e:
                     g.es('=======', tag, e)
                     return
-            if kind in (MD, RST, REST, TEXT) and _tree and self.show_whole_tree:
+            if kind in (ASCIIDOC, MD, RST, REST, TEXT) and _tree and self.show_whole_tree:
                 _tree.extend(rootcopy.subtree())
             f = pc.dispatch_dict.get(kind)
             if not f:
                 g.trace('no handler for kind: %s' % kind)
                 f = pc.update_rst
-            if kind in (MD, RST, REST, TEXT):
+            if kind in (ASCIIDOC, MD, RST, REST, TEXT):
                 f(_tree, keywords)
             else:
                 f(s, keywords)
@@ -1450,15 +1632,17 @@ class ViewRenderedController3(QtWidgets.QWidget):
     #@+node:TomP.20191215195433.52: *5* vr3.setBackgroundColor
     def setBackgroundColor(self, colorName, name, w):
         """Set the background color of the vr3 pane."""
-        if 0: # Do not do this! It interferes with themes.
-            pc = self
-            if not colorName: return
-            styleSheet = 'QTextEdit#%s { background-color: %s; }' % (name, colorName)
-            if QtGui.QColor(colorName).isValid():
-                w.setStyleSheet(styleSheet)
-            elif colorName not in pc.badColors:
-                pc.badColors.append(colorName)
-                g.warning('invalid body background color: %s' % (colorName))
+
+        return
+        # Do not do this! It interferes with themes.
+        # pc = self
+        # if not colorName: return
+        # styleSheet = 'QTextEdit#%s { background-color: %s; }' % (name, colorName)
+        # if QtGui.QColor(colorName).isValid():
+            # w.setStyleSheet(styleSheet)
+        # elif colorName not in pc.badColors:
+            # pc.badColors.append(colorName)
+            # g.warning('invalid body background color: %s' % (colorName))
     #@+node:TomP.20191215195433.53: *4* vr3.must_update
     def must_update(self, keywords):
         '''Return True if we must update the rendering pane.'''
@@ -1493,33 +1677,176 @@ class ViewRenderedController3(QtWidgets.QWidget):
         return _must_update
 
     #@+node:TomP.20191215195433.54: *4* vr3.update_asciidoc & helpers
-    def update_asciidoc(self, s, keywords):
+    def update_asciidoc(self, node_list, keywords):
         """Update asciidoc in the vr3 pane."""
-        #VrC.pdate_asciidoc(self, s, keywords)
 
-        global asciidoctor_exec, asciidoc3_exec
         pc = self
         # Do this regardless of whether we show the widget or not.
-        w = pc.ensure_text_widget()
+        w = pc.ensure_web_widget()
         assert pc.w
-        if s:
-            pc.show()
-        if asciidoctor_exec or asciidoc3_exec:
+
+        #if s:
+        pc.show()
+
+        self.rst_html = ''
+
+        ascdoc = self.process_asciidoc_nodes(node_list)
+        h = self.convert_to_asciidoc(ascdoc) or "No return from asciidoc processor"
+        h = g.toUnicode(h)  # EKR.
+        self.set_html(h, w)
+    #@+node:TomP.20200825083904.1: *5* vr3.process_asciidoc_nodes
+    def process_asciidoc_nodes(self, node_list, s=''):
+        """Convert content of Leo nodes, or a string, to Asciidoc.
+        
+        If the input contains Python code and self.execute_flag is True,
+        execute the code and capture stdout and stderr output.
+        Return the Asciidoc output with any execution results
+        appended in a literal block.
+        
+        This method uses a rudimentary state machine.
+        
+        ARGUMENTS
+        node_list -- a list of Leo nodes to process.
+        s -- a string.  The node_list must be empty.
+        
+        RETURNS
+        a string containing the Asciidoc and execution results.
+        """
+
+        result = ASCDOC_PYGMENTS_ATTRIBUTE + '\n'
+        codelist = []
+
+        sm = StateMachine(self, tag=TEXT, structure=ASCIIDOC, lang=ASCIIDOC)
+
+        if not node_list:
+            lines = s.split('\n')
+            # Process node's entire body text; handle @language directives
+            sproc, codelines = sm.runMachine(lines)
+            result += sproc
+            sm.reset()
+        else:
+            for node in node_list:
+                # Add node's text as a headline
+                s = node.b
+                s = self.remove_directives(s)
+                # Remove "@" directive from headline, if any
+                if self.use_node_headline:
+                    header = node.h or ''
+                    if header.startswith('@'):
+                        fields = header.split()
+                        headline = ' '.join(fields[1:]) if len(fields) > 1 else header[1:]
+                    else:
+                        headline = header
+                    headline_str = '== ' + headline
+                    s = headline_str + '\n' + s
+                lines = s.split('\n')
+
+                # Process node's entire body text; handle @language directives
+                sproc, codelines = sm.runMachine(lines)
+                result += sproc
+            if codelines:
+                codelist.extend(codelines)
+                sm.reset(sm.tag, sm.lang)
+
+        # Execute code blocks; capture and insert execution results.
+        # This means anything written to stdout or stderr.
+        if self.execute_flag and codelist:
+            execution_result, err_result = None, None
+            code = '\n'.join(codelist)
+            c = self.c
+            environment = {'c': c, 'g': g, 'p': c.p} # EKR: predefine c & p.
+            execution_result, err_result = self.exec_code(code, environment)
+            execution_result, err_result = execution_result.strip(), err_result.strip()
+            self.execute_flag = False
+
+            if execution_result or err_result:
+                result += '\n----\n'
+                if execution_result:
+                    result += f'\n{execution_result}\n'
+                if err_result:
+                    result += f'{err_result}\n'
+                result += '----\n'
+
+        return result
+    #@+node:TomP.20200824155122.1: *5* vr3.convert_to_asciidoc
+
+    def convert_to_asciidoc(self, s):
+        """Convert a string to html using an asciidoc processor.
+
+        ARGUMENT
+        s -- a string
+
+        RETURNS
+        the html returned by the processor.
+        """
+
+        global AsciiDocError
+        if self.prefer_external:
+            h =  self.convert_to_asciidoc_external(s)
+            self.rst_html = h
+            return h
+
+        if self.asciidoc_proc == asciidoctor_exec:
             try:
-                s2 = self.convert_to_asciidoctor(s)
-                self.set_html(s2, w)
-                return
-            except Exception:
-                g.es_exception()
-        self.update_rst(s, keywords)
-    #@+node:TomP.20191215195433.55: *5* vr3.make_asciidoc_title
-    def make_asciidoc_title(self, s):
-        """Generate an asciiidoc title for s."""
-        line = '#' * (min(4, len(s)))
-        return f"{line}\n{s}\n{line}\n\n"
-    #@+node:TomP.20191215195433.56: *5* vr3.convert_to_asciidoctor
-    def convert_to_asciidoctor(self, s):
-        """Convert s to html using the asciidoctor or asciidoc processor."""
+                # in case using the imported processor fails,
+                # fall back to launching external asciidoc program
+                asciidoc = AsciiDocAPI() # pylint: disable=E0602 # Undefined variable 'AsciiDocAPI
+                infile = io.StringIO(s)
+                outfile = io.StringIO()
+                asciidoc.execute(infile, outfile, backend='html5')
+                h = outfile.getvalue()
+                self.rst_html = h
+                return h
+            except AttributeError:
+                if self.asciidoc_internal_ok:
+                    g.es('VR3 - asciidoc error, launching external program')
+                self.asciidoc_internal_ok = False
+                try:
+                    h = self.convert_to_asciidoc_external(s)
+                    self.rst_html = h
+                    return h
+                except Exception:
+                    g.es_exception()
+                except AsciiDocError as e:  #pylint: disable=undefined-variable
+                    g.es(f'==== asciidoc syntax error: {e}')
+            finally:
+                infile.close()
+                outfile.close()
+        else:
+            # This code is nearly the same as for asciidoc. It is
+            # repeated here in case we may want to add something else to
+            # the calling parameters.
+            try:
+                # asciidoc3api bug may cause this to fail,
+                # so fall back to launching the external asciidoc3 program.
+                if not self.asciidoc3_internal_ok:
+                    raise AttributeError
+                from asciidoc3.asciidoc3api import AsciiDoc3API #pylint: disable=import-outside-toplevel
+                adoc = AsciiDoc3API()
+                infile = io.StringIO(s)
+                outfile = io.StringIO()
+                adoc.execute(infile, outfile, backend='html5')
+                h = outfile.getvalue()
+                self.rst_html = h
+                return h
+            except (AttributeError, ImportError):
+                if self.asciidoc3_internal_ok:
+                    g.es('VR3 - asciidoc3 error, launching external program')
+                self.asciidoc3_internal_ok = False
+                try:
+                    h =  self.convert_to_asciidoc_external(s)
+                    self.rst_html = h
+                    return h
+                except Exception:
+                    g.es_exception()
+            finally:
+                infile.close()
+                outfile.close()
+
+    #@+node:TomP.20191215195433.56: *5* vr3.convert_to_asciidoc_external
+    def convert_to_asciidoc_external(self, s):
+        """Convert s to html using external asciidoc or asciidoc3 processor."""
+
         pc = self
         c, p = pc.c, pc.c.p
         path = g.scanAllAtPathDirectives(c, p) or c.getNodePath(p)
@@ -1527,34 +1854,50 @@ class ViewRenderedController3(QtWidgets.QWidget):
             path = os.path.dirname(path)
         if os.path.isdir(path):
             os.chdir(path)
-        if pc.title:
-            s = pc.make_asciidoc_title(pc.title) + s
-            pc.title = None
-        s = pc.run_asciidoctor(s)
+        s = pc.run_asciidoctor_external(s)
         return g.toUnicode(s)
-    #@+node:TomP.20191215195433.57: *5* vr3.run_asciidoctor
-    def run_asciidoctor(self, s):
+    #@+node:TomP.20191215195433.57: *5* vr3.run_asciidoctor_external
+    def run_asciidoctor_external(self, s):
         """
-        Process s with asciidoctor or asciidoc3.
-        return the contents of the html file.
+        Process s with asciidoc or asciidoc3 external processor.
+        Return the contents of the html file.
         The caller handles all exceptions.
         """
+
         global asciidoctor_exec, asciidoc3_exec
         assert asciidoctor_exec or asciidoc3_exec, g.callers()
         home = g.os.path.expanduser('~')
-        i_path = g.os_path_finalize_join(home, 'vr3_input.adoc')
-        o_path = g.os_path_finalize_join(home, 'vr3_output.html')
+        i_path = g.os_path_finalize_join(home, 'vr3_adoc.adoc')
+        o_path = g.os_path_finalize_join(home, 'vr3_adoc.html')
+
         # Write the input file.
-        with open(i_path, 'w') as f:
+        with open(i_path, 'w', encoding='utf-8') as f:
             f.write(s)
+
         # Call the external program to write the output file.
-        prog = 'asciidoctor' if asciidoctor_exec else 'asciidoc3'
-        command = f"{prog} {i_path} -b html5 -o {o_path}"
-            # The -e option deletes css.
-        g.execute_shell_commands(command)
-        # Read the output file and return it.
-        with open(o_path, 'r') as f:
-            return f.read()
+        # Assume that the command line may be different between asciidoc and asciidoc3
+        if 'asciidoctor' in self.prefer_external:
+            command = f"del {o_path} & {self.prefer_external} -b html5 {i_path}"
+        elif self.asciidoc_proc == asciidoctor_exec:
+            command = f"del {o_path} & {self.asciidoc_proc} -b html5 {i_path}"
+        else:
+            command = f"del {o_path} & {self.asciidoc_proc} -b html5 {i_path}"
+
+        ext_proc = self.prefer_external or self.asciidoc_proc
+        if ext_proc:
+            if not self.using_ext_proc_msg_shown:
+                g.es(f"=== Using external asciidoc processor: {ext_proc}")
+                self.using_ext_proc_msg_shown = True
+
+            g.execute_shell_commands(command)
+            # Read the output file and return it.
+            try:
+                with open(o_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception as e:
+                g.es(f'asciidoc output file not found\n {e}')
+        else:
+            return 'Asciidoc processor not found - cannot render the text'
 
     #@+node:TomP.20191215195433.58: *4* vr3.update_graphics_script
     def update_graphics_script(self, s, keywords):
@@ -1740,6 +2083,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
             nothing
         """
 
+        # pylint: disable = R0914  #Too many local variables (26/20) (too-many-locals)
         # Do this regardless of whether we show the widget or not.
         self.ensure_web_widget()
         assert self.w
@@ -1780,6 +2124,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
         the HTML returned by markdown.
         """
 
+        # pylint: disable=R0914 #Too many local variables
         #@+others
         #@+node:TomP.20200208211132.1: *6* setup
         pc = self
@@ -1801,7 +2146,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
         #@+node:TomP.20200208211347.1: *6* process nodes
         result = ''
         codelist = []
-        sm = StateMachine(self)
+        sm = StateMachine(self, TEXT, MD, MD)
 
         if not node_list:
             lines = s.split('\n')
@@ -1811,18 +2156,19 @@ class ViewRenderedController3(QtWidgets.QWidget):
             sm.reset()
         else:
             for node in node_list:
-                # Add node's text as a headline
                 s = node.b
                 s = self.remove_directives(s)
-                # Remove "@" directive from headline, if any
-                header = node.h or ''
-                if header.startswith('@'):
-                    fields = header.split()
-                    headline = ' '.join(fields[1:]) if len(fields) > 1 else header[1:]
-                else:
-                    headline = header
-                headline_str = '#' + headline
-                s = headline_str + '\n' + s
+                if self.use_node_headline:
+                    # Add node's text as a headline
+                    # Remove "@" directive from headline, if any
+                    header = node.h or ''
+                    if header.startswith('@'):
+                        fields = header.split()
+                        headline = ' '.join(fields[1:]) if len(fields) > 1 else header[1:]
+                    else:
+                        headline = header
+                    headline_str = '##' + headline
+                    s = headline_str + '\n' + s
                 lines = s.split('\n')
 
                 # Process node's entire body text; handle @language directives
@@ -1851,17 +2197,73 @@ class ViewRenderedController3(QtWidgets.QWidget):
                     result += f'{err_result}\n'
                 result += '```\n'
 
+        #@+node:TomP.20200906224158.1: *6* process nodes orig
+        #@+at
+        # result = ''
+        # codelist = []
+        # sm = StateMachine(self, TEXT, MD, MD)
+        #
+        # if not node_list:
+        #     lines = s.split('\n')
+        #     # Process node's entire body text; handle @language directives
+        #     sproc, codelines = sm.runMachine(lines)
+        #     result += sproc
+        #     sm.reset()
+        # else:
+        #     for node in node_list:
+        #         s = node.b
+        #         s = self.remove_directives(s)
+        #         if self.use_node_headline:
+        #             # Add node's text as a headline
+        #             # Remove "@" directive from headline, if any
+        #             header = node.h or ''
+        #             if header.startswith('@'):
+        #                 fields = header.split()
+        #                 headline = ' '.join(fields[1:]) if len(fields) > 1 else header[1:]
+        #             else:
+        #                 headline = header
+        #             headline_str = '##' + headline
+        #             s = headline_str + '\n' + s
+        #         lines = s.split('\n')
+        #
+        #         # Process node's entire body text; handle @language directives
+        #         sproc, codelines = sm.runMachine(lines)
+        #         result += sproc
+        #         if codelines:
+        #             codelist.extend(codelines)
+        #         sm.reset()
+        #
+        # # Execute code blocks; capture and insert execution results.
+        # # This means anything written to stdout or stderr.
+        # if self.execute_flag and codelist:
+        #     execution_result, err_result = None, None
+        #     code = '\n'.join(codelist)
+        #     c = self.c
+        #     environment = {'c': c, 'g': g, 'p': c.p} # EKR: predefine c & p.
+        #     execution_result, err_result = self.exec_code(code, environment)
+        #     execution_result, err_result = execution_result.strip(), err_result.strip()
+        #     self.execute_flag = False
+        #
+        #     if execution_result or err_result:
+        #         result += '\n```text\n'
+        #         if execution_result:
+        #             result += f'\n{execution_result}\n'
+        #         if err_result:
+        #             result += f'{err_result}\n'
+        #         result += '```\n'
+        #
         #@+node:TomP.20200209115750.1: *6* generate HTML
 
-        ext = ['fenced_code', 'codehilite']
+        #ext = ['fenced_code', 'codehilite', 'def_list']
 
         try:
-            s = markdown(result, extensions=ext) # s will be an encoded byte attay
+            s = Markdown.reset().convert(result)
+            _html = s
         except SystemMessage as sm:
             msg = sm.args[0]
             if 'SEVERE' in msg or 'FATAL' in msg:
                 _html = 'MD error:\n%s\n\n%s' % (msg, s)
-                return _html
+                #return _html
 
         _html = self.md_header + '\n<body>\n' + s + '\n</body>\n</html>'
         return _html
@@ -1894,30 +2296,30 @@ class ViewRenderedController3(QtWidgets.QWidget):
             pc.vp.deleteLater()
         # Create a fresh player.
         g.es_print('playing', path)
-        if QtMultimedia:
-            url = QtCore.QUrl.fromLocalFile(path)
-            content = QtMultimedia.QMediaContent(url)
-            pc.vp = vp = QtMultimedia.QMediaPlayer()
-            vp.setMedia(content)
-            # Won't play .mp4 files: https://bugreports.qt.io/browse/QTBUG-32783
-            vp.play()
-        else:
-            pc.vp = vp = phonon.VideoPlayer(phonon.VideoCategory)
-            vw = vp.videoWidget()
-            vw.setObjectName('video-renderer')
-            # Embed the widgets
+        # if QtMultimedia:
+            # url = QtCore.QUrl.fromLocalFile(path)
+            # content = QtMultimedia.QMediaContent(url)
+            # pc.vp = vp = QtMultimedia.QMediaPlayer()
+            # vp.setMedia(content)
+            # # Won't play .mp4 files: https://bugreports.qt.io/browse/QTBUG-32783
+            # vp.play()
+        # else:
+            # pc.vp = vp = phonon.VideoPlayer(phonon.VideoCategory)
+        vw = vp.videoWidget()
+        vw.setObjectName('video-renderer')
+        # Embed the widgets
 
-            def delete_callback():
-                if pc.vp:
-                    pc.vp.stop()
-                    pc.vp.deleteLater()
-                    pc.vp = None
+        def delete_callback():
+            if pc.vp:
+                pc.vp.stop()
+                pc.vp.deleteLater()
+                pc.vp = None
 
-            pc.embed_widget(vp, delete_callback=delete_callback)
-            pc.show()
-            vp = pc.vp
-            vp.load(phonon.MediaSource(path))
-            vp.play()
+        pc.embed_widget(vp, delete_callback=delete_callback)
+        pc.show()
+        vp = pc.vp
+        vp.load(phonon.MediaSource(path))
+        vp.play()
     #@+node:TomP.20191215195433.68: *4* vr3.update_networkx
     def update_networkx(self, s, keywords):
         """Update a networkx graphic in the vr3 pane."""
@@ -2083,6 +2485,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
         the html returned by docutils.
         """
 
+        # pylint: disable=R0914 # Too many local variables
         #@+others
         #@+node:TomP.20200105214716.1: *6* vr3.setup
         #@@language python
@@ -2111,7 +2514,8 @@ class ViewRenderedController3(QtWidgets.QWidget):
                 # Add node's text as a headline
                 s = node.b
                 s = self.remove_directives(s)
-                s = self.make_rst_headline(node, s)
+                if self.use_node_headline:
+                    s = self.make_rst_headline(node, s)
 
                 # Process node's entire body text to handle @language directives
                 sproc, codelines = self.process_rst_node(s)
@@ -2193,6 +2597,11 @@ class ViewRenderedController3(QtWidgets.QWidget):
            RETURNS
            a string having the code parts formatted as rst code blocks.
         """
+
+        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-branches
+        # pylint: disable=too-many-statements
+
         #@+<< rst special line helpers >>
         #@+node:TomP.20200121121247.1: *6* << rst special line helpers >>
         def get_rst_code_language(line):
@@ -2203,7 +2612,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
                 _lang = _fields[1].strip()
             else:
                 _lang = PYTHON # Standard RsT default.
-            _tag = CODE if _lang in (PYTHON,) else TEXT
+            _tag = CODE if _lang in LANGUAGES else TEXT
 
             return _lang, _tag
 
@@ -2236,6 +2645,13 @@ class ViewRenderedController3(QtWidgets.QWidget):
         #environment = {'c': c, 'g': g, 'p': c.p} # EKR: predefine c & p.
 
         for i, line in enumerate(lines):
+            #@+<< omit at-others >>
+            #@+node:TomP.20200909123019.1: *7* << omit at-others >>
+            # Omit lines starting with [blank]*line =     @others
+            left = line.lstrip()
+            if left.startswith('@others'):
+                continue
+            #@-<< omit at-others >>
             #@+<< handle toctree >>
             #@+node:TomP.20200411133219.1: *7* << handle toctree >>
             # Skip all lines in an indented block started by a string in SKIPBLOCKS
@@ -2461,7 +2877,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
                 _headline_str = p.h
             _headline_str = _headline_str.strip() # Docutils raises error for leading space
             _headline_str.replace('\\', '\\\\')
-            _underline = '='*len(_headline_str)
+            _underline = '-'*len(_headline_str)
 
         # Don't duplicate node heading if the body already has it
         # Assumes that 1st two lines are a heading if
@@ -2588,7 +3004,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
                 return word
         # Look for @language directives.
         # Warning: (see #344): don't use c.target_language as a default.
-        colorizer = c.frame.body.colorizer
+        colorizer = getattr(c.frame.body.colorizer, 'findFirstValidAtLanguageDirective', g)
         return colorizer.findFirstValidAtLanguageDirective(p.copy())
     #@+node:TomP.20191215195433.82: *5* vr3.get_fn
     def get_fn(self, s, tag):
@@ -2601,11 +3017,11 @@ class ViewRenderedController3(QtWidgets.QWidget):
             # Expand '~' and handle Leo expressions.
             fn = fn[1:]
             fn = g.os_path_expanduser(fn)
-            fn = g.os_path_expandExpression(fn, c=c)
+            fn = c.expand_path_expression(fn)
             fn = g.os_path_finalize(fn)
         else:
             # Handle Leo expressions.
-            fn = g.os_path_expandExpression(fn, c=c)
+            fn = c.expand_path_expression(fn)
             # Handle ancestor @path directives.
             if c and c.openDirectory:
                 base = c.getNodePath(c.p)
@@ -2658,9 +3074,6 @@ class ViewRenderedController3(QtWidgets.QWidget):
         try:
             exec(code, environment)
         except Exception as e:
-            # print &gt;&gt; buffererr, traceback.format_exc()
-            # buffererr.flush() # otherwise exception info appears too late
-            # g.es('Viewrendered traceback:\n', sys.exc_info()[1])
             g.es('Viewrendered3 exception')
             g.es_exception()
             except_err = f'{type(e).__name__}: {str(e)}\n'
@@ -2708,17 +3121,14 @@ class ViewRenderedController3(QtWidgets.QWidget):
         g.registerHandler('select2', pc.update)
         g.registerHandler('idle', pc.update)
     #@+node:TomP.20200329230436.3: *5* vr3.contract & expand
+    # Change zoom factor of rendering pane
     def contract(self):
-        #VrC.contract(self)
         self.change_size(-100)
 
     def expand(self):
-        #VrC.expand(self)
         self.change_size(100)
 
     def change_size(self, delta):
-    #    VrC.change_size(self, delta)
-
         if hasattr(self.c, 'free_layout'):
             splitter = self.parent()
             i = splitter.indexOf(self)
@@ -2757,30 +3167,10 @@ class ViewRenderedController3(QtWidgets.QWidget):
     def show_dock_or_pane(self):
 
         c, vr = self.c, self
-        if g.app.dock:
-            dock = vr.leo_dock
-            if dock:
-                dock.show()
-                dock.raise_()
-                    # #1230.
-        else:
-            vr.activate()
-            vr.show()
-            vr.adjust_layout('open')
+        vr.activate()
+        vr.show()
+        vr.adjust_layout('open')
         c.bodyWantsFocusNow()
-    #@+node:TomP.20200329230436.7: *6* vr3.adjust_layout (legacy only)
-    def adjust_layout(self, which):
-        #VrC.adjust_layout(self, which)
-
-        global layouts
-        c = self.c
-        splitter = self.splitter
-        deflo = c.db.get('viewrendered3_default_layouts', (None, None))
-        loc, loo = layouts.get(c.hash(), deflo)
-        if which == 'closed' and loc and splitter:
-            splitter.load_layout(loc)
-        elif which == 'open' and loo and splitter:
-            splitter.load_layout(loo)
     #@+node:TomP.20200329230436.8: *5* vr3: toolbar helpers...
     #@+node:TomP.20200329230436.9: *6* vr3.get_toolbar_label
     #@+at
@@ -2807,6 +3197,25 @@ class ViewRenderedController3(QtWidgets.QWidget):
             return
 
 
+    #@+node:TomP.20200329230436.7: *5* vr3.adjust_layout (legacy only)
+    def adjust_layout(self, which):
+
+        global layouts
+        c = self.c
+        splitter = self.splitter
+        deflo = c.db.get(VR3_DEF_LAYOUT, (None, None))
+        loc, loo = layouts.get(c.hash(), deflo)
+        if which == 'closed' and loc and splitter:
+            # Make it work with old and new layout code
+            try:
+                splitter.load_layout(loc)
+            except TypeError:
+                splitter.load_layout(c, loc)
+        elif which == 'open' and loo and splitter:
+            try:
+                splitter.load_layout(loo)
+            except TypeError:
+                splitter.load_layout(c, loo)
     #@+node:TomP.20200329230436.12: *5* vr3: zoom helpers...
     #@+node:TomP.20200329230436.13: *6* vr3.shrinkView
     def shrinkView(self):
@@ -2869,7 +3278,7 @@ class ViewRenderedController3(QtWidgets.QWidget):
         c = self.c
         h = c.hash()
         splitter = self.splitter
-        deflo = c.db.get('viewrendered3_default_layouts', (None, None))
+        deflo = c.db.get(VR3_DEF_LAYOUT, (None, None))
         (loc, loo) = layouts.get(c.hash(), deflo)
         if which == 'closed' and splitter:
             loc = splitter.get_saveable_layout()
@@ -2879,9 +3288,10 @@ class ViewRenderedController3(QtWidgets.QWidget):
             loo = splitter.get_saveable_layout()
             loo = json.loads(json.dumps(loo))
             layouts[h] = loc, loo
-        c.db['viewrendered3_default_layouts'] = layouts[h]
+        c.db[VR3_DEF_LAYOUT] = layouts[h]
     #@-others
-#@+node:TomP.20200213170204.1: ** class State
+#@+node:TomP.20200827172759.1: ** State Machine Components
+#@+node:TomP.20200213170204.1: *3* class State
 class State(Enum):
     BASE = auto()
     AT_LANG_CODE = auto()
@@ -2889,10 +3299,13 @@ class State(Enum):
     IN_SKIP = auto()
     TO_BE_COMPUTED = auto()
 
-#@+node:TomP.20200213170314.1: ** class Action
+    STARTING_ASCDOC_CODE_BLOCK = auto()
+    ASCDOC_READY_FOR_FENCE = auto()
+
+#@+node:TomP.20200213170314.1: *3* class Action
 class Action:
     @staticmethod
-    def new_chunk(sm, line, tag):
+    def new_chunk(sm, line, tag, language, addline_at_new_start=False):
         """ Add chunk to chunk list, create new chunk.
 
         ARGUMENTS
@@ -2902,33 +3315,51 @@ class Action:
         """
 
         sm.chunk_list.append(sm.current_chunk)
-        marker, tag, _lang = StateMachine.get_marker(None, line)
-        sm.current_chunk = Chunk(tag, sm.structure, _lang)
+        sm.current_chunk = Chunk(tag, sm.structure, language)
+        if addline_at_new_start:
+            sm.current_chunk.add_line(line)
 
     @staticmethod
-    def add_line(sm, line, tag=None):
+    def new_chunk_add_line_to_old_end(sm, line, tag, language):
+        sm.current_chunk.add_line(line)
+        sm.chunk_list.append(sm.current_chunk)
+        sm.current_chunk = Chunk(tag, sm.structure, language)
+
+    @staticmethod
+    def new_chunk_add_line_to_new_start(sm, line, tag, language):
+        Action.new_chunk(sm, line, tag, language, True)
+
+    @staticmethod
+    def add_line(sm, line, tag=None, language=TEXT):
         sm.current_chunk.add_line(line)
 
     @staticmethod
-    def add_image(sm, line, tag=None):
-        marker, tag, _lang = StateMachine.get_marker(None, line)
+    def add_image(sm, line, tag=None, language=None):
+        # Used for @image lines
+        marker, tag, _lang = StateMachine.get_marker(sm, line)
         # Get image url
         fields = line.split(' ', 1)
         if len(fields) > 1:
-            url = fields[1]
-            line = f'![]({url})\n'
-            sm.current_chunk.add_line(line)
-        # If no url parameter, do nothing
-
+            url = fields[1] or ''
+            if url:
+                if sm.structure == MD:
+                    # image syntax: ![label](url)
+                    line = f'![]({url})'
+                elif sm.structure == ASCIIDOC:
+                    # image syntax: image:<target>[<attributes>] (must include "{}" even if no attributes
+                    line = f'image:{url}[]'
+                sm.current_chunk.add_line(line)
+            # If no url parameter, do nothing
 
     @staticmethod
-    def no_action(sm, line, tag=None):
+    def no_action(sm, line, tag=None, language=TEXT):
         pass
-#@+node:TomP.20200213170250.1: ** class Marker
+#@+node:TomP.20200213170250.1: *3* class Marker
 class Marker(Enum):
     """
     For indicating markers in a text line that characterize their purpose, like "@language".
     """
+
     AT_LANGUAGE_MARKER = auto()
     MD_FENCE_LANG_MARKER = auto() # fence token with language; e.g. ```python
     MD_FENCE_MARKER = auto() # fence token with no language
@@ -2936,7 +3367,12 @@ class Marker(Enum):
     START_SKIP = auto()
     END_SKIP = auto()
     IMAGE_MARKER = auto()
-#@+node:TomP.20191231172446.1: ** class Chunk
+
+    ASCDOC_CODE_MARKER = auto()
+    ASCDOC_CODE_LANG_MARKER = auto() # a line like "[source, python]" before a line "---"
+
+#@+node:TomP.20191231172446.1: *3* class Chunk
+#@@language python
 class Chunk:
     """Holds a block of text, with various metadata about it."""
 
@@ -2953,13 +3389,15 @@ class Chunk:
     def format_code(self):
         """Format the text of a chunk. Include special formatting for CODE chunks.
 
-        Currently only reformats RsT/Python and MD/Python.
+        Currently reformats RsT, MD, and Asciidoc, for code languages
+        python, javascript, java, css, and xml.
         """
 
-        if self.tag != CODE or self.structure not in (RST, REST, MD):
+        if self.tag != CODE or self.structure not in (RST, REST, MD, ASCIIDOC):
             self.formatted = '\n'.join(self.text_lines)
             return
 
+        _formatted = ['']
         if self.tag == CODE:
             if self.structure in (RST, REST):
                 _formatted = ['.. code:: %s\n' % (self.language)]
@@ -2971,38 +3409,50 @@ class Chunk:
                 _formatted.append('')
                 self.formatted = '\n'.join(_formatted)
             elif self.structure == MD:
-                _formatted = [f'{MD_CODE_FENCE}{self.language}\n']
-                _formatted.append('\n'.join(self.text_lines))
-                _formatted.append(f'{MD_CODE_FENCE}\n')
+                _formatted = [f'{MD_CODE_FENCE}{self.language}']
+                _formatted.extend(self.text_lines)
+                _formatted.append(f'{MD_CODE_FENCE}')
                 self.formatted = '\n'.join(_formatted)
-#@+node:TomP.20200211142437.1: ** class StateMachine
+            elif self.structure == ASCIIDOC:
+                code_marker = ASCDOC_CODE_LANG_MARKER + self.language + ']'
+                _formatted = [code_marker]
+                _formatted.append(ASCDOC_FENCE_MARKER)
+                _formatted.extend(self.text_lines)
+                _formatted.append(ASCDOC_FENCE_MARKER)
+                self.formatted = '\n'.join(_formatted)
+#@+node:TomP.20200211142437.1: *3* class StateMachine
 #@@language python
 
 class StateMachine:
-    def __init__(self, vr3, tag=TEXT, structure=MD, lang=MD):
+    def __init__(self, vr3, tag=TEXT, structure=RST, lang=RST):
         self.vr3 = vr3
         self.base_tag = tag
         self.structure = structure
         self.base_lang = lang
         self.state = State.BASE
         self.last_state = State.BASE
+        self.last_marker = None
 
         self.chunk_list = []
         self.current_chunk = Chunk(self.base_tag, structure, self.base_lang)
         self.lang = lang
+        self.tag = tag
+        self.codelang = ''
 
         self.inskip = False
 
-    def reset(self, tag=TEXT, lang=MD):
+    def reset(self, tag=TEXT, lang=RST):
         self.state = State.BASE
         self.last_state = State.BASE
         self.chunk_list = []
         self.current_chunk = Chunk(tag, self.structure, lang)
         self.lang = lang
+        self.tag = tag
         self.inskip = False
+        self.codelang = ''
 
     #@+<< runMachine >>
-    #@+node:TomP.20200215180012.1: *3* << runMachine >>
+    #@+node:TomP.20200215180012.1: *4* << runMachine >>
     def runMachine(self, lines):
         """Process a list of text lines and return final text and a list of lines of code.
 
@@ -3013,13 +3463,14 @@ class StateMachine:
         a tuple (final_text, code_lines).
         """
 
-        for i, line in enumerate(lines):
-            self.i = i
+        for self.i, line in enumerate(lines):
             self.do_state(self.state, line)
         self.chunk_list.append(self.current_chunk) # have to pick up the last chunk
 
+
         for ch in self.chunk_list:
             ch.format_code()
+
         if self.vr3.code_only:
             results = [ch.formatted for ch in self.chunk_list if ch.tag == CODE]
         else:
@@ -3033,8 +3484,8 @@ class StateMachine:
         return final_text, codelines
     #@-<< runMachine >>
     #@+<< do_state >>
-    #@+node:TomP.20200213170532.1: *3* << do_state >>
-
+    #@+node:TomP.20200213170532.1: *4* << do_state >>
+    #@@language python
     def do_state(self, state, line):
         marker, tag, language = self.get_marker(line)
         if marker == Marker.START_SKIP:
@@ -3052,6 +3503,7 @@ class StateMachine:
             action, next = StateMachine.State_table[(state, marker)]
         except KeyError:
             return
+
         if next == State.TO_BE_COMPUTED:
             # Need to know if this line specified a code or text language.
             # Only known case is if we are in an @language code block
@@ -3063,11 +3515,72 @@ class StateMachine:
                 next = State.BASE
                 #_lang = self.base_lang
 
-        action(self, line, tag)
+        action(self, line, tag, language)
         self.state = next
     #@-<< do_state >>
+    #@+<< get_marker_md >>
+    #@+node:TomP.20200901214058.1: *4* << get_marker_md >>
+    def get_marker_md(self, line, tag, _lang, marker):
+        # If _lang == a code language, we are starting a code block.
+        if _lang:
+            if _lang in LANGUAGES:
+                lang = _lang
+                tag = CODE
+                marker = Marker.MD_FENCE_LANG_MARKER
+            else:
+                # If _lang is TEXT or unknown, we are starting a new literal block.
+                lang = _lang
+                tag = TEXT
+                marker = Marker.MD_FENCE_MARKER
+        else:
+            # If there is no language indicator after the fence,
+            # We are ending the block
+            lang = _lang
+            tag = TEXT
+            marker = Marker.MD_FENCE_MARKER
+
+        return (marker, tag, lang)
+    #@-<< get_marker_md >>
+    #@+<< get_marker_asciidoc >>
+    #@+node:TomP.20200901211601.1: *4* << get_marker_asciidoc >>
+    def get_marker_asciidoc(self, line, tag, lang, marker):
+
+        if line.startswith(ASCDOC_CODE_LANG_MARKER):
+            self.codelang = ''
+            lang = ASCIIDOC
+            frags = line.split(',')
+            if len(frags) == 2:
+                _lang = frags[1][:-1].strip()  # remove trailing ']' and spaces
+                if _lang in LANGUAGES:
+                    lang = _lang
+                self.codelang = _lang
+                marker = Marker.ASCDOC_CODE_LANG_MARKER
+                self.last_marker = marker
+                self.tag = TEXT
+        elif line.startswith (ASCDOC_FENCE_MARKER):
+            # Might be either the start or end of a code block
+            if self.last_marker == Marker.ASCDOC_CODE_LANG_MARKER:
+                if self.codelang in LANGUAGES:
+                    tag = CODE
+                    lang = self.codelang
+                else:
+                    tag = TEXT
+                marker = Marker.ASCDOC_CODE_MARKER
+                self.tag = tag
+                self.last_marker = Marker.ASCDOC_CODE_MARKER
+            else:
+                # Must be at the end of a code chunk
+                lang = ASCIIDOC
+                tag = TEXT
+                self.codelang = ''
+                marker = Marker.ASCDOC_CODE_MARKER
+                self.last_marker = None
+
+        return (marker, tag, lang)
+    #@-<< get_marker_asciidoc >>
     #@+<< get_marker >>
-    #@+node:TomP.20200212085651.1: *3* << get_marker >>
+    #@+node:TomP.20200212085651.1: *4* << get_marker >>
+    #@@language python
     def get_marker(self, line):
         """Return classification information about a line.
 
@@ -3078,9 +3591,9 @@ class StateMachine:
 
         RETURNS
         a tuple (marker, tag, lang), where
-            marker is one of AT_LANGUAGE_MARKER, MD_FENCE_LANG_MARKER, MD_FENCE_MARKER, MARKER_NONE;
+            marker is one of the enumeration from class Marker;
             tag is one of CODE, TEXT;
-            lang is the language (e.g., MD, RST, PYTHON) specified by the line, else None.
+            lang is the language (e.g., MD, RST, ASCIIDOC, PYTHON) specified by the line, else None.
         """
 
         marker = Marker.MARKER_NONE
@@ -3089,7 +3602,7 @@ class StateMachine:
 
         # For debugging
         if line.startswith('#%%%%'):
-            print(self.state, self.current_chunk.language, self.current_chunk.tag)
+            g.es('====', self.state, self.lang, self.current_chunk.language, self.current_chunk.tag)
             return(None, None, None)
 
         # Omit lines between @ and @c
@@ -3098,36 +3611,37 @@ class StateMachine:
         elif line.strip() == '@c':
             marker = Marker.END_SKIP
 
-        # A marker line may start with "@language", "@image", or a Markdown code fence.
+        # A marker line may start with "@language", "@image", or a  code fence.
         elif line.startswith("@language"):
             marker = Marker.AT_LANGUAGE_MARKER
-            lang = MD
             for _lang in LANGUAGES:
                 if _lang in line:
                     lang = _lang
+                    tag = CODE
                     break
+
         elif line.startswith("@image"):
             marker = Marker.IMAGE_MARKER
-            lang = MD
+            lang = self.structure
 
-        elif line.startswith(MD_CODE_FENCE):
+        elif line.startswith(MD_CODE_FENCE) and self.structure == MD:
             lang = MD
-            for _lang in LANGUAGES:
-                if _lang in line:
-                    lang = _lang
-                    marker = Marker.MD_FENCE_LANG_MARKER
-                    break
-                else:
-                    # either a literal block or the end of a fenced code block.
-                    marker = Marker.MD_FENCE_MARKER
+            tag = TEXT
+            _lang = line.split(MD_CODE_FENCE)[1]
+            (marker, tag, lang) = self.get_marker_md(line, tag, _lang, marker)
 
-        if lang in LANGUAGES:
-            tag = CODE
+        elif self.structure == ASCIIDOC:
+            lang = ASCIIDOC
+            tag = TEXT
+            (marker, tag, lang) = self.get_marker_asciidoc(line, tag, lang, marker)
+
+        else:
+            marker = Marker.MARKER_NONE
 
         return (marker, tag, lang)
     #@-<< get_marker >>
     #@+<< State Table >>
-    #@+node:TomP.20200213171040.1: *3* << State Table >>
+    #@+node:TomP.20200213171040.1: *4* << State Table >>
     State_table = { # (state, marker): (action, next_state)
 
         (State.BASE, Marker.AT_LANGUAGE_MARKER):  (Action.new_chunk, State.AT_LANG_CODE),
@@ -3136,17 +3650,29 @@ class StateMachine:
 
         # When we encounter a new @language line, the next state might be either
         # State.BASE or State.AT_LANG_CODE, so we have to compute which it will be.
-        (State.AT_LANG_CODE, Marker.AT_LANGUAGE_MARKER): (Action.new_chunk, State.TO_BE_COMPUTED),
+        (State.AT_LANG_CODE, Marker.AT_LANGUAGE_MARKER): 
+                    (Action.new_chunk, State.TO_BE_COMPUTED),
 
-        (State.BASE, Marker.IMAGE_MARKER):                 (Action.add_image, State.BASE),
+        (State.BASE, Marker.IMAGE_MARKER):          (Action.add_image, State.BASE),
 
         # ========= Markdown-specific states ==================
-        (State.BASE, Marker.MD_FENCE_LANG_MARKER):         (Action.new_chunk, State.FENCED_CODE),
-        (State.BASE, Marker.MD_FENCE_MARKER):              (Action.add_line, State.BASE),
-        (State.FENCED_CODE, Marker.MARKER_NONE):           (Action.add_line, State.FENCED_CODE),
-        (State.FENCED_CODE, Marker.MD_FENCE_MARKER):       (Action.new_chunk, State.BASE),
-        (State.AT_LANG_CODE, Marker.MD_FENCE_LANG_MARKER): (Action.new_chunk, State.FENCED_CODE),
-        (State.AT_LANG_CODE, Marker.MD_FENCE_MARKER):      (Action.add_line, State.BASE),
+        (State.BASE, Marker.MD_FENCE_LANG_MARKER):   (Action.new_chunk, State.FENCED_CODE),
+        (State.BASE, Marker.MD_FENCE_MARKER):        (Action.add_line, State.BASE),
+        (State.FENCED_CODE, Marker.MARKER_NONE):     (Action.add_line, State.FENCED_CODE),
+        (State.FENCED_CODE, Marker.MD_FENCE_MARKER): (Action.new_chunk, State.BASE),
+        (State.AT_LANG_CODE, Marker.MD_FENCE_MARKER):
+                    (Action.add_line, State.AT_LANG_CODE),
+
+        # ========== ASCIIDOC-specific states =================
+        (State.BASE, Marker.ASCDOC_CODE_LANG_MARKER):
+                    (Action.no_action, State.ASCDOC_READY_FOR_FENCE),
+        (State.ASCDOC_READY_FOR_FENCE, Marker.ASCDOC_CODE_MARKER):
+                    # Start a new code chunk
+                    (Action.new_chunk, State.FENCED_CODE),
+        (State.FENCED_CODE, Marker.MARKER_NONE):        (Action.add_line, State.FENCED_CODE),
+        (State.FENCED_CODE, Marker.ASCDOC_CODE_MARKER):
+                    # End fenced code chunk
+                    (Action.new_chunk, State.BASE)
     }
     #@-<< State Table >>
 

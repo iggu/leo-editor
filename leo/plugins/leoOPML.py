@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20101110092851.5742: * @file leoOPML.py
+#@+node:ekr.20101110092851.5742: * @file ../plugins/leoOPML.py
 #@+<< docstring >>
 #@+node:ekr.20060904103412.1: ** << docstring >>
 #@@language rest
@@ -199,12 +199,6 @@ class OpmlController:
             # if 'O' in a: v.setOrphan()
             if 'T' in a: self.topVnode = v
             if 'V' in a: self.currentVnode = v
-        if 0: # Leo no longer uses the tnodeList.
-            s = node.attributes.get('leo:tnodeList')
-            tnodeList = s and s.split(',')
-            if tnodeList:
-                # This tnode list will be resolved later.
-                v.tempTnodeList = tnodeList
     #@+node:ekr.20060913220707: *3* oc.dumpTree
     def dumpTree(self, root, dummy=True):
         if not dummy:

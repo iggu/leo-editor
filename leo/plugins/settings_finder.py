@@ -1,8 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20170313020320.1: * @file settings_finder.py
+#@+node:ekr.20170313020320.1: * @file ../plugins/settings_finder.py
 """
 Let the user pick settings from a menu, find the relevant @settings nodes and open them.
 """
+# This plugin can be dangerous. It is not recommended.
 import leo.core.leoGlobals as g
 from leo.core.leoNodes import VNode
 from copy import deepcopy

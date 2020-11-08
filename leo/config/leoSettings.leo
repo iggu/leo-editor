@@ -131,6 +131,7 @@
 </v>
 </v>
 <v t="ekr.20041119034357.1"><vh>@settings</vh>
+<v t="ekr.20201010141557.1"><vh>@string theme-name = DefaultTheme</vh></v>
 <v t="ekr.20180306144001.1"><vh> Color definitions</vh>
 <v t="ekr.20140912072521.19153"><vh>@color LeoGreen = #00AA00</vh></v>
 <v t="ekr.20140912072521.19154"><vh>@color LeoYellow = #ffffec</vh></v>
@@ -664,12 +665,6 @@
 <v t="ekr.20171122044906.1"><vh>declutter: show last part of long filenames</vh></v>
 </v>
 </v>
-<v t="ekr.20190613024818.1"><vh>Docks</vh>
-<v t="ekr.20190613024838.1"><vh>@bool dockable-log-tabs = False</vh></v>
-<v t="ekr.20190614191608.1"><vh>@bool use-vr-dock = False</vh></v>
-<v t="ekr.20190808031525.1"><vh>@data pyzo_tool_ids</vh></v>
-<v t="ekr.20190613024836.1"><vh>@string central-dock-widget = outline</vh></v>
-</v>
 <v t="tbnorth.20170111153412.1"><vh>Editing</vh>
 <v t="tbnorth.20170111153417.1"><vh>@int autojustify = 78</vh></v>
 <v t="tbnorth.20170111153430.1"><vh>@bool autojustify-on-at-start = False</vh></v>
@@ -746,6 +741,8 @@
 </v>
 <v t="ekr.20110611092035.16480"><vh>Import options</vh>
 <v t="tbrown.20180525163032.1"><vh>@bool add-context-to-headlines = True</vh></v>
+<v t="ekr.20200620064409.1"><vh>@bool add-file-context-to-headlines = True</vh></v>
+<v t="ekr.20200620060909.1"><vh>@bool put-cython-decorators-in-imported-headlines = False</vh></v>
 <v t="ekr.20170617135317.1"><vh>@bool put-python-decorators-in-imported-headlines = False</vh></v>
 <v t="ekr.20080811105020.2"><vh>@bool suppress-import-parsing = False</vh></v>
 <v t="ekr.20170825083426.1"><vh>@data c-import-typedefs</vh></v>
@@ -765,6 +762,7 @@
 <v t="ekr.20180411070112.1"><vh>@bool replace-meta-with-alt = False</vh></v>
 <v t="ekr.20060122105527.8"><vh>@bool showHelpWhenEnteringModes = False</vh></v>
 <v t="ekr.20181018104056.1"><vh>@bool smart-quotes = False</vh></v>
+<v t="ekr.20200518065357.1"><vh>@bool use-german-keyboard = False</vh></v>
 <v t="ekr.20131112161153.4420"><vh>@bool vim-mode = False</vh></v>
 <v t="ekr.20060926161207.1"><vh>@bool warn-about-redefined-shortcuts = True</vh></v>
 <v t="ekr.20181018113612.1"><vh>@string default-editing-state = insert</vh></v>
@@ -1023,8 +1021,8 @@
 <v t="ekr.20131213135427.21871"><vh>@item open-cheat-sheet-leo</vh></v>
 <v t="ekr.20131213135427.21872"><vh>@item open-leo-docs-leo</vh></v>
 <v t="ekr.20161025090757.1"><vh>@item open-leo-dist-leo</vh></v>
-<v t="ekr.20131213135427.21873"><vh>@item open-leo-plugins-leo</vh></v>
 <v t="ekr.20151225193848.1"><vh>@item open-leo-py-leo</vh></v>
+<v t="ekr.20201013105810.1"><vh>@item open-leo-py-ref-leo</vh></v>
 <v t="ekr.20170323095822.1"><vh>@item open-my-leo-settings</vh></v>
 <v t="ekr.20131213135427.21874"><vh>@item open-quickstart-leo</vh></v>
 <v t="ekr.20131213135427.21875"><vh>@item open-scripts-leo</vh></v>
@@ -1465,7 +1463,6 @@
 </v>
 </v>
 <v t="ekr.20131213135427.22045"><vh>@menu &amp;Plugins</vh>
-<v t="ekr.20131213135427.22046"><vh>@item open-leo-plugins-leo</vh></v>
 <v t="ekr.20131213135427.22047"><vh>@item show-plugins-info</vh></v>
 <v t="ekr.20131213135427.22048"><vh>@item -</vh></v>
 </v>
@@ -1525,11 +1522,6 @@
 <v t="tbrown.20160130095933.2"><vh>@item free-layout-load</vh></v>
 <v t="tbrown.20160130095933.3"><vh>@item free-layout-restore</vh></v>
 <v t="tbrown.20160130095933.4"><vh>@item free-layout-zoom</vh></v>
-<v t="ekr.20190724171032.1"><vh>@item -</vh></v>
-<v t="ekr.20190724173715.1"><vh>@item show-hide-body-dock</vh></v>
-<v t="ekr.20190724173724.1"><vh>@item show-hide-outline-dock</vh></v>
-<v t="ekr.20190724173733.1"><vh>@item show-hide-render-dock</vh></v>
-<v t="ekr.20190724171039.1"><vh>@item show-hide-tabs-dock</vh></v>
 </v>
 <v t="ekr.20131213135427.22236"><vh>@menu &amp;Scroll Text Areas</vh>
 <v t="ekr.20131213135427.22237"><vh>@item scroll-outline-down-&amp;line</vh></v>
@@ -1934,7 +1926,10 @@
 <v t="ekr.20110611092035.16492"><vh>Mouse</vh></v>
 <v t="ekr.20051123100536"><vh>Plugins</vh>
 <v t="ekr.20181018110051.1"><vh>@bool warn_when_plugins_fail_to_load = True</vh></v>
-<v t="ekr.20070224073109.1"><vh>@enabled-plugins</vh></v>
+<v t="ekr.20070224073109.1"><vh>@enabled-plugins</vh>
+<v t="ekr.20201016081803.1"><vh>Alphabetica list</vh></v>
+<v t="ekr.20201016081718.1"><vh>Not recommended</vh></v>
+</v>
 <v t="tbrown.20091129085043.11789"><vh>active_path plugin</vh>
 <v t="tbrown.20091129085043.11790"><vh>@string active-path-attype = auto</vh></v>
 <v t="tbrown.20091129085043.11792"><vh>@string active-path-event = headdclick1</vh></v>
@@ -2071,6 +2066,19 @@
 <v t="ekr.20181018105800.1"><vh>@bool view-rendered-auto-create = False</vh></v>
 <v t="ekr.20181018113446.1"><vh>@string view-rendered-default-kind = rst</vh></v>
 <v t="ekr.20181018113502.1"><vh>@string view-rendered-md-extensions = extra</vh></v>
+</v>
+<v t="ekr.20201021105344.1"><vh>viewrendered3 plugin</vh>
+<v t="ekr.20201021110324.1"><vh>@bool vr3-insert-headline-from-node = False</vh></v>
+<v t="ekr.20201021105654.2"><vh>@bool vr3-math-output = False</vh></v>
+<v t="ekr.20201021110420.1"><vh>@bool vr3-md-math-output = False</vh></v>
+<v t="ekr.20201021110503.1"><vh>@bool vr3-prefer-asciidoc3 = False</vh></v>
+<v t="ekr.20201021110638.1"><vh>@int qweb-view-font-size = 16</vh></v>
+<v t="ekr.20201021105651.1"><vh>@string vr3-asciidoc-path = None</vh></v>
+<v t="ekr.20201021105654.1"><vh>@string vr3-default-kind = None</vh></v>
+<v t="ekr.20201021105654.3"><vh>@string vr3-mathjax-url = None</vh></v>
+<v t="ekr.20201021110716.1"><vh>@string vr3-md-stylesheet = None</vh></v>
+<v t="ekr.20201021110839.1"><vh>@string vr3-prefer-external = None</vh></v>
+<v t="ekr.20201021110940.1"><vh>@string vr3-rst-stylesheet = None</vh></v>
 </v>
 <v t="ekr.20051123100536.1"><vh>vim plugin</vh>
 <v t="ekr.20051123100536.2"><vh>@@string vim_cmd = c:\Program Files\vim\vim63\gvim --servername LEO</vh></v>
@@ -2318,6 +2326,8 @@
 <v t="tbrown.20140505094209.37266"><vh>@bool outline-tabs-show-close = True</vh></v>
 </v>
 </v>
+<v t="ekr.20060603215208"></v>
+<v t="ekr.20070224073109.1"></v>
 </vnodes>
 <tnodes>
 <t tx="TL.20080702085131.2">If True: Save the Leo file and all modified derived files every time the external editor saves a modified file.
@@ -2406,7 +2416,7 @@ This way makes @root trees more compatible with @file trees.</t>
 Valid values: Any nonzero integer.
 
 Negative tab widths (recommended) cause Leo to convert tabs to blanks when typing.</t>
-<t tx="ekr.20041119034357.32">The page width for wrapping doc parts in derived files.
+<t tx="ekr.20041119034357.32">The page width for wrapping doc parts in external files.
 
 Valid values: any nonzero positive integer.</t>
 <t tx="ekr.20041119034357.38"></t>
@@ -3608,12 +3618,12 @@ delete-comments                     = Ctrl-parenright # Shift-Ctrl-0
 delete-word                         = Ctrl-Delete
 delete-word                         = Keypad+Ctrl+Delete
 delete-spaces                       = None
-# indent-region                     = Tab # Only when text is selected.
+indent-region                       !text = Tab
 indent-region                       = ctrl-greater # Ctrl-shift-&gt;
 kill-line                           = Ctrl-k
 kill-to-end-of-line                 = None
 newline-and-indent                  = Ctrl-j
-newline-and-indent                  !text = Tab
+### newline-and-indent              !text = Tab
 focus-to-body                       !tree = Tab
 paste-text                          = Ctrl-v
 reformat-paragraph                  = Shift-Ctrl-p
@@ -3772,6 +3782,7 @@ To summarize, Leo enables plugins in a (relatively) straightforward way when it 
 Leo acts in a reasonable manner, but it is still possible to get confused even if you know the rules. This suggests that you refrain from putting @enabled-plugins nodes in any .leo file except myLeoSettings.leo. That way all your .leo files will use the same plugins. If you do put @enabled-plugins nodes in x.leo, be prepared for confusion from time to time.
 </t>
 <t tx="ekr.20070224073109.1"># Leo loads plugins in the order they appear here.
+# The children of this node are *not* loaded.
 
 # This node *MUST* be a child of the @settings node to take effect.
 
@@ -3781,152 +3792,20 @@ Leo acts in a reasonable manner, but it is still possible to get confused even i
 # Highly-recommended plugins:
 
 plugins_menu.py
-free_layout.py
-    # Now loaded automatically.
-    # But it's useful to have a free_layout menu in the Plugins menu.
-
+free_layout.py      # loaded automatically. Puts free_layout in Plugins menu.
+    
 # Recommended plugins:
 
-contextmenu.py
-    # This is required by the vim.py and xemacs.py plugins.
+contextmenu.py      # Required by the vim.py and xemacs.py plugins.
 leo_to_html.py
 mod_scripting.py
 nav_qt.py
 nodetags.py
 quicksearch.py
 screen_capture.py
-settings_finder.py
 stickynotes.py
 todo.py
 viewrendered.py
-
-# Alphabetical list of all Leo plugins.
-
-# Note: This list may be out of date. leo/plugins contains all official plugins.
-# Note: Leo loads all qt_*.py files automatically when the qt gui is in effect.
-
-# active_path.py
-# add_directives.py
-# at_folder.py
-# at_produce.py
-# at_view.py
-# attrib_edit.py
-# backlink.py
-# bibtex.py
-# bigdash.py
-# bookmarks.py
-# bzr_qcommands.py
-# chapter_hoist.py
-# colorize_headlines.py
-# contextmenu.py
-# ctagscompleter.py
-# cursesGui.py
-# datenodes.py
-# debugger_pudb.py
-# dragdropgoodies.py
-# dtest.py
-# dump_globals.py
-# empty_leo_file.py
-# enable_gc.py
-# expfolder.py
-# FileActions.py
-# free_layout.py
-    # loaded automatically
-# ftp.py
-# geotag.py
-# gitarchive.py
-# graphcanvas.py
-# import_cisco_config.py
-# initinclass.py
-# interact.py
-# jinjarender.py
-# leo_interface.py
-# leo_pdf.py
-# leo_to_html.py
-# leo_to_rtf.py
-# leocursor.py
-# leofeeds.py
-# leomail.py
-# leomylyn.py
-# leoOPML.py
-# leoremote.py
-# leoscreen.py
-# lineNumbers.py
-# livecode.py
-# macros.py
-# markup_inline.py
-# maximizeNewWindows.py
-# mime.py
-# mnplugins.py
-# mod_autosave.py
-# mod_framesize.py
-# mod_http.py
-# mod_leo2ascd.py
-# mod_read_dir_outline.py
-# mod_scripting.py
-# mod_speedups.py
-# mod_tempfname.py
-# mod_timestamp.py
-# multifile.py
-# nav_qt.py
-# nested_splitter.py
-    # loaded automatically.
-# niceNosent.py
-# nodeActions.py
-# nodediff.py
-# nodetags.py
-# nodewatch.py
-# notebook.py
-# open_shell.py
-# outline_export.py
-# paste_as_headlines.py
-# plugins_menu.py
-# pretty_print.py
-# projectwizard.py
-# python_terminal.py
-# QNCalendarWidget.py
-# qt_quicksearch.py
-# quickMove.py
-# quicksearch.py
-# quit_leo.py
-# read_only_nodes.py
-# redirect_to_log.py
-# richtext.py
-# rss.py
-# rst3.py
-# run_nodes.py
-# screen_capture.py
-# screencast.py
-# screenshots.py
-# script_io_to_body.py
-# scripts_menu.py
-# setHomeDirectory.py
-# settings_finder.py
-# sftp.py
-# slideshow.py
-# spydershell.py
-# startfile.py
-# stickynotes.py
-# stickynotes_plus.py
-# systray.py
-# testRegisterCommand.py
-# textnode.py
-# todo.py
-# tomboy_import.py
-# trace_gc_plugin.py
-# trace_keys.py
-# trace_tags.py
-# valuespace.py
-# viewrendered.py
-# viewrendered2.py
-# vim.py
-# wikiview.py
-# word_count.py
-# word_export.py
-# xemacs.py
-# xml_edit.py
-# xsltWithNodes.py
-# zenity_file_dialogs.py
 </t>
 <t tx="ekr.20070318065601">True:  Chapter commands are functional.
 False: Chapter commands do not exists.
@@ -5226,7 +5105,6 @@ Controller(c).run()
     self.errors = 0
     # Commanders...
     self.core = None  # leoPy.leo.
-    self.plugins = None  # leoPlugins.leo.
     self.settings = None  # leoSettings.leo.
     self.user_settings = None  # myLeoSettings.leo
 </t>
@@ -5287,7 +5165,6 @@ Controller(c).run()
     join, loadDir = g.os_path_join, g.app.loadDir
     self.core = open_commander(join(loadDir, '..', 'core', 'leoPy.leo'))
         # Opening LeoPyRef.leo would be slower.
-    self.plugins = open_commander(join(loadDir, '..', 'plugins', 'leoPlugins.leo'))
     self.settings = open_commander(join(loadDir, '..', 'config', 'leoSettings.leo'))
     self.user_settings = open_commander(g.app.loadManager.my_settings_path)
 </t>
@@ -5296,7 +5173,7 @@ Controller(c).run()
     Return a dict containing a representation of all calls to x.config.getX.
     '''
     d = {}
-    for c in (self.core, self.plugins):
+    for c in (self.core, ):
         print('scanning: %s' % c.shortFileName())
         self.get_configs_from_outline(c, d)
     return d
@@ -5955,7 +5832,6 @@ minibuffer-find-mode    use-find-dialog     mode: Ctrl-F puts focus in
 <t tx="ekr.20131213135427.21869">&amp;Weave...</t>
 <t tx="ekr.20131213135427.21871">&amp;CheatSheet.leo</t>
 <t tx="ekr.20131213135427.21872">Leo&amp;Docs.leo</t>
-<t tx="ekr.20131213135427.21873">leo&amp;Plugins.leo</t>
 <t tx="ekr.20131213135427.21874">&amp;quickstart.leo</t>
 <t tx="ekr.20131213135427.21875">scr&amp;ipts.leo</t>
 <t tx="ekr.20131213135427.21876"></t>
@@ -6102,7 +5978,6 @@ minibuffer-find-mode    use-find-dialog     mode: Ctrl-F puts focus in
 <t tx="ekr.20131213135427.22043">Go To Last Siblin&amp;g</t>
 <t tx="ekr.20131213135427.22044">Go To &amp;Last Visible</t>
 <t tx="ekr.20131213135427.22045"></t>
-<t tx="ekr.20131213135427.22046">Open leo&amp;Plugins.leo</t>
 <t tx="ekr.20131213135427.22047">Print Plugins &amp;Info</t>
 <t tx="ekr.20131213135427.22048"></t>
 <t tx="ekr.20131213135427.22050"></t>
@@ -6518,7 +6393,6 @@ next-line                       = Ctrl-n
 next-line-extend-selection      = None
 open-leo-docs-leo               = None
 open-leo-dist-leo               = None
-open-leo-plugins-leo            = None
 open-leo-settings               = None
 open-scripts-leo                = None
 open-offline-tutorial           = None
@@ -6976,7 +6850,6 @@ next-or-end-of-line                 = None # ! text = Down      # Brian Theado
 next-or-end-of-line-extend-selection= None #! text = Shift-Down # Brian Theado
 open-leo-docs-leo                   = None
 open-leo-dist-leo                   = None
-open-leo-plugins-leo                = None
 open-leo-settings                   = None
 open-scripts-leo                    = None
 open-offline-tutorial               = None
@@ -11606,15 +11479,18 @@ See https://jedi.readthedocs.io/en/latest/index.html
             return False
     #
     # These plugins/use settings in non-standard ways.
-    if setting.startswith(
-        ('bookmarks', 'datenodes', 'http', 'opml',
-        'rst3', 'todo', 'vim', 'zodb'),
+    if setting.startswith((
+            'bookmarks', 'datenodes', 'http', 'opml',
+            'rst3', 'todo', 'vim', 'zodb'
+        ),
     ):
         return False
     #
     # Find settings are defined in non-standard ways.
     for pattern in (
-        'batch', 'change-text', 'find-text', 'ignore-case',
+        'batch', 'change-text',
+        'find-def-creates-clones',
+        'find-text', 'ignore-case',
         'mark-changes', 'mark-finds', 'node-only', 'pattern-match',
         'reverse', 'search-body', 'search-headline', 'suboutline-only',
         'whole-word', 'wrap',
@@ -11660,8 +11536,8 @@ See https://jedi.readthedocs.io/en/latest/index.html
             return False
     #
     # These plugins use settings in non-standard ways.
-    if setting.startswith(
-        ('activepath', 'bookmarks', 'datenodes', 'http', 'opml',
+    if setting.startswith((
+        'activepath', 'bookmarks', 'datenodes', 'http', 'opml',
         'rst3', 'todo', 'vim', 'zodb'),
     ):
         return False
@@ -11835,40 +11711,8 @@ c.redraw()
 <t tx="ekr.20190325052226.1"></t>
 <t tx="ekr.20190422173857.1"></t>
 <t tx="ekr.20190608085550.1">The maximum line length allowed by the find-long-lines command.</t>
-<t tx="ekr.20190613024818.1"></t>
-<t tx="ekr.20190613024836.1">valid values are: outline, body, tabs
-
-Warning: you may have to clear the caches in .leo/db after changing this setting.
-
-</t>
-<t tx="ekr.20190613024838.1">False: (recommended) Plugins create areas in the Tabs dock.
-
-True: create separate docks for plugins that used to be in Log pane.</t>
-<t tx="ekr.20190614191608.1">True: The VR dock is (can be) moved.
-False: (Recommended) The VR dock splits the body dock.
-
-*Warning*: You may have to clear caches if you change this setting.
-
-The --init-docks command-line option is the easy way to do this.</t>
 <t tx="ekr.20190622093004.1"></t>
 <t tx="ekr.20190712053127.1"></t>
-<t tx="ekr.20190724171032.1"></t>
-<t tx="ekr.20190724171039.1"></t>
-<t tx="ekr.20190724173715.1"></t>
-<t tx="ekr.20190724173724.1"></t>
-<t tx="ekr.20190724173733.1"></t>
-<t tx="ekr.20190808031525.1"># Valid ids are:
-
-# pyzofilebrowser
-# pyzohistoryviewer
-# pyzointeractivehelp
-# pyzologger
-# pyzowebbrowser
-# pyzosourcestructure
-    # Partially functional.
-
-# Not ready yet:
-# pyzoworkspace</t>
 <t tx="ekr.20190915192551.1"></t>
 <t tx="ekr.20190915192702.1">True: Retain indentation of overindented stand-alone comment lines.</t>
 <t tx="ekr.20190915192705.1"></t>
@@ -11927,6 +11771,168 @@ For example: /home/tbrown/.bookmarks.leo#@bookmarks--&gt;Incoming
 <t tx="ekr.20200227064211.1"></t>
 <t tx="ekr.20200227181439.1">True: find-def (ctrl-click on word) creates a clone of the defining node.</t>
 <t tx="ekr.20200229053354.1"></t>
+<t tx="ekr.20200518065357.1">True: Remove Shift modifier when the desired key is a colon or semicolon.
+      This fixes an infelicity in German keyboards.
+</t>
+<t tx="ekr.20200620060909.1">True: The cython importer will copy the first decorator preceding a
+      function/method into the headline of the imported node.
+      
+**Note**: The importer will copy only the first line of a multiline decorator.</t>
+<t tx="ekr.20200620064409.1">*Note*: Used only if @bool add-context-to-headlines is True.
+
+If True, use headline "bar (foo.py)" for bar() defined at top level in foo.py. This is
+useful if you've cloned the node so its origin is not obvious from context.
+
+If False, does not do the above, useful if you don't use clones and don't
+want the visual clutter of repeated class / file names.</t>
+<t tx="ekr.20201010141557.1"></t>
+<t tx="ekr.20201013105810.1">leoPy&amp;Ref.leo
+</t>
+<t tx="ekr.20201016081718.1"># These plugins are experimental, broken or not recommended.
+
+# leo_pdf.py
+# leo_to_rtf.py
+# mnplugins.py
+# mod_speedups.py
+# run_nodes.py
+# settings_finder.py
+# stickynotes_plus.py
+# viewrendered2.py</t>
+<t tx="ekr.20201016081803.1"># Alphabetical list of plugins.
+
+# Note: This list may be out of date. leo/plugins contains all official plugins.
+# Note: Leo loads all qt_*.py files automatically when the qt gui is in effect.
+
+# active_path.py
+# add_directives.py
+# at_folder.py
+# at_produce.py
+# at_view.py
+# attrib_edit.py
+# backlink.py
+# bibtex.py
+# bigdash.py
+# bookmarks.py
+# bzr_qcommands.py
+# chapter_hoist.py
+# colorize_headlines.py
+# contextmenu.py
+# ctagscompleter.py
+# cursesGui.py
+# datenodes.py
+# debugger_pudb.py
+# dragdropgoodies.py
+# dtest.py
+# dump_globals.py
+# empty_leo_file.py
+# enable_gc.py
+# expfolder.py
+# FileActions.py
+# free_layout.py # loaded automatically
+# ftp.py
+# geotag.py
+# gitarchive.py
+# graphcanvas.py
+# import_cisco_config.py
+# initinclass.py
+# interact.py
+# jinjarender.py
+# leo_interface.py
+# leo_to_html.py
+# leocursor.py
+# leofeeds.py
+# leomail.py
+# leomylyn.py
+# leoOPML.py
+# leoremote.py
+# leoscreen.py
+# lineNumbers.py
+# livecode.py
+# macros.py
+# markup_inline.py
+# maximizeNewWindows.py
+# mime.py
+# mod_autosave.py
+# mod_framesize.py
+# mod_http.py
+# mod_leo2ascd.py
+# mod_read_dir_outline.py
+# mod_scripting.py
+# mod_tempfname.py
+# mod_timestamp.py
+# multifile.py
+# nav_qt.py
+# niceNosent.py
+# nodeActions.py
+# nodediff.py
+# nodetags.py
+# nodewatch.py
+# notebook.py
+# open_shell.py
+# outline_export.py
+# paste_as_headlines.py
+# plugins_menu.py
+# pretty_print.py
+# projectwizard.py
+# python_terminal.py
+# QNCalendarWidget.py
+# qt_quicksearch.py
+# quickMove.py
+# quicksearch.py
+# quit_leo.py
+# read_only_nodes.py
+# redirect_to_log.py
+# richtext.py
+# rss.py
+# rst3.py
+# screen_capture.py
+# screencast.py
+# screenshots.py
+# script_io_to_body.py
+# scripts_menu.py
+# setHomeDirectory.py
+# settings_finder.py
+# sftp.py
+# slideshow.py
+# spydershell.py
+# startfile.py
+# stickynotes.py
+# systray.py
+# testRegisterCommand.py
+# textnode.py
+# todo.py
+# tomboy_import.py
+# trace_gc_plugin.py
+# trace_keys.py
+# trace_tags.py
+# valuespace.py
+# viewrendered3.py
+# vim.py
+# wikiview.py
+# word_count.py
+# word_export.py
+# xemacs.py
+# xml_edit.py
+# xsltWithNodes.py
+# zenity_file_dialogs.py
+</t>
+<t tx="ekr.20201021105344.1"></t>
+<t tx="ekr.20201021105651.1">Path to ``asciidoc`` directory</t>
+<t tx="ekr.20201021105654.1">Default for rendering type: asciidoc, md or rst.</t>
+<t tx="ekr.20201021105654.2">Enable RsT MathJax math rendering</t>
+<t tx="ekr.20201021105654.3">MathJax script URL (both RsT and MD). Typically:
+
+file:///D:/utility/mathjax/es5/tex-chtml.js
+https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/latest.js?config=TeX-AMS_CHTML</t>
+<t tx="ekr.20201021110324.1">True: Render node headline as top heading.</t>
+<t tx="ekr.20201021110420.1">True: Enable MD MathJax math rendering.</t>
+<t tx="ekr.20201021110503.1">True: Use ``asciidoc3`` if available.
+False: Use ``asciidoc``</t>
+<t tx="ekr.20201021110638.1"></t>
+<t tx="ekr.20201021110716.1">"URL for MD stylesheet</t>
+<t tx="ekr.20201021110839.1">Name of external asciidoctor processor program
+</t>
+<t tx="ekr.20201021110940.1">URL for RsT Stylesheet</t>
 <t tx="jlunz.20150821113251.1">def html_tag():
     """expand &lt;tag&gt; to 
        &lt;tag&gt;\n&lt;/tag&gt; with proper indendation"""
@@ -12567,13 +12573,10 @@ AltControlShift hoist
 #     WITH: /
 
 </t>
-<t tx="tbrown.20180525163032.1">If True, names uses headline "Foo.bar" for bar() defined in class
-Foo, and headline "bar (foo.py)" for bar() defined at top level in
-foo.py.  This is useful if you've cloned the node so its origin is
-not obvious from context.
+<t tx="tbrown.20180525163032.1">If True, uses headline "Foo.bar" for bar() defined in class Foo.
 
-If False, does not do the above, useful if you don't use clones
-and don't want the visual clutter of repeated class / file names.</t>
+If False, does not do the above, useful if you don't use clones and don't
+want the visual clutter of repeated class / file names.</t>
 <t tx="ville.20090701225947.3902"># Open current node in external editor. 'v' is mnemonic for 'vi', because vi users request this most
 # cm-external-editor = Alt-v</t>
 <t tx="ville.20091008201813.3909">Qt ui uses a different (simpler) setup for creating context menus,

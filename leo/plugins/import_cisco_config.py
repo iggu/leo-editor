@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.669: * @file import_cisco_config.py
+#@+node:edream.110203113231.669: * @file ../plugins/import_cisco_config.py
 #@+<< docstring >>
 #@+node:ekr.20050912180321: ** << docstring >>
 ''' Allows the user to import Cisco configuration files.
@@ -48,11 +48,10 @@ def create_import_cisco_menu (tag,keywords):
     def importCiscoConfigCallback(event=None,c=c):
         importCiscoConfig(c)
 
-    newEntries = (
+    table = (
         ("-",None,None),
         ("Import C&isco Configuration","Shift+Ctrl+I",importCiscoConfigCallback))
-
-    c.frame.menu.createMenuEntries(importMenu,newEntries,dynamicMenu=True)
+    c.frame.menu.createMenuEntries(importMenu, table)
 #@+node:edream.110203113231.672: ** importCiscoConfig
 def importCiscoConfig(c):
 

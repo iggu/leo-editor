@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:ekr.20181103094900.1: * @file leoflexx.py
+#@+node:ekr.20181103094900.1: * @file ../plugins/leoflexx.py
 #@@first
 #@@language python
 #@@tabwidth -4
@@ -707,7 +707,6 @@ class LeoBrowserApp(flx.PyComponent):
                 c.gotoCommands.find_file_line(n=int(commandName))
         else:
             func = c.commandsDict.get(commandName)
-        k.newMinibufferWidget = None
         if func:
             # These must be done *after* getting the command.
             k.clearState()
@@ -722,12 +721,15 @@ class LeoBrowserApp(flx.PyComponent):
                 c.bodyWantsFocusNow()
                 # Change the event widget so we don't refer to the to-be-deleted headline widget.
                 event.w = event.widget = c.frame.body.wrapper.widget
-                c.executeAnyCommand(func, event)
+                ### c.executeAnyCommand(func, event)
             else:
                 c.widgetWantsFocusNow(event and event.widget)
                     # Important, so cut-text works, e.g.
-                c.executeAnyCommand(func, event)
-            k.endCommand(commandName)
+                ### c.executeAnyCommand(func, event)
+            try:
+                func(event)
+            except Exception:
+                g.es_exception()
             return True
         if 0: # Not ready yet
             # Show possible completions if the command does not exist.

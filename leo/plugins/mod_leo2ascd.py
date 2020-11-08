@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20101110093449.5822: * @file mod_leo2ascd.py
+#@+node:ekr.20101110093449.5822: * @file ../plugins/mod_leo2ascd.py
 __version__ = ".7" # Set version for the plugin handler.
 
 import leo.core.leoGlobals as g
@@ -155,13 +155,13 @@ def CreateAscMenu(tag,keywords):
     c = keywords.get('c')
     if not c: return
     exportMenu = c.frame.menu.getMenu('export')
-    newEntries = (
+    table = (
         ("-", None, None),
-        ("Export all to &AsciiDoc","Alt+Shift+A",WriteAll),
-        ("Export current tree to AsciiDoc","Alt+Shift+T",WriteTreeOfCurrentNode),
-        ("Log all root and ascfile to log pane","Alt+Shift+L",WriteAllRoots),
+        ("Export all to &AsciiDoc", "Alt+Shift+A", WriteAll),
+        ("Export current tree to AsciiDoc","Alt+Shift+T", WriteTreeOfCurrentNode),
+        ("Log all root and ascfile to log pane","Alt+Shift+L", WriteAllRoots),
     )
-    c.frame.menu.createMenuEntries(exportMenu,newEntries,dynamicMenu=True)
+    c.frame.menu.createMenuEntries(exportMenu, table)
 #@+node:ekr.20101110094152.5836: *3* GetAscFilename
 def GetAscFilename(c,p):
     'Checks a node for a filename directive.'

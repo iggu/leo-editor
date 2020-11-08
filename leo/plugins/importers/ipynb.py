@@ -1,12 +1,11 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20160412101008.1: * @file importers/ipynb.py
+#@+node:ekr.20160412101008.1: * @file ../plugins/importers/ipynb.py
 '''The @auto importer for Jupyter (.ipynb) files.'''
 import re
 import leo.core.leoGlobals as g
 try:
     import nbformat
 except ImportError:
-    g.es_print('import-jupyter-notebook requires nbformat package')
     nbformat = None
 #@+others
 #@+node:ekr.20160412101537.2: ** class Import_IPYNB
@@ -31,6 +30,10 @@ class Import_IPYNB:
         Import the given .ipynb file.
         https://nbformat.readthedocs.org/en/latest/format_description.html
         '''
+        # #1601:
+        if not nbformat:
+            g.es_print('import-jupyter-notebook requires nbformat package')
+            return
         c = self.c
         self.fn = fn
         self.parent = None
@@ -50,6 +53,10 @@ class Import_IPYNB:
         '''
         @auto entry point. Called by code in leoImport.py.
         '''
+        # #1601:
+        if not nbformat:
+            g.es_print('import-jupyter-notebook requires nbformat package')
+            return
         c = self.c
         fn = parent.atAutoNodeName()
         if c and fn:

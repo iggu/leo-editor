@@ -235,9 +235,12 @@ class Undoer:
         u.clearOptionalIvars()
         if 0:  # Debugging.
             g.pr('-' * 40)
-            for key in sorted(bunch):
-                g.trace(key, bunch.get(key))
+            for key in list(bunch.keys()):
+                g.trace(f"{key:20} {bunch.get(key)!r}")
             g.pr('-' * 20)
+        if g.unitTesting:  # #1694: An ever-present unit test.
+            val = bunch.get('oldMarked')
+            assert val in (True, False), f"{val!r} {g.callers()!s}"
         # bunch is not a dict, so bunch.keys() is required.
         for key in list(bunch.keys()):
             val = bunch.get(key)
@@ -457,7 +460,9 @@ class Undoer:
     #@+node:ekr.20050315134017.2: *5* u.afterChangeNodeContents
     def afterChangeNodeContents(self, p, command, bunch, inHead=False):
         """Create an undo node using d created by beforeChangeNode."""
-        u = self; c = self.c; w = c.frame.body.wrapper
+        u = self
+        c = self.c
+        w = c.frame.body.wrapper
         if u.redoing or u.undoing:
             return
         # Set the type & helpers.
@@ -799,7 +804,9 @@ class Undoer:
     def createCommonBunch(self, p):
         """Return a bunch containing all common undo info.
         This is mostly the info for recreating an empty node at position p."""
-        u = self; c = u.c; w = c.frame.body.wrapper
+        u = self
+        c = u.c
+        w = c.frame.body.wrapper
         return g.Bunch(
             oldMarked=p and p.isMarked(),
             oldSel=w and w.getSelectionRange() or None,
@@ -845,7 +852,7 @@ class Undoer:
     #@+node:ekr.20110519074734.6096: *5* u.putIvarsToVnode
     def putIvarsToVnode(self, p):
 
-        u = self; v = p.v
+        u, v = self, p.v
         assert self.per_node_undo
         bunch = g.bunch()
         for key in self.optionalIvars:
@@ -871,7 +878,7 @@ class Undoer:
         Do nothing when called from the undo/redo logic because the Undo
         and Redo commands merely reset the bead pointer.
         """
-        u = self; c = u.c
+        c, u = self.c, self
         #@+<< return if there is nothing to do >>
         #@+node:ekr.20040324061854: *5* << return if there is nothing to do >>
         if u.redoing or u.undoing:
@@ -888,9 +895,6 @@ class Undoer:
         #@-<< return if there is nothing to do >>
         #@+<< init the undo params >>
         #@+node:ekr.20040324061854.1: *5* << init the undo params >>
-        # Clear all optional params.
-        # for ivar in u.optionalIvars:
-            # setattr(u,ivar,None)
         u.clearOptionalIvars()
         # Set the params.
         u.undoType = undo_type
@@ -1065,6 +1069,7 @@ class Undoer:
                 undoType=undo_type,
                 undoHelper=u.undoTyping,
                 redoHelper=u.redoTyping,
+                oldMarked=old_p.isMarked() if old_p else p.isMarked(), # #1694
                 oldText=u.oldText,
                 oldSel=u.oldSel,
                 oldNewlines=u.oldNewlines,
@@ -1075,6 +1080,7 @@ class Undoer:
             bunch = old_d
         bunch.leading = u.leading
         bunch.trailing = u.trailing
+        bunch.newMarked = p.isMarked()  # #1694 
         bunch.newNewlines = u.newNewlines
         bunch.newMiddleLines = u.newMiddleLines
         bunch.newSel = u.newSel
@@ -1144,8 +1150,7 @@ class Undoer:
         elif u.newParent:
             u.newP._linkAsNthChild(u.newParent, 0)
         else:
-            oldRoot = c.rootPosition()
-            u.newP._linkAsRoot(oldRoot)
+            u.newP._linkAsRoot()
         c.selectPosition(u.newP)
         u.newP.setDirty()
     #@+node:ekr.20111005152227.15559: *4* u.redoDeleteMarkedNodes
@@ -1226,8 +1231,7 @@ class Undoer:
         elif u.newParent:
             u.newP._linkAsNthChild(u.newParent, 0)
         else:
-            oldRoot = c.rootPosition()
-            u.newP._linkAsRoot(oldRoot)
+            u.newP._linkAsRoot()
         if u.pasteAsClone:
             for bunch in u.afterTree:
                 v = bunch.v
@@ -1445,8 +1449,7 @@ class Undoer:
         elif u.oldParent:
             u.p._linkAsNthChild(u.oldParent, 0)
         else:
-            oldRoot = c.rootPosition()
-            u.p._linkAsRoot(oldRoot)
+            u.p._linkAsRoot()
         u.p.setDirty()
         c.selectPosition(u.p)
     #@+node:ekr.20080425060424.10: *4* u.undoDemote

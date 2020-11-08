@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20090119215428.2: * @file todo.py
+#@+node:tbrown.20090119215428.2: * @file ../plugins/todo.py
 #@+<< docstring >>
 #@+node:tbrown.20090119215428.3: ** << docstring >> (todo.py)
 ''' Provides to-do list and simple task management.
@@ -1281,10 +1281,8 @@ def todo_dec_pri(event, direction=1):
         pri = ordered[(ordered.index(pri) + direction) % len(ordered)]
 
     pri = c.cleo.setPri(pri)
-
     c.redraw()
-
-    # c.executeMinibufferCommand("todo-inc-pri")
+    # c.k.simulateCommand("todo-inc-pri")
 
 @g.command('todo-inc-pri')
 def todo_inc_pri(event):

@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ajones.20070122160142: * @file textnode.py
+#@+node:ajones.20070122160142: * @file ../plugins/textnode.py
 #@+<< docstring >>
 #@+node:ajones.20070122160142.1: ** << docstring >> (textnode.py)
 ''' Supports @text nodes for reading and writing external files.
@@ -100,6 +100,6 @@ def savetextnode(c, p):
     except IOError as msg:
         g.es("error writing %s: %s" % (name, msg))
         p.setDirty()
-        p.setMarked(1)
+        p.setMarked()
 #@-others
 #@-leo

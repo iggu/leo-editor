@@ -137,10 +137,13 @@
 </v>
 <v t="EKR.20040519090846"><vh>Distribution files</vh>
 <v t="ekr.20141016105045.2119"><vh>@clean ../../.gitattributes</vh></v>
-<v t="matt.20190205105334.1"><vh>@clean ../../.travis.yml</vh></v>
 <v t="EKR.20040519090846.1"><vh>@clean ../../LICENSE</vh></v>
 <v t="EKR.20040519090846.8"><vh>@clean ../../PKG-INFO.TXT</vh></v>
 <v t="EKR.20040519090846.9"><vh>@clean ../../README.md</vh></v>
+<v t="maphew.20200605112459.1"><vh>Continual Integration</vh>
+<v t="matt.20190205105334.1"><vh>@clean ../../.travis.yml</vh></v>
+<v t="maphew.20200605112532.1"><vh>@clean ../../.github/workflows/build-leo-exe.yml</vh></v>
+</v>
 <v t="mhw.20191107064451.1"><vh>Desktop integration</vh>
 <v t="mhw.20191107064521.1"><vh>@clean leo-editor.desktop</vh></v>
 </v>
@@ -235,7 +238,7 @@ Portions of Leo's pyzo interface uses code from pyzo:
 </t>
 <t tx="EKR.20040519090846.8">Metadata-Version: 1.0
 Name: leo
-Version: 6.2
+Version: 6.3
 Summary: An IDE, PIM and Outliner. See leoeditor.com/preface.html.
 Description: See users own descriptions of Leo at leoeditor.com/testimonials.html.
 Home-page: http://leoeditor.com/
@@ -243,7 +246,7 @@ Author: Edward K. Ream
 Author-email: edreamleo@gmail.com
 License: MIT
 Keywords: Outliner, IDE, PIM, DAG, Scripting
-Platform: Windows, Linux, MaxOS
+Platform: Windows, Linux, MacOS
 Classifier: Development Status :: 6 - Mature
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: MacOS
@@ -252,50 +255,34 @@ Classifier: Operating System :: POSIX :: Linux
 Classifier: Programming Language :: Python
 Classifier: Topic :: Software Development
 Classifier: Topic :: Text Processing
-Download-URL: http://sourceforge.net/projects/leo/files/
+Download-URL: https://github.com/leo-editor/leo-editor/releases
 </t>
-<t tx="EKR.20040519090846.9">Leo 6.2, http://leoeditor.com, is now available on [GitHub](https://github.com/leo-editor/leo-editor).
+<t tx="EKR.20040519090846.9">Leo 6.3, http://leoeditor.com, is now available on
+[GitHub](https://github.com/leo-editor/leo-editor).
 
 Leo is an [IDE, outliner and PIM](http://leoeditor.com/preface.html).
 
-**The highlights of Leo 6.2**
+**The highlights of Leo 6.3**
 
-- Added the fstringify-files and diff-fstringify-files commands.
-- Improved the beautify-files command. Added the diff-beautify-files commands.
-- Added the TokenOrderGenerator and TokenOrderTraverser classes in leoAst.py.
-  Leo's fstringify and beautify commands use these classes.
-- Added importers for the rust language and todo.txt files.
-- Added the viewrendered3 plugin.
-- Leo's legacy layout is now the default.
-- Fixed all known bugs, including some notable, long-standing bugs.
-- Fixed several "fit and finish" issues.
-- Removed unused settings from leoSettings.leo.
-
-**Quick Install**
-
-- Install python3
-- if not using git:  
-    `pip install leo`
-
-- If using git:  
-    `git clone https://github.com/leo-editor/leo-editor.git`  
-    `pip install --editable leo-editor`
-
-See [Getting Started](http://leoeditor.com/getting-started.html) for more. 
+- leoAst.py: The unification of Python's token and ast worlds.
+- Retired all Qt Dock code.
+- Improved viewrendered and viewrendered3 plugins.
+- Improved several importer plugins.
+- Refactored Leo's key handling code.
 
 **Links**
 
-- Leo's home page: https://leoeditor.com
-- [Documentation](https://leoeditor.com/leo_toc.html)
-- [Tutorials](https://leoeditor.com/tutorial.html)
-- [Video tutorials](https://leoeditor.com/screencasts.html)
-- [Forum](https://groups.google.com/group/leo-editor)
-- [Download](https://leoeditor.com/download.html)
+- Leo's home page: http://leoeditor.com
+- [Documentation](http://leoeditor.com/leo_toc.html)
+- [Tutorials](http://leoeditor.com/tutorial.html)
+- [Video tutorials](http://leoeditor.com/screencasts.html)
+- [Forum](http://groups.google.com/group/leo-editor)
+- [Download](http://sourceforge.net/projects/leo/files/)
 - [Leo on GitHub](https://github.com/leo-editor/leo-editor)
 - [LeoVue](https://github.com/kaleguy/leovue#leo-vue)
-- [What people are saying about Leo](https://leoeditor.com/testimonials.html)
-- [A web page that displays .leo files](https://leoeditor.com/load-leo.html)
-- [More links](https://leoeditor.com/leoLinks.html)
+- [What people are saying about Leo](http://leoeditor.com/testimonials.html)
+- [A web page that displays .leo files](http://leoeditor.com/load-leo.html)
+- [More links](http://leoeditor.com/leoLinks.html)
 </t>
 <t tx="EKR.20040519091259.1">5.1:        setup: 1,114    zip: 2,912
 5.0:        setup: 552      zip: 1,617
@@ -1629,7 +1616,6 @@ g.es_print('done')
     'doc/quickstart.leo',
     'external/leo2html.leo',
     'plugins/leoGuiPluginsRef.leo',
-    'plugins/leoPluginsRef.leo',
     'scripts/scripts.leo',
     'test/test.leo',
 )</t>
@@ -1673,9 +1659,8 @@ LeoDist.leo:
 - Make sure no distributed .leo file contains xml-stylesheet elements.
   Run @button check .leo files in leo-dist.leo.
 
-LeoPyRef.leo and LeoPluginsRef.leo:
-- Regenerate from corresponding local file.
-- Remove top-level clones.
+LeoPyRef.leo:
+- Regenerate from leoPy.leo: run write-LeoPyRef button in LeoPy.leo.
 </t>
 <t tx="ekr.20180405171433.3" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Regenerate all .html files.
 - Copy files to web, including leo/doc/html/index.html
@@ -1693,15 +1678,16 @@ LeoPyRef.leo and LeoPluginsRef.leo:
   - Do not use the -f option.
   - Tags should start with "v"
 
-git tag -a v6.3-b1 -m "Added v6.3-b1 tag"
+git checkout master
+git tag -a v6.3 -m "Added v6.3 tag"
 git push --follow-tags
 </t>
 <t tx="ekr.20180828095843.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">leoVersion.py:
 - Update version constant.
-</t>
+- Update date of the release.</t>
 <t tx="ekr.20181001112218.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Matt: After merge, create dev tag that matches
     static version added to leoversion.py earlier.
-    #static version = '6.3-devel'
+    #static version = '6.4-devel'
 
 git checkout devel
 git tag -a v6.4-devel -m "Added v6.4.devel tag"
@@ -2166,6 +2152,7 @@ zipFile2 =      abspath(join(rootDir,'Leo-%s-temp.zip' % (version)))
 </t>
 <t tx="ekr.20190618104430.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">From 6.3 branch:
     
+- Push any changes to release branch.
 - git merge master
 - Fix any conflicts and push.
 - git checkout master
@@ -2495,6 +2482,68 @@ a = Analysis(['launchLeo.py'],
 # fix errors as can until everything works.
 
 -----</t>
+<t tx="maphew.20200605112459.1"></t>
+<t tx="maphew.20200605112532.1">@language yaml
+# Create an "all in one" bundle of Leo and all dependencies for Windows that 
+# doesn't need to be installed in order to run, just unzip and use.
+
+name: Build standalone leo.exe
+
+on:
+  push:
+    branches: [ master, devel, gh-act ]
+    tags: 
+      - 'v*' 
+  pull_request:
+    branches: [ master, devel, gh-act ]
+    tags: 
+      - 'v*' 
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip packages
+      uses: actions/cache@v2
+      with:
+        path: ~\Appdata\Local\pip\Cache
+        # note addition of py ver, https://github.com/actions/cache/issues/175#issuecomment-586641991
+        #key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-pip
+    
+    - name: Install Leo and dependencies
+      run: |
+        python -m pip install --upgrade pip
+        #if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install wheel pyinstaller
+        pip install --editable .
+    - name: pyinstaller build
+      run: |
+        $ErrorView = 'NormalView'
+        pwd
+        ls
+        pyinstaller leo/dist/leo.spec
+    - name: create dist archive
+      run: |
+        $ErrorView = 'NormalView'
+        python leo/dist/zip-leo-exe.py
+    - uses: actions/upload-artifact@v2
+      with:
+        name: leo-windows-exe
+        path: dist/*.zip
+</t>
 <t tx="matt.20181004031246.1">@language md
 
 _Initiating issue: https://github.com/leo-editor/leo-editor/issues/672_
@@ -2513,7 +2562,8 @@ that updates yml file will delete any comments within it. (e.g. `travis encrypt
 ...`)
 
 </t>
-<t tx="matt.20190205105334.1">language: python
+<t tx="matt.20190205105334.1">@language yaml
+language: python
 python:
   - "3.6"
 git:
