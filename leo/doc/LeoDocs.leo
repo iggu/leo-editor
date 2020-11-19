@@ -5067,7 +5067,7 @@ Event name (tag argument)     Stop?    When called                         Keys 
     removing the window from g.app.windowList. The hook code may remove the window
     from app.windowList to prevent g.app.closeLeoWindow from destroying the window.
 
-12. Leo calls the 'headkey1' and 'headkey2' when the headline *might* have changed.
+12. New in Leo 6.4: Leo calls the 'headkey1' and 'headkey2' when the headline has *actually* changed.
 
 13. p is the new node (position) containing '@auto filename.ext'
 
@@ -19134,8 +19134,10 @@ The @string undo_granularity setting controls the granularity of undo. There are
     Select all text in the text pane.
 
 These commands work with either headline or body text.</t>
-<t tx="ekr.20150318110552.22">``indent-region (Tab)`` 
-    Shift selected lines right one tab position. Inserts one unit of indentation if no text is selected.
+<t tx="ekr.20150318110552.22">``always-indent-region``
+     Shift selected lines right one tab position. Inserts one unit of indentation if no text is selected.
+``indent-region (Tab)`` 
+    Shift selected lines right one tab position. Inserts a tab (or spaces) if no text is selected.
 ``unindent-region (Shift-Tab)``
     Shifts selected lines left one tab position. Deletes one unit of indentation if no text is selected.
     
@@ -26661,7 +26663,7 @@ The open-theme-file command will show you the effect of a theme file without cha
 
 To enable a theme, put the following setting in myLeoSettings.leo::
 
-    @string theme-name &lt;name of theme file&gt;
+    @string theme-name = &lt;name of theme file&gt;
 
 **Important**: When using themes, it's best to disable all other theme-related settings in myLeoSettings.leo.
 

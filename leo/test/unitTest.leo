@@ -567,11 +567,11 @@ try:
         stroke = k.getStrokeForCommandName('paste-text')
         if stroke is None:
             self.skipTest('no binding for paste-text') # #1345
-        k.manufactureKeyPressForCommandName(w,'paste-text')
+        k.manufactureKeyPressForCommandName(w, 'paste-text')
         g.app.gui.event_generate(c,'\n','Return',w)
-    assert p.h == h + paste,'oops2 got: %s' % p.h
+    assert p.h == h + paste, 'oops2 got: %s' % p.h
     k.manufactureKeyPressForCommandName(w,'undo')
-    assert p.h == h,'oops3 got: %s' % p.h
+    assert p.h == h, f"oops3 expected {h} got: {p.h}"
 finally:
     if 1:
         c.setHeadString(p,h) # Essential

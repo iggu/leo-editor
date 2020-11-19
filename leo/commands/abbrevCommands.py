@@ -440,7 +440,6 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
             do_placeholder = True
         else:
             do_placeholder = False
-            # Huh?
             oldSel = i, j
             c.frame.body.onBodyChanged(undoType='Typing', oldSel=oldSel)
         return val, do_placeholder
@@ -619,13 +618,12 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
         prefix = functools.reduce(g.longestCommonPrefix, aList)
         if prefix.strip():
             ypos = w.getYScrollPosition()
-            b = c.undoer.beforeChangeNodeContents(p, oldYScroll=ypos)
+            b = c.undoer.beforeChangeNodeContents(p)
             s = s[:i] + prefix + s[j:]
             w.setAllText(s)
             w.setInsertPoint(i + len(prefix))
             w.setYScrollPosition(ypos)
-            c.undoer.afterChangeNodeContents(p,
-                command='dabbrev-completion', bunch=b)
+            c.undoer.afterChangeNodeContents(p, command='dabbrev-completion', bunch=b)
             c.recolor()
     #@+node:ekr.20150514043850.21: *4* abbrev.dynamicExpansion M-/ & helper
     @cmd('dabbrev-expands')
@@ -679,7 +677,7 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
             w = self.w
             s = w.getAllText()
             ypos = w.getYScrollPosition()
-            b = c.undoer.beforeChangeNodeContents(p, oldYScroll=ypos)
+            b = c.undoer.beforeChangeNodeContents(p)
             ins = ins1 = w.getInsertPoint()
             if 0 < ins < len(s) and not g.isWordChar(s[ins]): ins1 -= 1
             i, j = g.getWord(s, ins1)
@@ -688,8 +686,7 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
             w.setAllText(s)
             w.setInsertPoint(i + len(k.arg))
             w.setYScrollPosition(ypos)
-            c.undoer.afterChangeNodeContents(p,
-                command='dabbrev-expand', bunch=b)
+            c.undoer.afterChangeNodeContents(p, command='dabbrev-expand', bunch=b)
             c.recolor()
     #@+node:ekr.20150514043850.23: *4* abbrev.getDynamicList (helper)
     def getDynamicList(self, w, s):
