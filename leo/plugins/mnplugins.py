@@ -68,11 +68,13 @@ def setHeadOK(c,v):
 #@+node:ekr.20040205071616.5: ** mnplugins.insertBodystamp
 def insertBodystamp (c,v):
 
-    w = c.frame.body.wrapper
+    p, u, w = c.p, c.undoer, c.frame.body.wrapper
     stamp = mnOKstamp() + '\n'
+    bunch = u.beforeChangeBody(p)
     ins = w.getInsertPoint()
     w.insert(ins,stamp)
-    c.frame.body.onBodyChanged("Typing")
+    p.v.b = w.getAllText()  # p.b would cause a redraw.
+    u.afterChangeBody(p, 'insert-timestamp', bunch)
 #@+node:ekr.20040205071616.6: ** is_subnodesOK
 def is_subnodesOK(v):
 
@@ -113,7 +115,7 @@ def insertUser (self,event=None):
     stamp = mnstamp()
     i = w.getInsertPoint()
     w.insert(i,stamp)
-    c.frame.body.onBodyChanged("Typing",oldSel=oldSel)
+    c.frame.body.onBodyChanged('insert-user',oldSel=oldSel)
 #@+node:ekr.20040205071616.10: ** create_UserMenu (mnplugins.py)
 def create_UserMenu (tag,keywords):
 

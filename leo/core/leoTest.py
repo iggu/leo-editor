@@ -1,8 +1,10 @@
 #@+leo-ver=5-thin
 #@+node:ekr.20051104075904: * @file leoTest.py
-"""Classes for Leo's unit testing.
+"""
+Support for Leo's *legacy* unit testing framework, based on unitTest.leo.
 
-Run the unit tests in test.leo using the Execute Script command.
+leoTest2.py supports Leo's *new* testing framework, based on coverage
+tests embedded in Leo's source code files themselves.
 """
 #@+<< imports >>
 #@+node:ekr.20051104075904.1: ** << imports >> (leoTest)
@@ -1133,6 +1135,8 @@ class TestManager:
         c.selectPosition(work)
         work.b = before.b
         w.setSelectionRange(sel1[0], sel1[1], insert=sel1[1])
+        ### g.trace(commandName, sel1[0], sel1[1])
+        ### g.printObj(g.splitLines(w.getSelectedText()))
         c.k.simulateCommand(commandName)
         s1 = work.b; s2 = after.b
         assert s1 == s2, (
@@ -1146,7 +1150,12 @@ class TestManager:
         i, j = sel2; sel2 = w.toPythonIndex(i), w.toPythonIndex(j)
         assert len(sel3) == 2, f"Bad headline index.  Expected index,index.  got: {sel3}"
         i, j = sel3; sel3 = w.toPythonIndex(i), w.toPythonIndex(j)
-        assert sel2 == sel3, f"mismatch in sel\nexpected: {sel2_orig} = {sel2}, got: {sel3}"
+        if 0:  # Be more permissive.
+            if sel2 != sel3:
+                print(f"\n{p.h}\nexpected: {sel2_orig} = {sel2}, got: {sel3}")
+        else:
+            message = f"mismatch in sel\nexpected: {sel2_orig} = {sel2}, got: {sel3}"
+            assert sel2 == sel3, message
         c.selectPosition(atTest)
         atTest.contract()
         # Don't redraw.

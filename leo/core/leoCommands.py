@@ -264,9 +264,11 @@ class Commands:
         # Break circular import dependencies by doing imports here.
         # These imports take almost 3/4 sec in the leoBridge.
         import leo.core.leoAtFile as leoAtFile
-        import leo.core.leoBeautify as leoBeautify # So decorators are executed.
-        assert leoBeautify # for pyflakes.
+        import leo.core.leoBeautify as leoBeautify  # So decorators are executed.
+        assert leoBeautify  # for pyflakes.
         import leo.core.leoChapters as leoChapters
+        # import leo.core.leoTest2 as leoTest2  # So decorators are executed.
+        # assert leoTest2  # For pyflakes.
         # User commands...
         import leo.commands.abbrevCommands as abbrevCommands
         import leo.commands.bufferCommands as bufferCommands
@@ -1272,7 +1274,11 @@ class Commands:
         g.doHook("clear-mark", c=c, p=p)
     #@+node:ekr.20040305223522: *5* c.setBodyString
     def setBodyString(self, p, s):
-        """This is equivalent to p.b = s."""
+        """
+        This is equivalent to p.b = s.
+        
+        Warning: This method may call c.recolor() or c.redraw().
+        """
         c, v = self, p.v
         if not c or not v:
             return
