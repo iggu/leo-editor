@@ -5,11 +5,25 @@ __pycache__/
 .cache/
 *.py[cod]
 *.history
+*.orig
+
+# Other programs
+leoProfile
+leo/.vscode/
+
+# PyInstaller folders.
+/build/
+/dist/
+
+# Transcrypt folder.
+__target__
 
 # .db files
 *.db
 
 # Per user stuff
+.coverage
+htmlcov/
 .gitconfig
 .viminfo
 .leo
@@ -42,10 +56,6 @@ pip-wheel-metadata/
 
 # Test results
 /.pytest_cache/
-
-# PyInstaller folders.
-/build/
-/dist/
 
 ./MANIFEST
 #./setup.cfg

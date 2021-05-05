@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.873: * @file at_folder.py
+#@+node:edream.110203113231.873: * @file ../plugins/at_folder.py
 r'''Synchronizes @folder nodes with folders.
 
 If a node is named '\@folder *<path_to_folder>*', the content (filenames) of the
@@ -14,8 +14,8 @@ folder. You can logically group it in leo (or even clone it to many groups),
 while keep every files in a flat/single directory on your computer.
 '''
 
-import leo.core.leoGlobals as g
 import os
+from leo.core import leoGlobals as g
 __version__ = "1.4"
 #@+others
 #@+node:ekr.20140920173002.17961: ** init
@@ -57,7 +57,7 @@ def sync_node_to_folder(c,parent,d):
     newlist.reverse()
     for name in newlist:
         v = parent.insertAsNthChild(0)
-        c.setHeadString(v,name)
+        v.h = name
         v.setMarked()
     #warn for orphan oldlist
     if oldlist:

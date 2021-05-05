@@ -5,8 +5,8 @@
 """Leo's buffer commands."""
 #@+<< imports >>
 #@+node:ekr.20150514045750.1: ** << imports >> (bufferCommands.py)
-import leo.core.leoGlobals as g
-from leo.commands.baseCommands import BaseEditCommandsClass as BaseEditCommandsClass
+from leo.core import leoGlobals as g
+from leo.commands.baseCommands import BaseEditCommandsClass
 #@-<< imports >>
 
 def cmd(name):
@@ -185,7 +185,7 @@ class BufferCommandsClass(BaseEditCommandsClass):
         p = self.findBuffer(self.fromName)
         if p:
             c.endEditing()
-            c.setHeadString(p, name)
+            p.h = name
             c.redraw(p)
     #@+node:ekr.20150514045829.13: *4* switchToBuffer
     @cmd('buffer-switch-to')
@@ -236,7 +236,8 @@ class BufferCommandsClass(BaseEditCommandsClass):
         self.computeData()
         self.getBufferNameFinisher = finisher
         prefix = k.getLabel()
-        k.get1Arg(event, handler=self.getBufferName1, prefix=prefix, tabList=self.nameList)
+        k.get1Arg(
+            event, handler=self.getBufferName1, prefix=prefix, tabList=self.nameList)
 
     def getBufferName1(self, event):
         k = self.c.k

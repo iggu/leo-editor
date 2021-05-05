@@ -4,9 +4,13 @@
 Support the commands in Leo's File:Print menu.
 Adapted from printing plugin.
 """
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 from leo.core.leoQt import printsupport, QtGui
 #@+others
+#@+node:ekr.20150509035503.1: ** cmd (decorator)
+def cmd(name):
+    """Command decorator for the PrintingController class."""
+    return g.new_cmd_decorator(name, ['c', 'printingController',])
 #@+node:ekr.20150420120520.1: ** class PrintingController
 class PrintingController:
     """A class supporting the commands in Leo's File:Print menu."""
@@ -16,13 +20,14 @@ class PrintingController:
         """Ctor for PrintingController class."""
         self.c = c
         self.reload_settings()
-        
+
     def reload_settings(self):
         c = self.c
         self.font_size = c.config.getString('printing-font-size') or '12'
-        self.font_family = c.config.getString('printing-font-family') or 'DejaVu Sans Mono'
+        self.font_family = c.config.getString(
+            'printing-font-family') or 'DejaVu Sans Mono'
         self.stylesheet = self.construct_stylesheet()
-        
+
     reloadSettings = reload_settings
     #@+node:ekr.20150419124739.8: *4* pr.construct stylesheet
     def construct_stylesheet(self):
@@ -30,15 +35,10 @@ class PrintingController:
         family, size = self.font_family, self.font_size
         table = (
             # Clearer w/o f-strings.
-            'h1 {font-family: %s}' % (family),
-            'pre {font-family: %s; font-size: %spx}' % (family, size),
+            f"h1 {{font-family: {family}}}",
+            f"pre {{font-family: {family}; font-size: {size}px}}",
         )
         return '\n'.join(table)
-    #@+node:ekr.20150509035503.1: *3* pr.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the PrintingController class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'printingController',])
     #@+node:ekr.20150420072955.1: *3* pr.Doc constructors
     #@+node:ekr.20150419124739.11: *4* pr.complex document
     def complex_document(self, nodes, heads=False):
@@ -48,8 +48,8 @@ class PrintingController:
         contents = ''
         for n in nodes:
             if heads:
-                contents += '<h1>%s</h1>\n' % (self.sanitize_html(n.h))
-            contents += '<pre>%s</pre>\n' % (self.sanitize_html(n.b))
+                contents += f"<h1>{self.sanitize_html(n.h)}</h1>\n"
+            contents += f"<pre>{self.sanitize_html(n.b)}</pre>\n"
         doc.setHtml(contents)
         return doc
     #@+node:ekr.20150419124739.9: *4* pr.document
@@ -60,7 +60,7 @@ class PrintingController:
         text = self.sanitize_html(text)
         if head:
             head = self.sanitize_html(head)
-            contents = "<h1>%s</h1>\n<pre>%s</pre>" % (head, text)
+            contents = f"<h1>{head}</h1>\n<pre>{text}</pre>"
         else:
             contents = f"<pre>{text}<pre>"
         doc.setHtml(contents)

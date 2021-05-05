@@ -190,7 +190,9 @@ python_main_keywords_dict = {
     "apply": "keyword2",
     "as": "keyword1",
     "assert": "keyword1",
-    "basestring": "keyword2", # Exists only in Python 2.
+    "async": "keyword1",  # Python 3.7
+    "await": "keyword1", # Python 3.7.
+    "basestring": "keyword2",  # Only in Python 2.
     "bool": "keyword2",
     "break": "keyword1",
     "buffer": "keyword2",
@@ -384,9 +386,10 @@ def python_rule19(colorer, s, i):
     return colorer.match_seq(s, i, kind="operator", seq="~",
         at_line_start=False, at_whitespace_end=False, at_word_start=False, delegate="")
 
-def python_rule20(colorer, s, i):
-    return colorer.match_mark_previous(s, i, kind="function", pattern="(",
-        at_line_start=False, at_whitespace_end=False, at_word_start=False, exclude_match=True)
+# #1821.
+# def python_rule20(colorer, s, i):
+    # return colorer.match_mark_previous(s, i, kind="function", pattern="(",
+        # at_line_start=False, at_whitespace_end=False, at_word_start=False, exclude_match=True)
 
 def python_rule21(colorer, s, i):
     return colorer.match_keywords(s, i)
@@ -420,7 +423,7 @@ rulesDict1 = {
     "%": [python_rule15,],
     "&": [python_rule16,],
     "'": [python_rule2, python_rule4,],
-    "(": [python_rule20,],
+    # "(": [python_rule20,],
     "*": [python_rule12,],
     "+": [python_rule9,],
     "-": [python_rule10,],

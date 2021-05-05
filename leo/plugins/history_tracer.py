@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:vitalije.20190928154420.1: * @file history_tracer.py
+#@+node:vitalije.20190928154420.1: * @file ../plugins/history_tracer.py
 #@+<< docstring >>
 #@+node:vitalije.20190928154420.2: ** << docstring >>
 """This plugin cooperates with leo-ver-serv utilty.
@@ -31,13 +31,13 @@
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:vitalije.20190928154420.3: ** << imports >>
-import leo.core.leoGlobals as g
-from leo.core.leoQt import QtCore
 import datetime
 import time
+import threading
 from urllib.request import urlopen
 from urllib.error import URLError
-import threading
+from leo.core import leoGlobals as g
+from leo.core.leoQt import QtCore
 #@-<< imports >>
 #@afterref
  # history_tracer.py
@@ -58,26 +58,26 @@ def c12_hook(tag, keys):
     c = keys.get('c')
     c.user_dict['last_command_at'] = time.time()
 #@+node:vitalije.20190928160510.1: ** IdleChecker
-class IdleChecker(QtCore.QObject):
-    def __init__(self):
-        QtCore.QObject.__init__(self)
-        self._tid = self.startTimer(5000)
-
-    def stop(self):
-        self.killTimer(self._tid)
-
-    def timerEvent(self, ev):
-        t = time.time()
-        for i, cx in enumerate(g.app.commanders()):
-            t1 = cx.user_dict.get('last_command_at', t)
-            t2 = cx.user_dict.get('last_snap_at', 0)
-            if t - t1 > 5 and t1 > t2:
-                cx.user_dict['last_snap_at'] = t
-                if save_snapshot(cx):
-                    g.es('snap', i, cx.mFileName.rpartition('/')[2])
-
 def init_idle_checker(tag, keys):
     global idle_checker
+    class IdleChecker(QtCore.QObject):
+        def __init__(self):
+            QtCore.QObject.__init__(self)
+            self._tid = self.startTimer(5000)
+
+        def stop(self):
+            self.killTimer(self._tid)
+
+        def timerEvent(self, ev):
+            t = time.time()
+            for i, cx in enumerate(g.app.commanders()):
+                t1 = cx.user_dict.get('last_command_at', t)
+                t2 = cx.user_dict.get('last_snap_at', 0)
+                if t - t1 > 5 and t1 > t2:
+                    cx.user_dict['last_snap_at'] = t
+                    if save_snapshot(cx):
+                        g.es('snap', i, cx.mFileName.rpartition('/')[2])
+
     print("don't forget to launch leo-ver-serv!!!")
     idle_checker = IdleChecker()
 #@+node:vitalije.20190928160520.1: ** save_snapshot

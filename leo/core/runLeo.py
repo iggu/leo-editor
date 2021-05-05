@@ -5,30 +5,31 @@
 """Entry point for Leo in Python."""
 #@+<< imports and inits >>
 #@+node:ekr.20080921091311.1: ** << imports and inits >> (runLeo.py)
-# import pdb ; pdb = pdb.set_trace
 import os
 import sys
 # Partial fix for #541.
 # See https://stackoverflow.com/questions/24835155/
-# pyw-and-pythonw-does-not-run-under-windows-7/30310192#30310192
 if sys.executable.endswith("pythonw.exe"):
     sys.stdout = open(os.devnull, "w");
     sys.stderr = open(
-        os.path.join(os.getenv("TEMP"),
-        "stderr-"+os.path.basename(sys.argv[0])),
+        os.path.join(os.getenv("TEMP", default=""),  # #1557.
+        "stderr-" + os.path.basename(sys.argv[0])),
         "w")
 path = os.getcwd()
 if path not in sys.path:
     # print('appending %s to sys.path' % path)
     sys.path.append(path)
-# Import leoGlobals, but do NOT set g.
-import leo.core.leoGlobals as leoGlobals
-# Create g.app.
-import leo.core.leoApp as leoApp
-leoGlobals.app = leoApp.LeoApp()
-# **Now** we can set g.
-g = leoGlobals
-assert(g.app)
+try:
+    # #1472: bind to g immediately.
+    from leo.core import leoGlobals as g
+    from leo.core import leoApp
+    g.app = leoApp.LeoApp()
+except Exception as e:
+    print(e)
+    msg = "\n*** Leo could not be started ***"
+    msg += "\nPlease verify you've installed the required dependencies:"
+    msg += "\nhttps://leoeditor.com/installing.html"
+    sys.exit(msg)
 #@-<< imports and inits >>
 #@+others
 #@+node:ekr.20031218072017.2607: ** profile_leo (runLeo.py)
@@ -45,17 +46,17 @@ def profile_leo():
         import pstats
     except ImportError:
         g.es_print('can not import pstats: this is a Python distro bug')
-        g.es_print('https://bugs.launchpad.net/ubuntu/+source/python-defaults/+bug/123755')
+        g.es_print(
+            'https://bugs.launchpad.net/ubuntu/+source/python-defaults/+bug/123755')
         g.es_print('try installing pstats yourself')
         return
     import cProfile as profile
-    import leo.core.leoGlobals as g
-    import os
+    from leo.core import leoGlobals as g
     theDir = os.getcwd()
     # On Windows, name must be a plain string.
     name = str(g.os_path_normpath(g.os_path_join(theDir, 'leoProfile')))
         # This is a binary file.
-    print(f'profiling binary stats to {name}')
+    print(f"profiling binary stats to {name}")
     profile.run('import leo ; leo.run()', name)
     p = pstats.Stats(name)
     p.strip_dirs()
@@ -74,13 +75,13 @@ def run(fileName=None, pymacs=None, *args, **keywords):
 #@+node:maphew.20180110221247.1: ** run console (runLeo.py)
 def run_console(*args, **keywords):
     """Initialize and run Leo in console mode gui"""
-    import sys
     sys.argv.append('--gui=console')
     run(*args, **keywords)
 #@-others
 #@@language python
 #@@tabwidth -4
 #@@pagewidth 70
+
 if __name__ == "__main__":
     run()
 #@-leo

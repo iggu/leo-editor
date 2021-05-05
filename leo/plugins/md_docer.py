@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:vitalije.20180804172140.1: * @file md_docer.py
+#@+node:vitalije.20180804172140.1: * @file ../plugins/md_docer.py
 """This plugin adds few commands for those who use Leo for writing
    markdown documentation with code samples taken from real source
    files.
@@ -33,9 +33,9 @@
     
     Author: vitalije(at)kviziracija.net
 """
-__version__ = "0.1"
+import io
 import re
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 pat = re.compile(r'^(\s*)LEOGNX:(.+)$')
 def init():
     '''Return True if the plugin has loaded successfully.'''
@@ -161,10 +161,10 @@ def sync_transformations(event):
     for dst, args in trtargets.items():
         name, src = args
         code = trscripts.get(name, 'out.write("not found transformer code")')
-        out = g.fileLikeObject()
+        out = io.StringIO()
         try:
             exec(code, dict(v=gnxDict[src], out=out, g=g, c=c))
-            gnxDict[dst].b = out.get()
+            gnxDict[dst].b = out.getvalue()
             count += 1
         except Exception:
             g.es_exception(True, c)

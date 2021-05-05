@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20090815203828.5235: * @file spydershell.py
+#@+node:ville.20090815203828.5235: * @file ../plugins/spydershell.py
 ''' Launches the spyder environment with access to Leo instance.
 See http://packages.python.org/spyder/
 
@@ -12,8 +12,7 @@ if it was closed before.
 #@+<< imports >>
 #@+node:ville.20090815203828.5238: ** << imports >>
 import sys
-
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')

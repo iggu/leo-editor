@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:danr7.20060902083957: * @file leo_to_rtf.py
+#@+node:danr7.20060902083957: * @file ../plugins/leo_to_rtf.py
 #@+<< docstring >>
 #@+node:danr7.20060902085340: ** << docstring >> (leo_to_rtf.py)
 r''' Outputs a Leo outline as a numbered list to an RTF file. The RTF file
@@ -19,9 +19,8 @@ set to c:\ so you may need to modify it depending on your system.
 #@-<< docstring >>
 
 # leoToRTF 1.0 plugin by Dan Rahmel
-
-import leo.core.leoGlobals as g
 import configparser as ConfigParser
+from leo.core import leoGlobals as g
 
 #@+others
 #@+node:ekr.20100128073941.5373: ** init

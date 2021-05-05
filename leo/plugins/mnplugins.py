@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20040205071616: * @file mnplugins.py
+#@+node:ekr.20040205071616: * @file ../plugins/mnplugins.py
 #@+<< docstring >>
 #@+node:ekr.20050101090717: ** << docstring >> (mnplugins.py)
 """
@@ -21,10 +21,9 @@ insertUser : Shift-F6
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:ekr.20050101090717.1: ** << imports >>
-import leo.core.leoGlobals as g
-
-import leo.core.leoCommands as leoCommands
 import time
+from leo.core import leoGlobals as g
+from leo.core import leoCommands
 #@-<< imports >>
 
 OKFLAG='OK '  # Space required.
@@ -63,17 +62,18 @@ def onStart (tag,keywords):
 #@+node:ekr.20040205071616.4: ** setHeadOK
 def setHeadOK(c,v):
 
-    s = OKFLAG + v.h
-    c.setHeadString(v,s)
+    v.h = OKFLAG + v.h
 
 #@+node:ekr.20040205071616.5: ** mnplugins.insertBodystamp
 def insertBodystamp (c,v):
 
-    w = c.frame.body.wrapper
+    p, u, w = c.p, c.undoer, c.frame.body.wrapper
     stamp = mnOKstamp() + '\n'
+    bunch = u.beforeChangeBody(p)
     ins = w.getInsertPoint()
     w.insert(ins,stamp)
-    c.frame.body.onBodyChanged("Typing")
+    p.v.b = w.getAllText()  # p.b would cause a redraw.
+    u.afterChangeBody(p, 'insert-timestamp', bunch)
 #@+node:ekr.20040205071616.6: ** is_subnodesOK
 def is_subnodesOK(v):
 
@@ -114,18 +114,16 @@ def insertUser (self,event=None):
     stamp = mnstamp()
     i = w.getInsertPoint()
     w.insert(i,stamp)
-    c.frame.body.onBodyChanged("Typing",oldSel=oldSel)
-#@+node:ekr.20040205071616.10: ** create_UserMenu
+    c.frame.body.onBodyChanged('insert-user',oldSel=oldSel)
+#@+node:ekr.20040205071616.10: ** create_UserMenu (mnplugins.py)
 def create_UserMenu (tag,keywords):
 
     c = keywords.get("c")
-
     c.pluginsMenu = c.frame.menu.createNewMenu("UserMenu")
-
     table = [
         ("insUser", 'Shift+F6', c.insertUser),
-        ("insOK",'Ctrl+Shift+O',c.insertOKcmd)]
-
-    c.frame.menu.createMenuEntries(c.pluginMenu,table,dynamicMenu=True)
+        ("insOK",'Ctrl+Shift+O',c.insertOKcmd),
+    ]
+    c.frame.menu.createMenuEntries(c.pluginMenu, table)
 #@-others
 #@-leo

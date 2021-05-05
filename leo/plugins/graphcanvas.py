@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20090206153748.1: * @file graphcanvas.py
+#@+node:tbrown.20090206153748.1: * @file ../plugins/graphcanvas.py
 """
 Provides a widget for displaying graphs (networks) in Leo.
 
@@ -23,34 +23,33 @@ make sense to focus on pydot.
 
 #@+<< imports >>
 #@+node:bob.20110119123023.7392: ** << imports >> graphcanvas
-import leo.core.leoGlobals as g
-import leo.core.leoPlugins as leoPlugins
 
 from math import atan2, sin, cos
-# import time
 import os
 import tempfile
 import urllib.request as urllib
 
+from leo.core import leoGlobals as g
+from leo.core import leoPlugins
+from leo.core.leoQt import QtConst, QtCore, QtGui, QtWidgets, uic
+# Third-party imports
 try:
     # pylint: disable=import-error
         # These are optional.
     import pydot
     import dot_parser
     assert dot_parser
+    pygraphviz = None
 except Exception:
     pydot = None
-
-# Fail gracefully if the gui is not qt.
-g.assertUi('qt')
-from leo.core.leoQt import QtConst, QtCore, QtGui, QtWidgets, uic
-
-pygraphviz = None
-if not pydot:
     try:
         import pygraphviz
     except ImportError:
         pygraphviz = None
+
+# Fail gracefully if the gui is not qt.
+g.assertUi('qt')
+
 #@-<< imports >>
 c_db_key = '_graph_canvas_gnx'
 #@+others
@@ -592,8 +591,6 @@ class linkItem(QtWidgets.QGraphicsItemGroup):
 
         pass glue object and let it key nodeItems to leo nodes
         """
-        # pylint: disable=keyword-arg-before-vararg
-            # putting *args first is invalid in Python 2.x.
         self.glue = glue
         super().__init__()
         self.line = QtWidgets.QGraphicsLineItem(*args)

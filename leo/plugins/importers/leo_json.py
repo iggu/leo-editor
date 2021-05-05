@@ -1,11 +1,11 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20160504080826.1: * @file importers/leo_json.py
+#@+node:ekr.20160504080826.1: * @file ../plugins/importers/leo_json.py
 '''The @auto importer for .json files.'''
 #
 # This module must **not** be named json, to avoid conflicts with the json standard library.
 import json
-import leo.core.leoGlobals as g
-import leo.core.leoNodes as leoNodes
+from leo.core import leoGlobals as g
+from leo.core import leoNodes
 #@+others
 #@+node:ekr.20160504080826.2: ** class JSON_Scanner
 class JSON_Scanner:

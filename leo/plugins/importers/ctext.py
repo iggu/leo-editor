@@ -1,8 +1,8 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20140801105909.47549: * @file importers/ctext.py
+#@+node:tbrown.20140801105909.47549: * @file ../plugins/importers/ctext.py
 #@@language python
 #@@tabwidth -4
-import leo.plugins.importers.linescanner as linescanner
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 #@+others
 #@+node:tbrown.20140801105909.47551: ** class CText_Importer

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:ekr.20181103094900.1: * @file leoflexx.py
+#@+node:ekr.20181103094900.1: * @file ../plugins/leoflexx.py
 #@@first
 #@@language python
 #@@tabwidth -4
@@ -35,28 +35,31 @@ you see is real, and most of it is "live".
 #@-<< leoflexx: docstring >>
 #@+<< leoflexx: imports >>
 #@+node:ekr.20181113041314.1: ** << leoflexx: imports >>
-try:
-    from flexx import flx
-    from pscript import RawJS
-except Exception:
-    flx = None
 import os
 import re
 import sys
 import time
+
 # This is what Leo typically does.
+# pylint: disable=wrong-import-position
 path = os.getcwd()
 if path not in sys.path:
     sys.path.append(path)
-import leo.core.leoGlobals as g
-    # JS code can *not* use g.trace, g.callers or g.pdb.
-# import leo.core.leoBridge as leoBridge
-import leo.core.leoFastRedraw as leoFastRedraw
-import leo.core.leoFrame as leoFrame
-import leo.core.leoGui as leoGui
-import leo.core.leoMenu as leoMenu
-import leo.core.leoNodes as leoNodes
-import leo.core.leoTest as leoTest
+# JS code can *not* use g.trace, g.callers or g.pdb.
+from leo.core import leoGlobals as g
+from leo.core import leoFastRedraw
+from leo.core import leoFrame
+from leo.core import leoGui
+from leo.core import leoMenu
+from leo.core import leoNodes
+from leo.core import leoTest
+# Third-party imports.
+try:
+    # pylint: disable=import-error
+    from flexx import flx
+    from pscript import RawJS
+except Exception:
+    flx = None
 #@-<< leoflexx: imports >>
 #@+<< leoflexx: assets >>
 #@+node:ekr.20181111074958.1: ** << leoflexx: assets >>
@@ -68,7 +71,10 @@ flx.assets.associate_asset(__name__, base_url + 'theme-solarized_dark.js')
 #@-<< leoflexx: assets >>
 #
 # pylint: disable=logging-not-lazy
-# pylint: disable=missing-super-argument
+
+# flexx can't handle generators, so we *must* use comprehensions instead.
+# pylint: disable=use-a-generator
+
 #@+others
 #@+node:ekr.20181121040901.1: **  top-level functions
 #@+node:ekr.20181121091633.1: *3* dump_event
@@ -184,12 +190,12 @@ class API_Wrapper (leoFrame.StringTextWrapper):
     #@@wrap
     #@+at
     # These methods implement Leo's high-level api for the body pane.
-    # 
+    #
     # Consider Leo's sort-lines command. sort-lines knows nothing about which gui
     # is in effect. It updates the body pane using *only* the high-level api.
-    # 
+    #
     # These methods must do two things:
-    #     
+    #
     # 1. Call the corresponding super() method to update self.s, self.i and self.ins.
     # 2. Call the corresponding flx_body methods to update the flx_body widget,
     #    except while unit testing.
@@ -708,7 +714,6 @@ class LeoBrowserApp(flx.PyComponent):
                 c.gotoCommands.find_file_line(n=int(commandName))
         else:
             func = c.commandsDict.get(commandName)
-        k.newMinibufferWidget = None
         if func:
             # These must be done *after* getting the command.
             k.clearState()
@@ -723,12 +728,13 @@ class LeoBrowserApp(flx.PyComponent):
                 c.bodyWantsFocusNow()
                 # Change the event widget so we don't refer to the to-be-deleted headline widget.
                 event.w = event.widget = c.frame.body.wrapper.widget
-                c.executeAnyCommand(func, event)
             else:
                 c.widgetWantsFocusNow(event and event.widget)
                     # Important, so cut-text works, e.g.
-                c.executeAnyCommand(func, event)
-            k.endCommand(commandName)
+            try:
+                func(event)
+            except Exception:
+                g.es_exception()
             return True
         if 0: # Not ready yet
             # Show possible completions if the command does not exist.
@@ -1019,25 +1025,31 @@ class LeoBrowserApp(flx.PyComponent):
         fc = c.findCommands
         
         class DummyFTM:
-            def getFindText(self):
+            def get_find_text(self):
                 return pattern
-            def getReplaceText(self):
+            def get_change_text(self):
                 return ''
+            def get_settings(self):
+                return g.Bunch(
+                    # Find/change strings...
+                    find_text   = pattern,
+                    change_text = '',
+                    # Find options...
+                    ignore_case     = True,
+                    mark_changes    = False,
+                    mark_finds      = False,
+                    node_only       = False,
+                    pattern_match   = False,
+                    search_body     = True,
+                    search_headline = True,
+                    suboutline_only = False,
+                    whole_word      = True,
+                )
 
         # Init the search.
-        if 1:
-            fc.ftm = DummyFTM()
-        if 1:
-            fc.find_text = pattern
-            fc.change_text = ''
-            fc.find_seen = set()
-            fc.pattern_match = False
-            fc.in_headline = False
-            fc.search_body = True
-            fc.was_in_headline = False
-            fc.wrapping = False
+        fc.ftm = DummyFTM()
         # Do the search.
-        fc.findNext()
+        fc.find_next()
         if 1: # Testing only?
             w = self.root.main_window
             c.k.keyboardQuit()
@@ -1073,19 +1085,18 @@ class LeoBrowserApp(flx.PyComponent):
 
     def terminate_do_head(self, args, c, event):
         '''never actually called.'''
-    #@+node:ekr.20181210092817.1: *7* app.end_set_headline
+    #@+node:ekr.20181210092817.1: *7* app.end_set_headline (leoflexx.py)
     def end_set_headline(self, h):
         c, k, p, u = self.c, self.c.k, self.c.p, self.c.undoer
         w = self.root.main_window
-        # Undoably set the head. Like leoTree.onHeadChanged, called LeoTree.endEditLabel.
-        oldHead = p.h
+        # Undoably set the head. Like leoTree.onHeadChanged.
         p.v.setHeadString(h)
-        undoType = 'Typing'
-        undoData = u.beforeChangeNodeContents(p, oldHead=oldHead)
-        if not c.changed: c.setChanged(True)
-        dirtyVnodeList = p.setDirty()
-        u.afterChangeNodeContents(p, undoType, undoData,
-            dirtyVnodeList=dirtyVnodeList, inHead=True)
+        undoType = 'set-headline'
+        undoData = u.beforeChangeNodeContents(p)
+        if not c.changed:
+            c.setChanged()
+        p.setDirty()
+        u.afterChangeNodeContents(p, undoType, undoData)
         k.keyboardQuit()
         c.redraw()
         w.body.set_focus()
@@ -1183,8 +1194,6 @@ class LeoBrowserApp(flx.PyComponent):
 #@+node:ekr.20181115092337.3: *3* class LeoBrowserBody
 class LeoBrowserBody(leoFrame.NullBody):
     
-    attributes = set()
-   
     def __init__(self, frame):
         super().__init__(frame, parentFrame=None)
         self.c = c = frame.c
@@ -2561,6 +2570,7 @@ class LeoFlexxTree(flx.Widget):
         # Reselect the present ap if there are no selection events.
         # This ensures that clicking a headline twice has no effect.
         if not any([ev.new_value for ev in events]):
+                # Must use a comprehension above. flexx can't handle generator expressions.
             ev = events[0]
             self.assert_exists(ev)
             ap = ev.source.leo_ap

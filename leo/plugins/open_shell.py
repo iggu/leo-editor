@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:EKR.20040517080049.4: * @file open_shell.py
+#@+node:EKR.20040517080049.4: * @file ../plugins/open_shell.py
 #@+<< docstring >>
 #@+node:ekr.20050111112200: ** << docstring >>
 ''' Creates an 'Extensions' menu containing two commands:
@@ -21,9 +21,9 @@ Current limitations:
 #@-<< docstring >>
 
 # Written by Ed Taekema.  Modified by EKR
-import leo.core.leoGlobals as g
 import os
 import sys
+from leo.core import leoGlobals as g
 
 # Changes these as required.
 if sys.platform == "win32":
@@ -60,16 +60,15 @@ class pluginController:
     #@+node:EKR.20040517080049.6: *3* load_menu
     def load_menu (self):
 
+        c = self.c
         if sys.platform == "win32":
             table = (
                 ("&Open Console Window",None,self.launchCmd),
                 ("Open &Explorer",None,self.launchExplorer))
         else:
             table = (("Open &xterm",None,self.launchxTerm),)
-
-        c = self.c
         c.frame.menu.createNewMenu("E&xtensions","top")
-        c.frame.menu.createMenuItemsFromTable("Extensions",table,dynamicMenu=True)
+        c.frame.menu.createMenuItemsFromTable("Extensions", table)
     #@+node:EKR.20040517080049.7: *3* _getpath
     def _getpath (self,p):
 

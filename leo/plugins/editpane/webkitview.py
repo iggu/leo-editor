@@ -3,10 +3,11 @@
 #@+<< webkitview.py imports >>
 #@+node:tbrown.20171028115457.1: ** << webkitview.py imports >>
 import os
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 assert g
 from leo.core.leoQt import QtWebKit, QtWebKitWidgets
-if not QtWebKitWidgets or 'engine' in g.os_path_basename(QtWebKitWidgets.__file__).lower():
+if not QtWebKitWidgets or 'engine' in g.os_path_basename(
+    QtWebKitWidgets.__file__).lower():
     # not loading webkit view, webengine masquerading as webkit
     raise ImportError
 #@-<< webkitview.py imports >>
@@ -28,7 +29,7 @@ def _path_from_pos(c, p):
     def atfile(p):
         word0 = p.h.split()[0]
         return (
-            word0 in g.app.atFileNames|set(['@auto']) or
+            word0 in g.app.atFileNames | set(['@auto']) or
             word0.startswith('@auto-')
         )
 
@@ -46,7 +47,6 @@ def _path_from_pos(c, p):
         p.moveToParent()
 
     return path
-
 #@+node:tbrown.20171028115457.3: ** class LEP_WebKitView
 class LEP_WebKitView(QtWebKitWidgets.QWebView):
     """LEP_WebKitView - Web Kit View
@@ -57,7 +57,7 @@ class LEP_WebKitView(QtWebKitWidgets.QWebView):
     #@+node:tbrown.20171028115457.4: *3* __init__
     def __init__(self, c=None, lep=None, *args, **kwargs):
         """set up"""
-        super(LEP_WebKitView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.c = c
         self.lep = lep
 
@@ -83,7 +83,6 @@ class LEP_WebKitView(QtWebKitWidgets.QWebView):
         g.es(path)
         self.setHtml(text)
         os.chdir(owd)
-
     #@+node:tbrown.20171028115457.6: *3* update_text
     def update_text(self, text):
         """update_text - update for current text
@@ -92,9 +91,6 @@ class LEP_WebKitView(QtWebKitWidgets.QWebView):
             text (str): current text
         """
         self.new_text(text)
-
-
-
     #@-others
 #@-others
 #@@language python

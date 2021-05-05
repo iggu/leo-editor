@@ -1,14 +1,13 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.727: * @file mod_timestamp.py
+#@+node:edream.110203113231.727: * @file ../plugins/mod_timestamp.py
 """ Timestamps all save operations to show when they occur."""
 
 #@@language python
 #@@tabwidth -4
 
 # By Paul Paterson.
-import leo.core.leoGlobals as g
-
 import time
+from leo.core import leoGlobals as g
 
 __version__ = "0.1"
 

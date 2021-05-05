@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20081223111325.3: * @file backlink.py
+#@+node:tbrown.20081223111325.3: * @file ../plugins/backlink.py
 #@+<< docstring >>
 #@+node:ekr.20140920145803.17984: ** << docstring >>
 """Allows arbitrary links between nodes.
@@ -73,13 +73,8 @@ where the extra information is the name of the linked node's parent.
 #     - linkClicked(n) (zero based)
 #@-<< notes >>
 # By TNB
-
 # **Important**: this plugin is gui-independent.
-import leo.core.leoGlobals as g
-# try:
-    # from leo.core.leoQt import QtCore
-# except ImportError:
-    # pass
+from leo.core import leoGlobals as g
 Tk = None
 Qt = None
 #@+others
@@ -245,22 +240,24 @@ class backlinkController:
 
         if dir_ == 'url':
             self.linkUrl()
+        
         elif not self.linkMark or not self.c.positionExists(self.linkMark):
             self.showMessage('Link mark not specified or no longer valid', color='red')
             return
 
-        if dir_ == "from":
+        else: # dir_ in ['from', 'to', 'undirected']
             p = self.linkMark
+            
             if newChild:
                 p = self.linkMark.insertAsLastChild()
                 p.h = self.c.p.h
-            self.link(self.c.p, p)
-        elif dir_ == 'to':
-            p = self.linkMark
-            if newChild:
-                p = self.linkMark.insertAsLastChild()
-                p.h = self.c.p.h
-            self.link(p, self.c.p)
+
+            if dir_ == 'from':
+                self.link(self.c.p, p)
+            elif dir_ == 'to':
+                self.link(p, self.c.p)
+            else:
+                self.link(p, self.c.p, 'undirected')
 
         self.updateTabInt()
         self.c.redraw()
@@ -645,7 +642,7 @@ class backlinkController:
         p = self.linkMark
         self.linkMark = self.c.p.copy()
         self.c.selectPosition(p)
-    #@+node:ekr.20090616105756.3967: *3* updateTab
+    #@+node:ekr.20090616105756.3967: *3* updateTab (backlink.py)
     def updateTab(self,tag,k):
         """called by leo select position hook"""
         if k['c'] != self.c: return  # not our problem
@@ -687,7 +684,10 @@ class backlinkController:
                 self.showMessage('Click a link to follow it', optional=True)
                 # pylint: disable=cell-var-from-loop
                 for i in dests:
-                    
+
+                    if i[1] is None: # destination node is deleted
+                        continue
+
                     def goThere(where = i[1]):
                         c.selectPosition(where)
 

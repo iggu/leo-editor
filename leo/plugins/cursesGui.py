@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20150107090324.1: * @file cursesGui.py
+#@+node:ekr.20150107090324.1: * @file ../plugins/cursesGui.py
 '''A minimal text-oriented gui.'''
 #@+at
 # Things not found in the GUI 'interface' classes (in leoFrame.py, leoGui.py, etc)
@@ -9,15 +9,14 @@
 # pylint: disable=arguments-differ
 #@+<< imports >>
 #@+node:ekr.20150107090324.2: ** << imports >>
-# pylint: disable=wrong-import-order
-import leo.core.leoGlobals as g
-import leo.core.leoChapters as leoChapters
-import leo.core.leoGui as leoGui
-import leo.core.leoKeys as leoKeys
-import leo.core.leoFrame as leoFrame
-import leo.core.leoMenu as leoMenu
-import leo.core.leoNodes as leoNodes
 import os
+from leo.core import leoGlobals as g
+from leo.core import leoChapters
+from leo.core import leoGui
+from leo.core import leoKeys
+from leo.core import leoFrame
+from leo.core import leoMenu
+from leo.core import leoNodes
 get_input = input
 #@-<< imports >>
 #@+<< TODO >>
@@ -73,8 +72,7 @@ class textGui(leoGui.LeoGui):
         # TODO leoTkinterFrame finishCreate g.app.windowList.append(f) - use that?
     #@+node:ekr.20150107090324.8: *3* createKeyHandlerClass
     def createKeyHandlerClass(self, c):
-        # import leo.core.leoKeys as leoKeys
-            # Do this here to break a circular dependency.
+
         return leoKeys.KeyHandlerClass(c)
     #@+node:ekr.20150107090324.9: *3* createLeoFrame
     def createLeoFrame(self, c, title=None):
@@ -168,17 +166,23 @@ class TextFrame(leoFrame.LeoFrame):
         assert self.c == c
         self.top = None
         self.ratio = self.secondary_ratio = 0.0
-    #@+node:ekr.20150107090324.23: *3* createFirstTreeNode
+    #@+node:ekr.20150107090324.23: *3* createFirstTreeNode (cursesGui.py)
     def createFirstTreeNode(self):
         c = self.c
+        #
+        # #1631: Initialize here, not in p._linkAsRoot.
+        c.hiddenRootNode.children = []
+        #
+        # #1817: Clear the gnxDict.
+        c.fileCommands.gnxDict = {}
+        #
         v = leoNodes.vnode(context=c)
         p = leoNodes.position(v)
         v.initHeadString("NewHeadline")
         # New in Leo 4.5: p.moveToRoot would be wrong:
         # the node hasn't been linked yet.
-        p._linkAsRoot(oldRoot=None)
+        p._linkAsRoot()
         # c.setRootPosition(p) # New in 4.4.2.
-
     #@+node:ekr.20150107090324.24: *3* deiconify
     def deiconify(self): pass # N/A
 

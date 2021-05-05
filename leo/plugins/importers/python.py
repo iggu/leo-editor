@@ -1,10 +1,10 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20140723122936.18149: * @file importers/python.py
+#@+node:ekr.20140723122936.18149: * @file ../plugins/importers/python.py
 '''The new, line-based, @auto importer for Python.'''
 # Legacy version of this file is in the attic.
 import re
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 Target = linescanner.Target
 #@+others
@@ -12,11 +12,11 @@ Target = linescanner.Target
 class Py_Importer(Importer):
     '''A class to store and update scanning state.'''
 
-    def __init__(self, importCommands, **kwargs):
+    def __init__(self, importCommands, language='python', **kwargs):
         '''Py_Importer.ctor.'''
         super().__init__(
             importCommands,
-            language='python',
+            language=language,
             state_class = Python_ScanState,
             strict=True,
         )
@@ -102,7 +102,7 @@ class Py_Importer(Importer):
         Non-recursively parse all lines of s into parent, creating descendant
         nodes as needed.
         '''
-        tail_p = None
+        self.tail_p = None
         prev_state = self.state_class()
         target = PythonTarget(parent, prev_state)
         stack = [target, target]
@@ -120,11 +120,11 @@ class Py_Importer(Importer):
                 pass # Sets self.skip and self.decorator_lines.
             elif self.starts_block(i, lines, new_state, prev_state, stack):
                 first = False
-                tail_p = None
+                self.tail_p = None
                 self.start_new_block(i, lines, new_state, prev_state, stack)
             elif first:
                 if self.is_ws_line(line):
-                    p = tail_p or top.p
+                    p = self.tail_p or top.p
                     self.add_line(p, line)
                 else:
                     first = False
@@ -134,9 +134,9 @@ class Py_Importer(Importer):
                     stack.append(PythonTarget(p, new_state))
             elif self.ends_block(line, new_state, prev_state, stack):
                 first = False
-                tail_p = self.end_block(i, lines, new_state, prev_state, stack)
+                self.tail_p = self.end_block(i, lines, new_state, prev_state, stack)
             else:
-                p = tail_p or top.p
+                p = self.tail_p or top.p
                 self.add_line(p, line)
             prev_state = new_state
         if self.skip:
@@ -277,6 +277,10 @@ class Py_Importer(Importer):
             return False
         if top.kind == 'def' and new_state.indent > prev_indent:
             # class/def within a def.
+            # #1493: Insert decorators.
+            p = self.tail_p or top.p
+            for line in self.decorator_lines:
+                self.add_line(p, line)
             return False
         if top.at_others_flag and new_state.indent > prev_indent:
             return False

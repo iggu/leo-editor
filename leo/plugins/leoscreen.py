@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20100226095909.12777: * @file leoscreen.py
+#@+node:tbrown.20100226095909.12777: * @file ../plugins/leoscreen.py
 #@+<< docstring >>
 #@+node:tbrown.20100226095909.12778: ** << docstring >>
 '''Allows interaction with shell apps via screen.
@@ -141,19 +141,16 @@ stdout is ignored, Popen() needs to ensure it's not just inherited.
 
 #@+<< imports >>
 #@+node:tbrown.20100226095909.12779: ** << imports >>
-import leo.core.leoGlobals as g
-
 import subprocess
 import os
 import time
 import tempfile
 import difflib
-
+from leo.core import leoGlobals as g
 try:
-    import leo.plugins.stickynotes as stickynotes
+    from leo.plugins import stickynotes
 except ImportError:
     stickynotes = None
-
 from leo.plugins.attrib_edit import ListDialog
 #@-<< imports >>
 #@+others

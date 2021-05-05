@@ -3,30 +3,29 @@
 #@+node:ekr.20150514040239.1: * @file ../commands/spellCommands.py
 #@@first
 """Leo's spell-checking commands."""
-
 #@+<< imports >>
 #@+node:ekr.20150514050530.1: ** << imports >> (spellCommands.py)
 import re
-import leo.core.leoGlobals as g
-from leo.commands.baseCommands import BaseEditCommandsClass as BaseEditCommandsClass
 try:
     # pylint: disable=import-error
         # We can't assume the user has this.
     import enchant
-except Exception: # May throw WinError(!)
+except Exception:  # May throw WinError(!)
     enchant = None
+from leo.commands.baseCommands import BaseEditCommandsClass
+from leo.core import leoGlobals as g
 #@-<< imports >>
 
 def cmd(name):
     """Command decorator for the SpellCommandsClass class."""
     return g.new_cmd_decorator(name, ['c', 'spellCommands',])
+
 #@+others
 #@+node:ekr.20180207071908.1: ** class BaseSpellWrapper
 class BaseSpellWrapper:
     """Code common to EnchantWrapper and DefaultWrapper"""
     # pylint: disable=no-member
     # Subclasses set self.c and self.d
-    
     #@+others
     #@+node:ekr.20180207071114.3: *3* spell.add
     def add(self, word):
@@ -71,23 +70,24 @@ class BaseSpellWrapper:
     def find_user_dict(self):
         """Return the full path to the local dictionary."""
         c = self.c
+        join = g.os_path_finalize_join
         table = (
             c.config.getString('enchant-local-dictionary'),
                 # Settings first.
-            g.os_path_finalize_join(g.app.homeDir, '.leo', 'spellpyx.txt'),
+            join(g.app.homeDir, '.leo', 'spellpyx.txt'),
                 # #108: then the .leo directory.
-            g.os_path_finalize_join(g.app.loadDir, "..", "plugins", 'spellpyx.txt'),
+            join(g.app.loadDir, "..", "plugins", 'spellpyx.txt'),
                 # The plugins directory as a last resort.
         )
         for path in table:
             if g.os_path_exists(path):
                 return path
-        #
-        g.es_print('Do spellpyx.txt file found')
-        return None
+        g.es_print('Creating ~/.leo/spellpyx.txt')
+        # #1453: Return the default path.
+        return join(g.app.homeDir, '.leo', 'spellpyx.txt')
     #@+node:ekr.20150514063305.515: *3* spell.ignore
     def ignore(self, word):
-        
+
         self.d.add_to_session(word)
     #@+node:ekr.20150514063305.517: *3* spell.process_word
     def process_word(self, word):
@@ -120,15 +120,14 @@ class BaseSpellWrapper:
             return None
         return d.suggest(word)
     #@-others
-#@+node:ekr.20180207075606.1: ** class DefaultDict (object)
+#@+node:ekr.20180207075606.1: ** class DefaultDict
 class DefaultDict:
     """A class with the same interface as the enchant dict class."""
-    
+
     def __init__(self, words=None):
         self.added_words = set()
         self.ignored_words = set()
         self.words = set() if words is None else set(words)
-
     #@+others
     #@+node:ekr.20180207075740.1: *3* dict.add
     def add(self, word):
@@ -154,7 +153,7 @@ class DefaultDict:
         return False
     #@+node:ekr.20180207081634.1: *3* dict.suggest & helpers
     def suggest(self, word):
-        
+
         def known(words):
             """Return the words that are in the dictionary."""
             return [z for z in list(set(words)) if z in self.words]
@@ -167,6 +166,8 @@ class DefaultDict:
         )
         return suggestions
     #@+node:ekr.20180207085717.1: *4* dict.edits1 & edits2
+    #@@nobeautify
+
     def edits1(self, word):
         "All edits that are one edit away from `word`."
         letters    = 'abcdefghijklmnopqrstuvwxyz'
@@ -177,7 +178,7 @@ class DefaultDict:
         inserts    = [L + c + R               for L, R in splits for c in letters]
         return list(set(deletes + transposes + replaces + inserts))
 
-    def edits2(self, word): 
+    def edits2(self, word):
         "All edits that are two edits away from `word`."
         return [e2 for e1 in self.edits1(word) for e2 in self.edits1(e1)]
     #@-others
@@ -234,41 +235,21 @@ class DefaultWrapper(BaseSpellWrapper):
         fn = g.os_path_finalize_join(
             g.app.homeDir, '.leo', 'main_spelling_dict.txt')
         return fn if g.os_path_exists(fn) else None
-    #@+node:ekr.20180207073815.1: *3* default.read_words & helper
+    #@+node:ekr.20180207073815.1: *3* default.read_words
     def read_words(self, kind, fn):
         """Return all the words from the dictionary file."""
         words = set()
         try:
             with open(fn, 'rb') as f:
                 s = g.toUnicode(f.read())
+                # #1688: Do this in place.
                 for line in g.splitLines(s):
-                    self.add_expanded_line(line, words)
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        words.add(line)
         except Exception:
             g.es_print(f"can not open {kind} dictionary: {fn}")
         return words
-    #@+node:ekr.20180207132550.1: *4* default.add_expanded_line
-    def add_expanded_line(self, s, words):
-        """Add the expansion of line s to the words set."""
-        s = g.toUnicode(s).strip()
-        if not s or s.startswith('#'):
-            return
-        # Strip off everything after /
-        i = s.find('/')
-        if i > -1:
-            flags = s[i+1:].strip().lower()
-            s = s[:i].strip()
-        else:
-            flags = ''
-        if not s:
-            return
-        words.add(s)
-        words.add(s.lower())
-        # Flags are not properly documented.
-        # Adding plurals is good enough for now.
-        if 's' in flags and not s.endswith('s'):
-            words.add(s+'s')
-            words.add(s.lower()+'s')
-      
     #@+node:ekr.20180207110718.1: *3* default.save_dict
     def save_dict(self, kind, fn, trace=False):
         """
@@ -291,15 +272,15 @@ class DefaultWrapper(BaseSpellWrapper):
         f.close()
     #@+node:ekr.20180211104628.1: *3* default.save_main/user_dict
     def save_main_dict(self, trace=False):
-        
+
         self.save_dict('main', self.main_fn, trace=trace)
-        
+
     def save_user_dict(self, trace=False):
 
         self.save_dict('user', self.user_fn, trace=trace)
     #@+node:ekr.20180209141933.1: *3* default.show_info
     def show_info(self):
-        
+
         if self.main_fn:
             g.es_print('Default spell checker')
             table = (
@@ -314,7 +295,8 @@ class DefaultWrapper(BaseSpellWrapper):
                 ('user', self.user_fn),
             )
         for kind, fn in table:
-            g.es_print(f"{kind} dictionary: {(g.os_path_normpath(fn) if fn else 'None')}")
+            g.es_print(
+                f"{kind} dictionary: {(g.os_path_normpath(fn) if fn else 'None')}")
     #@-others
 #@+node:ekr.20150514063305.510: ** class EnchantWrapper (BaseSpellWrapper)
 class EnchantWrapper(BaseSpellWrapper):
@@ -330,11 +312,11 @@ class EnchantWrapper(BaseSpellWrapper):
         g.app.spellDict = self.d = self.open_dict_file(fn)
     #@+node:ekr.20180207073536.1: *3* enchant.create_dict_from_file
     def create_dict_from_file(self, fn, language):
-     
+
         return enchant.DictWithPWL(language, fn)
     #@+node:ekr.20180207074613.1: *3* enchant.default_dict
     def default_dict(self, language):
-        
+
         return enchant.Dict(language)
     #@+node:ekr.20180207072846.1: *3* enchant.init_language
     def init_language(self):
@@ -394,7 +376,7 @@ class EnchantWrapper(BaseSpellWrapper):
                 f.close()
     #@+node:ekr.20150514063305.515: *3* spell.ignore
     def ignore(self, word):
-        
+
         self.d.add_to_session(word)
     #@+node:ekr.20150514063305.517: *3* spell.process_word
     def process_word(self, word):
@@ -430,14 +412,13 @@ class EnchantWrapper(BaseSpellWrapper):
     def show_info(self):
 
         g.es_print('pyenchant spell checker')
-        g.es_print('user dictionary:   %s' % self.find_user_dict())
+        g.es_print(f"user dictionary:   {self.find_user_dict()}")
         try:
             aList = enchant.list_dicts()
             aList2 = [a for a, b in aList]
-            g.es_print('main dictionaries: %s' % ', '.join(aList2))
+            g.es_print(f"main dictionaries: {', '.join(aList2)}")
         except Exception:
             g.es_exception()
-
     #@-others
 #@+node:ekr.20150514063305.481: ** class SpellCommandsClass
 class SpellCommandsClass(BaseEditCommandsClass):
@@ -453,7 +434,7 @@ class SpellCommandsClass(BaseEditCommandsClass):
         self.c = c
         self.handler = None
         self.reloadSettings()
-        
+
     def reloadSettings(self):
         """SpellCommandsClass.reloadSettings."""
         c = self.c
@@ -623,11 +604,11 @@ class SpellCommandsClass(BaseEditCommandsClass):
             return
         c = self.c
         spell_ok = True
-        if self.spell_as_you_type: # might just be for wrapping
+        if self.spell_as_you_type:  # might just be for wrapping
             w = c.frame.body.wrapper
             txt = w.getAllText()
             i = w.getInsertPoint()
-            word = txt[: i].rsplit(None, 1)[-1]
+            word = txt[:i].rsplit(None, 1)[-1]
             word = ''.join(i if i.isalpha() else ' ' for i in word).split()
             if word:
                 word = word[-1]
@@ -635,7 +616,7 @@ class SpellCommandsClass(BaseEditCommandsClass):
                 suggests = ec.process_word(word)
                 if suggests:
                     spell_ok = False
-                    g.es(' '.join(suggests[: 5]) +
+                    g.es(' '.join(suggests[:5]) +
                          ('...' if len(suggests) > 5 else ''),
                          color='red')
                 elif suggests is not None:
@@ -650,15 +631,15 @@ class SpellCommandsClass(BaseEditCommandsClass):
             i = w.getInsertPoint()
             # calculate the current column
             parts = txt.split('\n')
-            popped = 0 # chars on previous lines
+            popped = 0  # chars on previous lines
             while len(parts[0]) + popped < i:
-                popped += len(parts.pop(0)) + 1 # +1 for the \n that's gone
+                popped += len(parts.pop(0)) + 1  # +1 for the \n that's gone
             col = i - popped
             if col > self.page_width:
-                txt = txt[: i] + '\n' + txt[i:] # replace space with \n
+                txt = txt[:i] + '\n' + txt[i:]  # replace space with \n
                 w.setAllText(txt)
                 c.p.b = txt
-                w.setInsertPoint(i + 1) # must come after c.p.b assignment
+                w.setInsertPoint(i + 1)  # must come after c.p.b assignment
     #@+node:ekr.20150514063305.498: *4* as_you_type_replace
     def as_you_type_replace(self, word):
         """as_you_type_replace - replace the word behind the cursor
@@ -680,7 +661,7 @@ class SpellCommandsClass(BaseEditCommandsClass):
             i -= 1
         if i or (txt and not txt[0].isalpha()):
             i += 1
-        txt = txt[: i] + word + txt[j:]
+        txt = txt[:i] + word + txt[j:]
         w.setAllText(txt)
         c.p.b = txt
         w.setInsertPoint(i + len(word) + xtra - 1)
@@ -742,9 +723,10 @@ class SpellTabHandler:
         selection = self.tab.getSuggestion()
         if selection:
             # Use getattr to keep pylint happy.
-            if hasattr(self.tab, 'change_i') and getattr(self.tab, 'change_i') is not None:
-                start = getattr(self.tab, 'change_i')
-                end = getattr(self.tab, 'change_j')
+            i = getattr(self.tab, 'change_i', None)
+            j = getattr(self.tab, 'change_j', None)
+            if i is not None:
+                start, end = i, j
                 oldSel = start, end
             else:
                 start, end = oldSel = w.getSelectionRange()
@@ -798,7 +780,8 @@ class SpellTabHandler:
                     c.invalidateFocus()
                     c.bodyWantsFocus()
                     w.setSelectionRange(i, j, insert=j)
-                    w.see(j)
+                    k = g.see_more_lines(s, j, 4)
+                    w.see(k)
                     return
                 self.seen.add(word)
             # No more misspellings in p

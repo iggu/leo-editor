@@ -1,10 +1,10 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20160412101901.1: * @file writers/ipynb.py
+#@+node:ekr.20160412101901.1: * @file ../plugins/writers/ipynb.py
 '''The @auto write code for jupyter (.ipynb) files.'''
 import json
 import re
 import sys
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 import leo.plugins.writers.basewriter as basewriter
 
 #@+others

@@ -13,20 +13,20 @@ On Ubuntu, the following alias runs this file::
 #@@tabwidth -4
 # pylint: disable=invalid-name
     # flake8-leo isn't a valid module name, but it isn't a module.
-import leo.core.leoGlobals as g
-import leo.core.leoTest as leoTest
 import optparse
 import os
 import time
-
+from leo.core import leoGlobals as g
+from leo.core import leoTest
 #@+others
 #@+node:ekr.20160517182239.10: ** main & helpers
 def main(files):
     """Call run on all tables in tables_table."""
     try:
+        # pylint: disable=import-error
         from flake8 import engine
     except Exception:
-        print(f'{g.shortFileName(__file__)}: can not import flake8')
+        print(f"{g.shortFileName(__file__)}: can not import flake8")
         return
     config_file = get_flake8_config()
     if config_file:
@@ -35,7 +35,7 @@ def main(files):
         check_all(files, style)
         t2 = time.time()
         n = len(files)
-        print('%s file%s, time: %5.2f sec.' % (n, g.plural(n), t2 - t1))
+        print(f"{n} file{g.plural(n)}, time: {t2 - t1:5.2f} sec.")
 #@+node:ekr.20160517222900.1: *3* get_home
 def get_home():
     """Returns the user's home directory."""
@@ -74,6 +74,7 @@ def get_flake8_config():
 #@+node:ekr.20160517222332.1: *3* check_all
 def check_all(files, style):
     """Run flake8 on all paths."""
+    # pylint: disable=import-error
     from flake8 import main
 
     report = style.check_files(paths=files)
@@ -83,7 +84,7 @@ def report_version():
     try:
         import flake8
 
-        print('flake8 version: %s' % flake8.__version__)
+        print(f"flake8 version: {flake8.__version__}")
     except ImportError:
         g.trace('can not import flake8')
 #@+node:ekr.20160517182239.15: ** scanOptions

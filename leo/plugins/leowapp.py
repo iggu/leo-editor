@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:ekr.20181028052650.1: * @file leowapp.py
+#@+node:ekr.20181028052650.1: * @file ../plugins/leowapp.py
 #@@first
 '''
 This file is deprecated/obsolete. It may be removed soon.
@@ -10,9 +10,6 @@ leoflexx.py implements LeoWapp using flexx.
 '''
 #@+<< imports >>
 #@+node:ekr.20181028052650.3: ** << imports >>
-import leo.core.leoGlobals as g
-import leo.core.leoFrame as leoFrame
-import leo.core.leoGui as leoGui
 import sys
 try:
     import websockets
@@ -22,6 +19,9 @@ except ImportError:
     print('leowapp.py requires websockets')
     print('>pip install websockets')
 import xml.sax.saxutils as saxutils
+from leo.core import leoGlobals as g
+from leo.core import leoFrame
+from leo.core import leoGui
 #@-<< imports >>
 #@+<< config >>
 #@+node:ekr.20181029070405.1: ** << config >>

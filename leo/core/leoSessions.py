@@ -3,17 +3,14 @@
 """Support for sessions in Leo."""
 #@+<< imports >>
 #@+node:ekr.20120420054855.14344: ** <<imports>> (leoSessions.py)
-import leo.core.leoGlobals as g
-#import config
-#import dnode
 import json
-# import os
-# import sys
+from leo.core import leoGlobals as g
 #@-<< imports >>
 #@+<< exception classes>>
 #@+node:ekr.20120420054855.14357: ** <<exception classes>>
 # class LeoNodeNotFoundException(Exception):
     # pass
+
 
 class LeoSessionException(Exception):
     pass
@@ -21,6 +18,7 @@ class LeoSessionException(Exception):
 #@+others
 #@+node:ekr.20120420054855.14349: ** class SessionManager
 # These were top-level nodes of leotools.py
+
 
 class SessionManager:
     #@+others
@@ -68,20 +66,19 @@ class SessionManager:
         for unl in unls:
             i = unl.find("#")
             if i > -1:
-                fn, unl = unl[: i], unl[i:]
+                fn, unl = unl[:i], unl[i:]
             else:
                 fn, unl = unl, ''
             fn = fn.strip()
             exists = fn and g.os_path_exists(fn)
             if not exists:
                 if 'startup' in g.app.debug:
-                    g.trace('file not found:', fn)
+                    g.trace('session file not found:', fn)
                 continue
             if 'startup' in g.app.debug:
-                g.trace('loading:', fn)
+                g.trace('loading session file:', fn)
             g.app.loadManager.loadLocalFile(fn, gui=g.app.gui, old_c=c)
                 # This selects the proper position.
-           
     #@+node:ekr.20120420054855.14248: *3* SessionManager.load_snapshot
     def load_snapshot(self):
         """

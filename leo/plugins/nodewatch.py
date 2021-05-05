@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:peckj.20131130132659.5964: * @file nodewatch.py
+#@+node:peckj.20131130132659.5964: * @file ../plugins/nodewatch.py
 #@+<< docstring >>
 #@+node:peckj.20131101132841.6445: ** << docstring >>
 '''
@@ -98,8 +98,7 @@ Run all @settings->@nodewatch nodes in the outline, and update the nodewatch GUI
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:peckj.20131101132841.6447: ** << imports >>
-import leo.core.leoGlobals as g
-#from PyQt4 import QtGui, QtCore
+from leo.core import leoGlobals as g
 from leo.core.leoQt import QtWidgets, QtCore
 #@-<< imports >>
 #@+others

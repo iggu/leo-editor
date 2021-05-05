@@ -1,8 +1,8 @@
 #@+leo-ver=5-thin
 #@+node:ekr.20031218072017.3439: * @file leoPlugins.py
 """Classes relating to Leo's plugin architecture."""
-import leo.core.leoGlobals as g
 import sys
+from leo.core import leoGlobals as g
 # Define modules that may be enabled by default
 # but that mignt not load because imports may fail.
 optional_modules = [
@@ -70,8 +70,6 @@ class CommandChainDispatcher:
 
     def add(self, func, priority=0):
         """ Add a func to the cmd chain with given priority """
-        # Fails in Python 3: func is not orderable.
-        # bisect.insort(self.chain,(priority,func))
         self.chain.append((priority, func),)
         self.chain.sort(key=lambda z: z[0])
 
@@ -97,7 +95,7 @@ class BaseLeoPlugin:
 
     - import the base class::
 
-        from leoPlugins import leo.core.leoBasePlugin as leoBasePlugin
+        from leoPlugins from leo.core import leoBasePlugin
 
     - create a class which inherits from leoBasePlugin::
 
@@ -262,7 +260,7 @@ class LeoPluginsController:
         self.loadingModuleNameStack = []
             # The stack of module names.
             # The top is the module being loaded.
-        self.signonModule = None # A hack for plugin_signon.
+        self.signonModule = None  # A hack for plugin_signon.
         # Settings.  Set these here in case finishCreate is never called.
         self.warn_on_failure = True
         assert(g)
@@ -274,8 +272,8 @@ class LeoPluginsController:
         self.reloadSettings()
 
     def reloadSettings(self):
-        self.warn_on_failure = \
-            g.app.config.getBool('warn_when_plugins_fail_to_load', default=True)
+        self.warn_on_failure = g.app.config.getBool(
+            'warn_when_plugins_fail_to_load', default=True)
     #@+node:ekr.20100909065501.5952: *3* plugins.Event handlers
     #@+node:ekr.20161029060545.1: *4* plugins.on_idle
     def on_idle(self):
@@ -385,7 +383,7 @@ class LeoPluginsController:
                 for tag in tags:
                     n = max(n, len(tag))
                     data.append((tag, key),)
-        lines = ['%*s %s\n' % (-n, s1, s2) for(s1, s2) in data]
+        lines = ["%*s %s\n" % (-n, s1, s2) for (s1, s2) in data]
         g.es('', ''.join(lines), tabName=tabName)
     #@+node:ekr.20100908125007.6026: *4* plugins.printPlugins
     def printPlugins(self, c):
@@ -414,23 +412,23 @@ class LeoPluginsController:
             fileName = d.get(moduleName)
             n = max(n, len(moduleName))
             data.append((moduleName, fileName),)
-        lines = ['%*s %s\n' % (-n, s1, s2) for(s1, s2) in data]
+        lines = ["%*s %s\n" % (-n, s1, s2) for (s1, s2) in data]
         g.es('', ''.join(lines), tabName=tabName)
     #@+node:ekr.20100909065501.5949: *4* plugins.regularizeName
-    def regularizeName(self, fn):
-        """Return the name used as a key to this modules dictionaries."""
-        if not fn.endswith('.py'):
-            return fn
+    def regularizeName(self, moduleOrFileName):
+        """
+        Return the module name used as a key to this modules dictionaries.
+        
+        We *must* allow .py suffixes, for compatibility with @enabled-plugins nodes.
+        """
+        if not moduleOrFileName.endswith('.py'):
+            # A module name. Return it unchanged.
+            return moduleOrFileName
         #
-        # Allow .leo/plugins
-        path = g.os_path_finalize_join('~', '.leo', 'plugins', fn)
-        if g.os_path_exists(path):
-            return fn[: -3]
-        # Return the default module for leo plugins.
-        return "leo.plugins." + fn[: -3]
-    #@+node:ekr.20100909104341.5979: *4* plugins.setLoaded
-    def setLoaded(self, fn, m):
-        self.loadedModules[self.regularizeName(fn)] = m
+        # 1880: The legacy code implictly assumed that os.path.dirname(fn) was empty!
+        #       The new code explicitly ignores any directories in the path.
+        fn = g.os_path_basename(moduleOrFileName)
+        return "leo.plugins." + fn[:-3]
     #@+node:ekr.20100909065501.5953: *3* plugins.Load & unload
     #@+node:ekr.20100908125007.6022: *4* plugins.loadHandlers
     def loadHandlers(self, tag, keys):
@@ -468,7 +466,7 @@ class LeoPluginsController:
         def report(message):
             if trace and not g.unitTesting:
                 g.es_print(f"loadOnePlugin: {message}")
-                
+
         # Define local helper functions.
         #@+others
         #@+node:ekr.20180528160855.1: *5* function:callInitFunction
@@ -482,7 +480,9 @@ class LeoPluginsController:
                     report(f"{moduleName}.init() did not return a bool")
                 if init_result:
                     self.loadedModules[moduleName] = result
-                    self.loadedModulesFilesDict[moduleName] = g.app.config.enabledPluginsFileName
+                    self.loadedModulesFilesDict[moduleName] = (
+                        g.app.config.enabledPluginsFileName
+                    )
                 else:
                     report(f"{moduleName}.init() returned False")
                     result = None
@@ -495,7 +495,7 @@ class LeoPluginsController:
         def finishImport(result):
             """Handle last-minute checks."""
             if tag == 'unit-test-load':
-                return result # Keep the result, but do no more.
+                return result  # Keep the result, but do no more.
             if hasattr(result, 'init'):
                 return callInitFunction(result)
             #
@@ -540,7 +540,6 @@ class LeoPluginsController:
             ):
                 report(f"can not load enabled plugin: {moduleName}")
         #@-others
-
         if not g.app.enablePlugins:
             report(f"plugins disabled: {moduleOrFileName}")
             return None
@@ -574,8 +573,11 @@ class LeoPluginsController:
         finally:
             self.loadingModuleNameStack.pop()
         if result:
+            # #1688: Plugins can update globalDirectiveList.
+            #        Recalculate g.directives_pat.
+            g.update_directives_pat()
             report(f"loaded: {moduleName}")
-        self.signonModule = result # for self.plugin_signon.
+        self.signonModule = result  # for self.plugin_signon.
         return result
     #@+node:ekr.20031218072017.1318: *4* plugins.plugin_signon
     def plugin_signon(self, module_name, verbose=False):
@@ -586,7 +588,7 @@ class LeoPluginsController:
         if verbose:
             g.es(f"...{m.__name__}.py v{m.__version__}: {g.plugin_date(m)}")
             g.pr(m.__name__, m.__version__)
-        self.signonModule = None # Prevent double signons.
+        self.signonModule = None  # Prevent double signons.
     #@+node:ekr.20100908125007.6030: *4* plugins.unloadOnePlugin
     def unloadOnePlugin(self, moduleOrFileName, verbose=False):
         moduleName = self.regularizeName(moduleOrFileName)
@@ -616,13 +618,13 @@ class LeoPluginsController:
             moduleName = '<no module>'
         if 0:
             if g.app.unitTesting: g.pr('')
-            g.pr('%6s %15s %25s %s' % (g.app.unitTesting, moduleName, tag, fn.__name__))
+            g.pr(f"{g.app.unitTesting:6} {moduleName:15} {tag:25} {fn.__name__}")
         if g.app.unitTesting: return
         if tag in self.handlers:
             g.es(f"*** Two exclusive handlers for '{tag}'")
         else:
             bunch = g.Bunch(fn=fn, moduleName=moduleName, tag='handler')
-            self.handlers[tag] = [bunch] # Vitalije
+            self.handlers[tag] = [bunch]  # Vitalije
     #@+node:ekr.20100908125007.6029: *4* plugins.registerHandler & registerOneHandler
     def registerHandler(self, tags, fn):
         """ Register one or more handlers"""
@@ -640,10 +642,10 @@ class LeoPluginsController:
             moduleName = '<no module>'
         if 0:
             if g.app.unitTesting: g.pr('')
-            g.pr('%6s %15s %25s %s' % (g.app.unitTesting, moduleName, tag, fn.__name__))
+            g.pr(f"{g.app.unitTesting:6} {moduleName:15} {tag:25} {fn.__name__}")
         items = self.handlers.get(tag, [])
         functions = [z.fn for z in items]
-        if fn not in functions: # Vitalije
+        if fn not in functions:  # Vitalije
             bunch = g.Bunch(fn=fn, moduleName=moduleName, tag='handler')
             items.append(bunch)
         self.handlers[tag] = items
@@ -664,4 +666,5 @@ class LeoPluginsController:
 #@@language python
 #@@tabwidth -4
 #@@pagewidth 70
+
 #@-leo

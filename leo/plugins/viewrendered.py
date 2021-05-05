@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20100318101414.5990: * @file viewrendered.py
+#@+node:tbrown.20100318101414.5990: * @file ../plugins/viewrendered.py
 #@+<< vr docstring >>
 #@+node:tbrown.20100318101414.5991: ** << vr docstring >>
 '''
@@ -154,6 +154,13 @@ contain a filename.  If relative, the filename is resolved relative to Leo's loa
   See http://en.wikipedia.org/wiki/Scalable_Vector_Graphics
   **Note**: if the first character of the body text is ``<`` after removing Leo directives,
   the contents of body pane is taken to be an svg image.
+  
+Relative file names
+===================
+
+vr.convert_to_html resolves relative paths using whatever @path directive
+is in effect for a particular node. It also does `os.chdir(path)` for that
+path.
 
 Settings
 ========
@@ -178,11 +185,12 @@ Settings
 Acknowledgments
 ================
 
-Terry Brown created this initial version of this plugin,
-and the free_layout and NestedSplitter plugins used by viewrendered.
+Terry Brown created this initial version of this plugin, and the
+free_layout and NestedSplitter plugins used by viewrendered.
 
-Edward K. Ream generalized this plugin and added communication
-and coordination between the free_layout, NestedSplitter and viewrendered plugins.
+Edward K. Ream generalized this plugin and added communication and
+coordination between the free_layout, NestedSplitter and viewrendered
+plugins.
 
 Jacob Peck added markdown support to this plugin.
 
@@ -192,7 +200,7 @@ Jacob Peck added markdown support to this plugin.
 #@+node:ekr.20140924060835.19485: ** << to do >> (vr)
 #@+at
 # To do:
-# 
+#
 # - Use the free_layout rotate-all command in Leo's toggle-split-direction command.
 # - Add dict to allow customize must_update.
 # - Lock movies automatically until they are finished?
@@ -200,21 +208,28 @@ Jacob Peck added markdown support to this plugin.
 # - Support uA's that indicate the kind of rendering desired.
 # - (Failed) Make viewrendered-big work.
 #@-<< to do >>
-#pylint: disable=no-member
-trace = False
-    # This global trace is convenient.
 #@+<< imports >>
 #@+node:tbrown.20100318101414.5993: ** << imports >> (vr)
-import leo.core.leoGlobals as g
+from distutils.spawn import find_executable
+import json
+import os
+from pathlib import Path
+from urllib.request import urlopen
+from leo.core import leoGlobals as g
+
 try:
-    import leo.plugins.qt_text as qt_text
-    import leo.plugins.free_layout as free_layout
+    from leo.plugins import qt_text
+    from leo.plugins import free_layout
     from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets
     from leo.core.leoQt import phonon, QtMultimedia, QtSvg, QtWebKitWidgets
 except Exception:
     QtWidgets = False
-from distutils.spawn import find_executable
+#
+# Optional third-party imports...
+#
+# Docutils.
 try:
+    # pylint: disable=import-error
     import docutils
     import docutils.core
 except ImportError:
@@ -232,29 +247,33 @@ if docutils:
         g.es_exception()
 else:
     got_docutils = False
-# markdown support, non-vital
+#
+# Jinja.
 try:
+    from jinja2 import Template
+except ImportError:
+    Template = None
+# 
+# Markdown.
+try:
+    # pylint: disable=import-error
     from markdown import markdown
     got_markdown = True
 except ImportError:
     got_markdown = False
-import os
-# nbformat (@jupyter) support, non-vital.
+#
+# nbformat (@jupyter) support.
 try:
+    # pylint: disable=import-error
     import nbformat
     from nbconvert import HTMLExporter
     # from traitlets.config import Config
 except ImportError:
     nbformat = None
-import json
-try:
-    from urllib.request import urlopen
-except ImportError:
-    try:
-        from urllib import urlopen  # for Python 2.7
-    except ImportError:
-        urllib = None
 #@-<< imports >>
+#pylint: disable=no-member
+trace = False
+    # This global trace is convenient.
 asciidoctor_exec = find_executable('asciidoctor')
 asciidoc3_exec = find_executable('asciidoc3')
 pandoc_exec = find_executable('pandoc')
@@ -321,7 +340,7 @@ def init():
         if (
             not g.unitTesting and
             not g.app.batchMode and
-            not g.app.gui.guiName() in ('browser', 'curses')
+            g.app.gui.guiName() not in ('browser', 'curses')
         ):
             g.es_print('viewrendered requires Qt')
         return False
@@ -343,10 +362,6 @@ def onCreate(tag, keys):
         return
     provider = ViewRenderedProvider(c)
     free_layout.register_provider(c, provider)
-    if g.app.dock:
-        # Instantiate immediately.
-        viewrendered(event={'c': c})
-
 #@+node:vitalije.20170712174157.1: *3* vr.onClose
 def onClose(tag, keys):
     c = keys.get('c')
@@ -404,16 +419,7 @@ def viewrendered(event):
     vr = controllers.get(h)
     if not vr:
         controllers[h] = vr = ViewRenderedController(c)
-    if g.app.dock:
-        dock = vr.leo_dock
-        if not c.mFileName:
-            # #1318 and #1332: Tricky init code for new windows.
-            g.app.restoreWindowState(c)
-            dock.hide()
-            dock.raise_()
-        return vr
-    #
-    # Legacy code: add the pane to the splitter.
+    # Add the pane to the splitter.
     layouts[h] = c.db.get('viewrendered_default_layouts', (None, None))
     vr._ns_id = '_leo_viewrendered' # for free_layout load/save
     vr.splitter = splitter = c.free_layout.get_top_splitter()
@@ -440,8 +446,6 @@ def contract_rendering_pane(event):
     vr = controllers.get(c.hash())
     if not vr:
         vr = viewrendered(event)
-    if g.app.dock:
-        return
     vr.contract()
 #@+node:ekr.20130413061407.10361: *3* g.command('vr-expand')
 @g.command('vr-expand')
@@ -455,8 +459,6 @@ def expand_rendering_pane(event):
     vr = controllers.get(c.hash())
     if not vr:
         vr = viewrendered(event)
-    if g.app.dock:
-        return
     vr.expand()
 #@+node:ekr.20110917103917.3639: *3* g.command('vr-hide')
 @g.command('vr-hide')
@@ -471,15 +473,6 @@ def hide_rendering_pane(event):
     vr = controllers.get(c.hash())
     if not vr:
         vr = viewrendered(event)
-    if g.app.dock:
-        if vr.external_dock:
-            return # Can't hide a top-level dock.
-        dock = vr.leo_dock
-        if dock:
-            dock.hide()
-        return
-    #
-    # Legacy code.
     if vr.pyplot_active:
         g.es_print('can not close VR pane after using pyplot')
         return
@@ -564,14 +557,7 @@ def toggle_rendering_pane(event):
     if not vr:
         vr = viewrendered(event)
         vr.hide() # So the toggle below will work.
-    if g.app.dock:
-        if vr.external_dock:
-            return # Can't hide a top-level dock.
-        dock = vr.leo_dock
-        if dock:
-            f = dock.show if dock.isHidden() else dock.hide
-            f()
-    elif vr.isHidden():
+    if vr.isHidden():
         show_rendering_pane(event)
     else:
         hide_rendering_pane(event)
@@ -617,8 +603,6 @@ def zoom_rendering_pane(event):
     vr = controllers.get(c.hash())
     if not vr:
         vr = viewrendered(event)
-    if g.app.dock:
-        return
     flc = c.free_layout
     if vr.zoomed:
         for ns in flc.get_top_splitter().top().self_and_descendants():
@@ -642,7 +626,7 @@ def zoom_rendering_pane(event):
                     ns.setSizes(sizes)
                     break
     vr.zoomed = not vr.zoomed
-#@+node:tbrown.20110629084915.35149: ** class ViewRenderedProvider (vr)
+#@+node:tbrown.20110629084915.35149: ** class ViewRenderedProvider
 class ViewRenderedProvider:
     #@+others
     #@+node:tbrown.20110629084915.35154: *3* vr.__init__
@@ -653,13 +637,11 @@ class ViewRenderedProvider:
             splitter = c.free_layout.get_top_splitter()
             if splitter:
                 splitter.register_provider(self)
-    #@+node:tbrown.20110629084915.35150: *3* vr.ns_provides
-    def ns_provides(self):
-        return [('Viewrendered', '_leo_viewrendered')]
     #@+node:tbrown.20110629084915.35151: *3* vr.ns_provide
     def ns_provide(self, id_):
         global controllers, layouts
-        if id_ == '_leo_viewrendered':
+        # #1678: duplicates in Open Window list
+        if id_ == self.ns_provider_id():
             c = self.c
             vr = controllers.get(c.hash()) or ViewRenderedController(c)
             h = c.hash()
@@ -669,6 +651,21 @@ class ViewRenderedProvider:
             # return ViewRenderedController(self.c)
             return vr
         return None
+    #@+node:ekr.20200917062806.1: *3* vr.ns_provider_id
+    def ns_provider_id(self):
+        # return f"vr_id:{self.c.shortFileName()}"
+        return '_leo_viewrendered'
+    #@+node:tbrown.20110629084915.35150: *3* vr.ns_provides
+    def ns_provides(self):
+        # #1671: Better Window names.
+        # #1678: duplicates in Open Window list
+        return [('Viewrendered', self.ns_provider_id())]
+    #@+node:ekr.20200917063221.1: *3* vr.ns_title
+    def ns_title(self, id_):
+        if id_ != self.ns_provider_id():
+            return None
+        filename = self.c.shortFileName() or 'Unnamed file'
+        return f"Viewrendered: {filename}"
     #@-others
 #@+node:ekr.20110317024548.14375: ** class ViewRenderedController (QWidget)
 if QtWidgets: # NOQA
@@ -676,7 +673,7 @@ if QtWidgets: # NOQA
     class ViewRenderedController(QtWidgets.QWidget):
         '''A class to control rendering in a rendering pane.'''
         #@+others
-        #@+node:ekr.20110317080650.14380: *3* vr.ctor & helpers
+        #@+node:ekr.20110317080650.14380: *3*  vr.ctor & helpers
         def __init__(self, c, parent=None):
             '''Ctor for ViewRenderedController class.'''
             self.c = c
@@ -731,6 +728,8 @@ if QtWidgets: # NOQA
                 'rest': pc.update_rst,
                 'rst': pc.update_rst,
                 'svg': pc.update_svg,
+                'plantuml': pc.update_plantuml,
+                'jinja' : pc.update_jinja,
                 # 'url': pc.update_url,
                 # 'xml': pc.update_xml,
             }
@@ -743,37 +742,36 @@ if QtWidgets: # NOQA
             self.auto_create = c.config.getBool('view-rendered-auto-create', False)
             self.background_color = c.config.getColor('rendering-pane-background-color') or 'white'
             self.default_kind = c.config.getString('view-rendered-default-kind') or 'rst'
-            self.external_dock = c.config.getBool('use-vr-dock', default=False)
+
         #@+node:ekr.20190614065659.1: *4* vr.create_pane
         def create_pane(self, parent):
             '''Create the VR pane or dock.'''
-            c = self.c
-            dw = c.frame.top
-            self.leo_dock = None # May be set below.
             if g.app.unitTesting:
                 return
             # Create the inner contents.
             self.setObjectName('viewrendered_pane')
             self.setLayout(QtWidgets.QVBoxLayout())
             self.layout().setContentsMargins(0, 0, 0, 0)
-            if not g.app.dock:
-                return
-            # Allow the VR dock to move only in special circumstances.
-            central_body = g.app.get_central_widget(c) == 'body'
-            moveable = g.app.init_docks or central_body
-            self.leo_dock = dock = g.app.gui.create_dock_widget(
-                closeable=True, moveable=moveable, height=50, name='Render')
-            if central_body:
-                # Create a stand-alone dockable area.
-                dock.setWidget(self)
-                dw.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-            else:
-                # Split the body dock.
-                dw.leo_docks.append(dock)
-                dock.setWidget(self)
-                dw.splitDockWidget(dw.body_dock, dock, QtCore.Qt.Horizontal)
-            if g.app.init_docks:
-                dock.show()
+        #@+node:ekr.20110317080650.14381: *3* vr.activate
+        def activate(self):
+            '''Activate the vr-window.'''
+            pc = self
+            if pc.active: return
+            pc.inited = True
+            pc.active = True
+            g.registerHandler('select2', pc.update)
+            g.registerHandler('idle', pc.update)
+        #@+node:vitalije.20170712183051.1: *3* vr.adjust_layout (legacy only)
+        def adjust_layout(self, which):
+            global layouts
+            c = self.c
+            splitter = self.splitter
+            deflo = c.db.get('viewrendered_default_layouts', (None, None))
+            loc, loo = layouts.get(c.hash(), deflo)
+            if which == 'closed' and loc and splitter:
+                splitter.load_layout(c, loc)
+            elif which == 'open' and loo and splitter:
+                splitter.load_layout(c, loo)
         #@+node:tbrown.20110621120042.22676: *3* vr.closeEvent
         def closeEvent(self, event):
             '''Close the vr window.'''
@@ -798,15 +796,6 @@ if QtWidgets: # NOQA
                     else:
                         sizes[j] = max(0, size - int(delta / (n - 1)))
                 splitter.setSizes(sizes)
-        #@+node:ekr.20110317080650.14381: *3* vr.activate
-        def activate(self):
-            '''Activate the vr-window.'''
-            pc = self
-            if pc.active: return
-            pc.inited = True
-            pc.active = True
-            g.registerHandler('select2', pc.update)
-            g.registerHandler('idle', pc.update)
         #@+node:ekr.20110317080650.14382: *3* vr.deactivate
         def deactivate(self):
             '''Deactivate the vr window.'''
@@ -825,6 +814,13 @@ if QtWidgets: # NOQA
             '''Unlock the vr pane.'''
             g.note('rendering pane unlocked')
             self.locked = False
+        #@+node:ekr.20200304133109.1: *3* vr.onContextMenuCallback
+        def onContextMenuCallback(self, point):
+            """LeoQtTree: Callback for customContextMenuRequested events."""
+            # #1286.
+            c = self.c
+            w = self
+            g.app.gui.onContextMenu(c, w, point)
         #@+node:ekr.20160921071239.1: *3* vr.set_html
         def set_html(self, s, w):
             '''Set text in w to s, preserving scroll position.'''
@@ -846,6 +842,30 @@ if QtWidgets: # NOQA
                 # Restore the scrollbars
                 assert pos is not None
                 sb.setSliderPosition(pos)
+        #@+node:ekr.20190614133401.1: *3* vr.show_dock_or_pane
+        def show_dock_or_pane(self):
+
+            c, vr = self.c, self
+            vr.activate()
+            vr.show()
+            vr.adjust_layout('open')
+            c.bodyWantsFocusNow()
+        #@+node:vitalije.20170712183618.1: *3* vr.store_layout
+        def store_layout(self, which):
+            global layouts
+            c = self.c; h = c.hash()
+            splitter = self.splitter
+            deflo = c.db.get('viewrendered_default_layouts', (None, None))
+            (loc, loo) = layouts.get(c.hash(), deflo)
+            if which == 'closed' and splitter:
+                loc = splitter.get_saveable_layout()
+                loc = json.loads(json.dumps(loc))
+                layouts[h] = loc, loo
+            elif which == 'open' and splitter:
+                loo = splitter.get_saveable_layout()
+                loo = json.loads(json.dumps(loo))
+                layouts[h] = loc, loo
+            c.db['viewrendered_default_layouts'] = layouts[h]
         #@+node:ekr.20110319143920.14466: *3* vr.underline
         def underline(self, s):
             '''Generate rST underlining for s.'''
@@ -876,8 +896,7 @@ if QtWidgets: # NOQA
                 #
                 # Use plain text if we are hidden.
                 # This avoids annoying messages with rst.
-                dock = pc.leo_dock or pc
-                if dock.isHidden():
+                if pc.isHidden():
                     w = pc.ensure_text_widget()
                     w.setPlainText(s)
                     return
@@ -1456,10 +1475,97 @@ if QtWidgets: # NOQA
                 if 'SEVERE' in msg or 'FATAL' in msg:
                     s = 'RST error:\n%s\n\n%s' % (msg, s)
             return s
+
+        def update_plantuml(self, s, keywords):
+            pc = self
+            w = pc.ensure_text_widget()
+            path = self.c.p.h[9:].strip()
+            print("Plantuml output file name: ", path)
+            with open("temp.plantuml", "w") as f:
+                f.write(s)
+            pth_plantuml_jar = "~/.leo"
+            os.system("cat temp.plantuml | java -jar %s/plantuml.jar -pipe > %s" % (pth_plantuml_jar, path))
+            template = image_template % (path)
+            # Only works in Python 3.x.
+            template = g.adjustTripleString(template, pc.c.tab_width).strip()
+            pc.show()
+            w.setReadOnly(False)
+            w.setHtml(template)
+            w.setReadOnly(True)
+
+        def update_jinja(self, s, keywords):
+            pc = self
+            h = self.c.p.h
+            p = self.c.p
+            c = self.c
+            oldp = None
+
+            #print "try act"
+            if not h.startswith('@jinja'):
+                #print("Not a @jinja node")
+                return
+
+            def find_root(p):
+                for newp in p.parents():
+                    if newp.h.strip() == '@jinja':
+                        oldp, p = p, newp
+                        #print("Found @jinja node")
+                        return oldp, p
+                return None, None
+
+            def find_inputs(p):
+                for newp in p.parents():
+                    if newp.h.strip() == '@jinja inputs':
+                        oldp, p = p, newp
+                        _, p = find_root(p) 
+                        return oldp, p
+                return None, None
+                
+            # if on jinja node's children, find the parent
+            if h.strip() == '@jinja template' or h.strip() == '@jinja inputs':
+                # not at @jinja, find from parents
+                oldp, p = find_root(p)
+
+            elif h.startswith('@jinja variable'):
+                # not at @jinja, first find @jinja inputs, then @jinja
+                oldp, p = find_inputs(p) 
+
+            def untangle(c,p):
+            
+                return g.getScript(c,p,
+                    useSelectedText=False,
+                    useSentinels=False)
+
+            template_data = {}
+            for child in p.children():
+                if child.h == '@jinja template':
+                    template_path = g.os_path_finalize_join(c.getNodePath(p), untangle(c, child).strip())
+                    #print("template_path: ", template_path)
+                elif child.h == '@jinja inputs':
+                    for template_var_node in child.children():
+                        template_data[template_var_node.h.replace('@jinja variable', '').strip()] = untangle(c, template_var_node).strip()
+                    #print("template_data: ", template_data)
+
+            if not template_path:
+                g.es("No template_path given. Your @jinja node should contain a child node 'template' with the path to the template (relative or absolute)")
+                return
+
+            #print "act"
+            tmpl = Template(Path(template_path).read_text())
+            out = tmpl.render(template_data)
+            w = pc.ensure_text_widget()
+            pc.show()
+            w.setPlainText(out)
+            p.b = out
+            c.redraw(p)
+            
+            # focus back on entry node
+            if oldp:
+                c.redraw(oldp)
+            
         #@+node:ekr.20110320120020.14479: *4* vr.update_svg
         # http://doc.trolltech.com/4.4/qtsvg.html
         # http://doc.trolltech.com/4.4/painting-svgviewer.html
-
         def update_svg(self, s, keywords):
             pc = self
             if pc.must_change_widget(QtSvg.QSvgWidget):
@@ -1514,9 +1620,12 @@ if QtWidgets: # NOQA
                 # Instantiate a new QTextBrowser.
                 # Allow non-ctrl clicks to open url's.
                 w = QtWidgets.QTextBrowser()
+                # #1286.
+                w.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+                w.customContextMenuRequested.connect(self.onContextMenuCallback)
 
                 def handleClick(url, w=w):
-                    import leo.plugins.qt_text as qt_text
+                    from leo.plugins import qt_text
                     wrapper = qt_text.QTextEditWrapper(w, name='vr-body', c=c)
                     event = g.Bunch(c=c, w=wrapper)
                     g.openUrlOnClick(event, url=url)
@@ -1535,7 +1644,6 @@ if QtWidgets: # NOQA
         #@+node:ekr.20110320120020.14483: *5* vr.get_kind
         def get_kind(self, p):
             '''Return the proper rendering kind for node p.'''
-            c = self.c
             
             def get_language(p):
                 """
@@ -1551,8 +1659,7 @@ if QtWidgets: # NOQA
                         return word
                 # Look for @language directives.
                 # Warning: (see #344): don't use c.target_language as a default.
-                colorizer = c.frame.body.colorizer
-                return colorizer.findFirstValidAtLanguageDirective(p.copy())
+                return g.findFirstValidAtLanguageDirective(p.copy())
             #
             #  #1287: Honor both kind of directives node by node.
             for p in p.self_and_parents(p):
@@ -1575,11 +1682,11 @@ if QtWidgets: # NOQA
                 # Expand '~' and handle Leo expressions.
                 fn = fn[1:]
                 fn = g.os_path_expanduser(fn)
-                fn = g.os_path_expandExpression(fn, c=c)
+                fn = c.expand_path_expression(fn)
                 fn = g.os_path_finalize(fn)
             else:
                 # Handle Leo expressions.
-                fn = g.os_path_expandExpression(fn, c=c)
+                fn = c.expand_path_expression(fn)
                 # Handle ancestor @path directives.
                 if c and c.openDirectory:
                     base = c.getNodePath(c.p)
@@ -1611,48 +1718,6 @@ if QtWidgets: # NOQA
                         continue
                 result.append(s)
             return ''.join(result)
-        #@+node:vitalije.20170712183051.1: *3* vr.adjust_layout (legacy only)
-        def adjust_layout(self, which):
-            global layouts
-            c = self.c
-            splitter = self.splitter
-            deflo = c.db.get('viewrendered_default_layouts', (None, None))
-            loc, loo = layouts.get(c.hash(), deflo)
-            if which == 'closed' and loc and splitter:
-                splitter.load_layout(loc)
-            elif which == 'open' and loo and splitter:
-                splitter.load_layout(loo)
-        #@+node:ekr.20190614133401.1: *3* vr.show_dock_or_pane
-        def show_dock_or_pane(self):
-
-            c, vr = self.c, self
-            if g.app.dock:
-                dock = vr.leo_dock
-                if dock:
-                    dock.show()
-                    dock.raise_()
-                        # #1230.
-            else:
-                vr.activate()
-                vr.show()
-                vr.adjust_layout('open')
-            c.bodyWantsFocusNow()
-        #@+node:vitalije.20170712183618.1: *3* vr.store_layout
-        def store_layout(self, which):
-            global layouts
-            c = self.c; h = c.hash()
-            splitter = self.splitter
-            deflo = c.db.get('viewrendered_default_layouts', (None, None))
-            (loc, loo) = layouts.get(c.hash(), deflo)
-            if which == 'closed' and splitter:
-                loc = splitter.get_saveable_layout()
-                loc = json.loads(json.dumps(loc))
-                layouts[h] = loc, loo
-            elif which == 'open' and splitter:
-                loo = splitter.get_saveable_layout()
-                loo = json.loads(json.dumps(loo))
-                layouts[h] = loc, loo
-            c.db['viewrendered_default_layouts'] = layouts[h]
         #@-others
 #@-others
 #@@language python

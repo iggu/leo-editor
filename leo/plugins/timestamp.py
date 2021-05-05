@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20130808211520.15893: * @file timestamp.py
+#@+node:ekr.20130808211520.15893: * @file ../plugins/timestamp.py
 '''If this plugin is enabled, the following node attributes will be managed:
     - str_ctime: creation time
     - str_mtime: time node was last modified
@@ -9,7 +9,7 @@
 # By Kent Tenney
 
 import time
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 #@@language python
 #@@tabwidth -4

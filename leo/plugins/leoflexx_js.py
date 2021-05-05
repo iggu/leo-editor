@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:ekr.201811100000000.1: * @file leoflexx_js.py
+#@+node:ekr.201811100000000.1: * @file ../plugins/leoflexx_js.py
 #@@first
 #@@language python
 #@@tabwidth -4
@@ -8,7 +8,7 @@
 A Stand-alone prototype for Leo using flexx.
 '''
 from flexx import flx
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 assert g
 #@+others
 #@+node:ekr.20181110170337.1: **  init

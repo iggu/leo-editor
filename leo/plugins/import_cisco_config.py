@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.669: * @file import_cisco_config.py
+#@+node:edream.110203113231.669: * @file ../plugins/import_cisco_config.py
 #@+<< docstring >>
 #@+node:ekr.20050912180321: ** << docstring >>
 ''' Allows the user to import Cisco configuration files.
@@ -27,7 +27,7 @@ All created sections are alphabetically ordered.
 
 '''
 #@-<< docstring >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 #@+others
 #@+node:ekr.20050311102853.1: ** init
@@ -48,11 +48,10 @@ def create_import_cisco_menu (tag,keywords):
     def importCiscoConfigCallback(event=None,c=c):
         importCiscoConfig(c)
 
-    newEntries = (
+    table = (
         ("-",None,None),
         ("Import C&isco Configuration","Shift+Ctrl+I",importCiscoConfigCallback))
-
-    c.frame.menu.createMenuEntries(importMenu,newEntries,dynamicMenu=True)
+    c.frame.menu.createMenuEntries(importMenu, table)
 #@+node:edream.110203113231.672: ** importCiscoConfig
 def importCiscoConfig(c):
 
@@ -75,7 +74,7 @@ def importCiscoConfig(c):
         return
 
     p = current.insertAsNthChild(0)
-    c.setHeadString(p,"cisco config: %s" % name)
+    p.h = "cisco config: %s" % name
     c.redraw()
 
     try:
@@ -112,7 +111,7 @@ def importCiscoConfig(c):
                     out.append(g.angleBrackets(customLine))
                     # create first-level child
                     child = p.insertAsNthChild(0)
-                    c.setHeadString(child,g.angleBrackets(customLine))
+                    child.h = g.angleBrackets(customLine)
                     children.append(child)
 
                 blocks[customLine].append(linelist[i])
@@ -134,7 +133,7 @@ def importCiscoConfig(c):
                     out.append(g.angleBrackets(key))
                     # create first-level child
                     child = p.insertAsNthChild(0)
-                    c.setHeadString(child,g.angleBrackets(key))
+                    child.h = g.angleBrackets(key)
                     children.append(child)
 
                 value = [linelist[i]]
@@ -168,7 +167,7 @@ def importCiscoConfig(c):
         else:
             outClean.append(line)
         prev = line
-    c.setBodyString(p,'\n'.join(outClean))
+    p.b = '\n'.join(outClean)
 
     # scan through the created outline and add children
     for child in children:
@@ -179,14 +178,14 @@ def importCiscoConfig(c):
             # if type(blocks[key][0]) == type(''):
             if g.isString(blocks[key][0]):
                 # it's a string, no sub-children, so just print the text
-                c.setBodyString(child,'\n'.join(blocks[key]))
+                child.b = '\n'.join(blocks[key])
             else:
                 # it's a multi-level node
                 for value in blocks[key]:
                     # each value is a list containing the headline and then the text
                     subchild = child.insertAsNthChild(0)
-                    c.setHeadString(subchild,value[0])
-                    c.setBodyString(subchild,'\n'.join(value))
+                    subchild.h = value[0]
+                    subchild.b = '\n'.join(value)
             # child.sortChildren()
         else:
             # this should never happen

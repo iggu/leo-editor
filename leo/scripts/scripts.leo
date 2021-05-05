@@ -385,1313 +385,61 @@
 <v t="ekr.20190911074705.1"><vh>script: find trailing comments</vh></v>
 <v t="ekr.20190911232205.1"><vh>@@button next-trailing-comment @key=ctrl-1</vh></v>
 </v>
-<v t="ekr.20060824111500.108"><vh>@button jEdit2Py</vh>
-<v t="ekr.20060824111500.109"><vh>&lt;&lt; imports &gt;&gt;</vh></v>
-<v t="ekr.20060824111500.110"><vh>&lt;&lt; to do &gt;&gt;</vh></v>
-<v t="ekr.20060824111500.111"><vh>&lt;&lt; version history &gt;&gt;</vh></v>
-<v t="ekr.20060824111500.112"><vh>&lt;&lt; set files to convert &gt;&gt;</vh></v>
-<v t="ekr.20060824111500.113"><vh>top-level</vh>
-<v t="ekr.20160319080102.1"><vh>cleanSaxInputString</vh></v>
-<v t="ekr.20060824111500.115"><vh>parse_jEdit_file</vh></v>
-<v t="ekr.20060824111500.114"><vh>convert</vh></v>
-<v t="ekr.20060824111500.116"><vh>munge</vh></v>
-<v t="ekr.20160319081141.1"><vh>main</vh></v>
+<v t="ekr.20200505051804.1"><vh>Leo 6.3</vh>
+<v t="ekr.20200505051752.1"><vh>script: clone all files defining cmd</vh></v>
+<v t="ekr.20200505051957.1"><vh>script: convert @cmd decorators</vh>
+<v t="ekr.20200505051957.2"><vh>&lt;&lt; define patterns &gt;&gt;</vh></v>
+<v t="ekr.20200505051957.3"><vh>dump_parts</vh></v>
+<v t="ekr.20200505051957.4"><vh>find_parts</vh></v>
+<v t="ekr.20200505051957.5"><vh>make_command_node</vh></v>
+<v t="ekr.20200505051957.6"><vh>make_command_root</vh></v>
+<v t="ekr.20200505051957.7"><vh>do_part</vh></v>
 </v>
-<v t="ekr.20060824111500.117"><vh>class modeClass</vh>
-<v t="ekr.20060824111500.118"><vh> mode.__init__</vh></v>
-<v t="ekr.20060824111500.119"><vh> mode.__str__ &amp; __repr__</vh></v>
-<v t="ekr.20060824111500.120"><vh> Output...</vh>
-<v t="ekr.20060827162343"><vh>fullDelegate</vh></v>
-<v t="ekr.20060824111500.121"><vh>escapeString &amp; quoteString</vh></v>
-<v t="ekr.20060824111500.122"><vh>put, putTripleString</vh></v>
-<v t="ekr.20060824111500.123"><vh>putAttributes</vh></v>
-<v t="ekr.20060824111500.124"><vh>putDict &amp; putDictOfLists</vh></v>
-<v t="ekr.20060824111500.125"><vh>putImportDict</vh></v>
-<v t="ekr.20060824111500.126"><vh>putKeywordsData</vh></v>
-<v t="ekr.20060824111500.127"><vh>putList</vh></v>
-<v t="ekr.20060824111500.128"><vh>putModeProperties</vh></v>
-<v t="ekr.20060824111500.129"><vh>putRule &amp; rule creators</vh>
-<v t="ekr.20060824111500.130"><vh>putBadRule</vh></v>
-<v t="ekr.20060824111500.131"><vh>putEolSpan</vh></v>
-<v t="ekr.20060824111500.132"><vh>putEolSpanRegexp</vh></v>
-<v t="ekr.20060824111500.133"><vh>putImport</vh></v>
-<v t="ekr.20060824111500.134"><vh>putKeywords</vh></v>
-<v t="ekr.20060824111500.135"><vh>putMarkFollowing</vh></v>
-<v t="ekr.20060824111500.136"><vh>putMarkPrevious</vh></v>
-<v t="ekr.20060824111500.137"><vh>putSeq</vh></v>
-<v t="ekr.20060824111500.138"><vh>putSeqRegexp</vh></v>
-<v t="ekr.20060824111500.139"><vh>putSpan</vh></v>
-<v t="ekr.20060824111500.140"><vh>putSpanRegexp</vh></v>
-<v t="ekr.20060824111500.141"><vh>putTerminate</vh></v>
 </v>
-<v t="ekr.20060824111500.142"><vh>putRules</vh></v>
-<v t="ekr.20060824111500.143"><vh>write</vh></v>
+<v t="ekr.20201030065542.1"><vh>Leo 6.4</vh>
+<v t="ekr.20201030065548.2"><vh>script: make-annonymous (Dangerous!)</vh></v>
+<v t="ekr.20201030065548.3"><vh>script: print summary of c.config.settingsDict</vh></v>
+<v t="ekr.20201030065548.4"><vh>script: remove-icon-script</vh></v>
+<v t="ekr.20201030065548.5"><vh>script: set window to youtube size</vh></v>
+<v t="ekr.20201030065548.6"><vh>Script: Speed Ream: install leowapp</vh>
+<v t="ekr.20201030065548.7"><vh>&lt;&lt; docstring &gt;&gt;</vh></v>
+<v t="ekr.20201030065548.8"><vh>&lt;&lt; usage &gt;&gt;</vh></v>
+<v t="ekr.20201030065548.9"><vh>&lt;&lt; commands &gt;&gt;</vh></v>
+<v t="ekr.20201030065548.10"><vh>imports</vh></v>
+<v t="ekr.20201030065548.11"><vh>globals</vh></v>
+<v t="ekr.20201030065548.12"><vh>data</vh></v>
+<v t="ekr.20201030065548.13"><vh>control routines</vh></v>
+<v t="ekr.20201030065548.14"><vh>run routines</vh>
+<v t="ekr.20201030065548.15"><vh>setup_dirs</vh></v>
+<v t="ekr.20201030065548.16"><vh>leo_copy_test</vh></v>
+<v t="ekr.20201030065548.17"><vh>create_dir</vh></v>
+<v t="ekr.20201030065548.18"><vh>run_env_cmd</vh></v>
+<v t="ekr.20201030065548.19"><vh>clone_repo</vh></v>
+<v t="ekr.20201030065548.20"><vh>setup_git</vh></v>
+<v t="ekr.20201030065548.21"><vh>unzip</vh></v>
+<v t="ekr.20201030065548.22"><vh>get_names</vh></v>
+<v t="ekr.20201030065548.23"><vh>setup_zip</vh></v>
+<v t="ekr.20201030065548.24"><vh>pull_repo</vh></v>
+<v t="ekr.20201030065548.25"><vh>install</vh></v>
 </v>
-<v t="ekr.20060824111500.144"><vh> Printing...</vh>
-<v t="ekr.20060824111500.145"><vh>printModeAttributes, printRulesetAttributes &amp; printAttributesHelper</vh></v>
-<v t="ekr.20060824111500.146"><vh>printProperty</vh></v>
-<v t="ekr.20060824111500.147"><vh>printRule</vh></v>
-<v t="ekr.20060824111500.148"><vh>printRuleset</vh></v>
-<v t="ekr.20060824111500.149"><vh>printSummary</vh></v>
 </v>
-<v t="ekr.20060824111500.150"><vh>doAttribute</vh></v>
-<v t="ekr.20060824111500.151"><vh>doContent</vh></v>
-<v t="ekr.20060824111500.152"><vh>endElement</vh></v>
-<v t="ekr.20060824111500.153"><vh>error</vh></v>
-<v t="ekr.20060824111500.154"><vh>getters</vh></v>
-<v t="ekr.20060824111500.155"><vh>inRule</vh></v>
-<v t="ekr.20060824111500.156"><vh>startElement</vh></v>
+<v t="ekr.20201030065548.26"><vh>script: write @clean node without writing .leo file</vh>
+<v t="ekr.20201030065548.27"><vh>@@clean at_clean_test.py</vh>
+<v t="ekr.20201030065548.28"><vh>spam</vh></v>
+<v t="ekr.20201030065548.29"><vh>eggs</vh></v>
 </v>
-<v t="ekr.20060824111500.157"><vh>class rulesetClass</vh>
-<v t="ekr.20060824111500.158"><vh>ctor &amp; __str__</vh></v>
 </v>
-<v t="ekr.20060824111500.159"><vh>class ruleClass</vh>
-<v t="ekr.20060824111500.160"><vh>ctor &amp; __str__</vh></v>
-<v t="ekr.20060824111500.161"><vh>rule.getters</vh></v>
-</v>
-<v t="ekr.20060824111500.162"><vh>class contentHandler (xml.sax.saxutils.XMLGenerator)</vh>
-<v t="ekr.20060824111500.163"><vh> __init__ &amp; helpers</vh></v>
-<v t="ekr.20060824111500.164"><vh>helpers</vh>
-<v t="ekr.20060824111500.165"><vh>attrsToList</vh></v>
-<v t="ekr.20060824111500.166"><vh>attrsToString</vh></v>
-<v t="ekr.20060824111500.167"><vh>clean</vh></v>
-<v t="ekr.20060824111500.168"><vh>error</vh></v>
-<v t="ekr.20060824111500.169"><vh>printStartElement</vh></v>
-<v t="ekr.20060824111500.170"><vh>printSummary</vh></v>
-</v>
-<v t="ekr.20060824111500.171"><vh>sax over-rides</vh>
-<v t="ekr.20060824111500.172"><vh> Do nothing...</vh>
-<v t="ekr.20060824111500.173"><vh>other methods</vh></v>
-<v t="ekr.20060824111500.174"><vh>endDocument</vh></v>
-<v t="ekr.20060824111500.175"><vh>startDocument</vh></v>
-</v>
-<v t="ekr.20060824111500.176"><vh>characters</vh></v>
-<v t="ekr.20060824111500.177"><vh>endElement</vh></v>
-<v t="ekr.20060824111500.178"><vh>startElement</vh></v>
-</v>
-<v t="ekr.20060824111500.179"><vh>doStartElement</vh></v>
-<v t="ekr.20060824111500.180"><vh>doEndElement</vh></v>
-<v t="ekr.20060824111500.181"><vh>getMode</vh></v>
+<v t="ekr.20201110014825.1"><vh>script: add tags for issues</vh></v>
+<v t="ekr.20201110014834.1"><vh>script: remove all tags</vh></v>
+<v t="ekr.20210118070851.1"><vh>script: convert-LeoFind</vh>
+<v t="ekr.20210118070851.2"><vh>convert</vh></v>
+<v t="ekr.20210118070851.3"><vh>main</vh></v>
+<v t="ekr.20210118070851.4"><vh>new_name</vh></v>
+<v t="ekr.20210118070851.5"><vh>exists</vh></v>
 </v>
 </v>
 </vnodes>
 <tnodes>
-<t tx="ekr.20060824111500.108">'''Convert jEdit language description file to an equivalent .py file.'''
-
-@language python
-@tabwidth -4
-@pagewidth 80
-
-&lt;&lt; imports &gt;&gt;
-&lt;&lt; to do &gt;&gt;
-&lt;&lt; version history &gt;&gt;
-&lt;&lt; set files to convert &gt;&gt;
-opt_print_summary = False # True: print summary in doEndElement.
-opt_print_elements = False
-@others
-main()
-</t>
-<t tx="ekr.20060824111500.109">import glob
-import os
-import string
-import xml.sax
-import xml.sax.saxutils
-</t>
-<t tx="ekr.20060824111500.110">@nocolor
-@
-
-AT_LINE_START, AT_WHITESPACE_END and AT_WORD_START attributes can also be used
-on the BEGIN and END elements. Setting these attributes to the same value on
-both elements has the same effect as setting them on the SPAN element.
-</t>
-<t tx="ekr.20060824111500.111">@nocolor
-@
-
-7/23/06 EKR: Ignore keywords containing whitespace.
-7/30/06 EKR: Compute keywordChars properly.  This fixes erlang bug, e.g.
-8/24/06 EKR: Lowercase all keywords if ignore_case is true.
-8/25/06 EKR: Prefixed all rule names with fileName (w/o extension) so I can makes sense of imported rules.
-8/26/06 EKR: No need for hash_char in pattern matchers, because they are called only if the hash_char matches.
-9/4/06  EKR: Added support for ESCAPE attribute of RULES element.
-             This is required so the new colorizer plugin can support the no_escape argument to pattern matchers.
-</t>
-<t tx="ekr.20060824111500.112"># theDir = r'c:\prog\tigris-cvs\leo\modes'
-theDir = g.os_path_abspath(g.os_path_join(g.app.loadDir,'..','modes'))
-fixed = ['antlr','applescript','apacheconf','bibtex','cil','pl1','shell','shellscript','ssharp','text']
-errors = [] # 'cil',] # End keyword not matched by start.
-errors = [r'%s\%s.xml' % (theDir,s) for s in errors]
-# for s in errors: print(s)
-if 1: # A a list of files.
-    short_files = ['asciidoc']
-    files = [rf"{theDir}{os.path.sep}{z}.xml" for z in short_files]
-elif 1: # translate all files.
-    files = glob.glob(g.os_path_abspath(g.os_path_join(theDir,'*.xml')))
-elif 1: # error files
-    files = [g.os_path_abspath(g.os_path_join(theDir,s)) for s in errors]
-else: # translate two representative files.
-    files = [g.os_path_abspath(g.os_path_join(theDir,s)) for s in ('python','php')]
-# for s in files: print(s)
-</t>
-<t tx="ekr.20060824111500.113"></t>
-<t tx="ekr.20060824111500.114">def convert (c,inputFileName, outputFileName):
-
-    junk, fn = g.os_path_split(inputFileName)
-    language, junk = g.os_path_splitext(fn)
-    mode = parse_jEdit_file(inputFileName, language)
-    if not mode:
-        g.trace('FAIL: no mode', language, inputFileName)
-        return
-    with open(outputFileName,'w') as f:
-        try:
-            mode.write(f, language)
-            g.es_print('wrote', outputFileName)
-        except IOError:
-            g.es_print('can not create', outputFileName)
-</t>
-<t tx="ekr.20060824111500.115">def parse_jEdit_file(inputFileName,language):
-
-    if not inputFileName:
-        return None
-    if not inputFileName.endswith('.xml'):
-        inputFileName = inputFileName + '.xml'
-    path = g.os_path_join(g.app.loadDir,'../','modes',inputFileName)
-    path = g.os_path_normpath(path)
-    if not g.os_path_exists(path):
-        g.es_print('not found:', path)
-        return
-    try:
-        f = open(path,'r')
-    except IOError:
-        g.trace('can not open %s'%path)
-        return None
-    try:
-        try:
-            mode = None
-            parser = xml.sax.make_parser()
-                # Do not include external general entities.
-                # The actual feature name is
-                # "http://xml.org/sax/features/external-general-entities"
-            parser.setFeature(xml.sax.handler.feature_external_ges,0)
-            handler = contentHandler(c,inputFileName,language)
-            parser.setContentHandler(handler)
-            parser.parse(f)
-                # Works with Python 3.
-                # Fails with Python 2 when the file contains non-ascii characters.
-            mode = handler.getMode()
-        except:
-            g.es('unexpected exception parsing %s' % (inputFileName),color='red')
-            g.es_exception()
-    finally:
-        f.close()
-        return mode
-</t>
-<t tx="ekr.20060824111500.116">def munge(s):
-
-    '''Munge a mode name so that it is a valid python id.'''
-
-    valid = string.ascii_letters + string.digits + '_'
-    return ''.join([g.choose(ch in valid,ch.lower(),'_') for ch in s])
-</t>
-<t tx="ekr.20060824111500.117">class modeClass:
-
-    '''A class representing one jEdit language-description mode.
-
-    Use getters to access the attributes, properties and rules of this mode.'''
-
-    @others
-</t>
-<t tx="ekr.20060824111500.118">def __init__ (self,contentHandler,fileName):
-
-    # g.trace('mode',fileName)
-
-    self.contentHandler = contentHandler
-    self.c = contentHandler.c
-    self.fileName = g.shortFileName(fileName) # The file from which the mode was imported.
-    modeName, junk = g.os_path_splitext(self.fileName)
-    self.fileModeName = modeName
-    self.modeName = munge(modeName).lower()
-    self.outputFile = None # The open output file to which Python statements get written.
-    self.tab_width = c.scanAllDirectives().get('tab_width')
-
-    # Mode statistics...
-    self.numberOfAttributes = 0
-    self.numberOfElements = 0
-    self.numberOfErrors = 0
-    self.numberOfPropertyAttributes = 0
-    self.numberOfRuleAttributes = 0
-
-    # List of boolean attributes.
-    self.boolAttrs = [
-        'at_line_start','at_whitespace_end','at_word_start',
-        'exclude_match','highlight_digits','ignore_case',
-        'no_escape','no_line_break','no_word_break',]
-
-    # List of elements that start a rule.
-    self.ruleElements = [
-        'eol_span','eol_span_regexp','import','keywords',
-        'mark_following','mark_previous','seq','seq_regexp',
-        'span','span_regexp','terminate',]
-
-    if 0: # Not used at present.
-        self.seqSpanElements = [
-            'eol_span','eol_span_regexp','seq','seq_regexp',
-            'span','span_regexp',]
-
-    # Mode semantics.
-    self.attributes = {}
-    self.handlerCount = 0
-    self.importedRules = [] # A bunch describing the imported ruleset.
-    self.inProps = False
-    self.inRules = False
-    self.keywords = None
-    self.modeProperties = []
-    self.presentProperty = None # A bunch to be assigned to modeProperties or rulesetProperties.
-    self.rule = None
-    self.rulesets = []
-    self.rules = [] # The rules of the present rules element.
-    self.rulesetProperties = []
-    self.rulesetAttributes = {} # The attributes of the present rules element.
-</t>
-<t tx="ekr.20060824111500.119">def __str__ (self):
-
-    return '&lt;modeClass for %s&gt;' % self.fileName
-
-__repr__ = __str__
-</t>
-<t tx="ekr.20060824111500.120"># Similar to printing, but generates the output file.
-</t>
-<t tx="ekr.20060824111500.121">def escapeString (self,s):
-    '''Return string s enclosed in double quotes.'''
-    if not s: s = ''
-    if isinstance(s, (list, tuple)):
-        s = ''.join(s)
-    s = g.toUnicode(s)
-    # Order is important: escape backspaces first.
-    return '"%s"' % s.replace('\\','\\\\').replace('"','\\"').replace('\t','\\t')
-
-quoteString = escapeString
-</t>
-<t tx="ekr.20060824111500.122">def put (self,s):
-
-    self.outputFile.write(s)
-
-def putTripleString(self,s):
-
-    self.put(g.adjustTripleString(s,self.tab_width))
-</t>
-<t tx="ekr.20060824111500.123">def putAttributes (self):
-
-    dd = {}
-    data = (
-        ('default','null'),
-        ('digit_re',''),
-        ('escape',''),
-        ('highlight_digits',True),
-        ('ignore_case',True),
-        ('no_word_sep',None), # could be false or ''.
-    )
-
-    for ruleset in self.rulesets:
-        d = {}
-        prefix = '%s_%s' % (self.modeName,ruleset.name)
-        self.put('# Attributes dict for %s ruleset.\n' % (prefix))
-        for key,default in data:
-            val = ruleset.attributes.get(key,default)
-            if default == True: val = g.choose(val,'true','false')
-            elif default == None:
-                if val and val.lower() == 'false': val = ''
-                else: val = g.choose(val,val,'')
-            # if val: g.trace(key,repr(val))
-            d [key] = val
-        self.putDict('%s_attributes_dict' % (prefix),d)
-        dd [ prefix ] = '%s_attributes_dict' % (prefix)
-
-    self.put('# Dictionary of attributes dictionaries for %s mode.\n' % (self.modeName))
-    self.putDict('attributesDictDict',dd,escape=False)
-</t>
-<t tx="ekr.20060824111500.124">def putDict (self,name,theDict,escape=True):
-
-    esc = self.escapeString
-    esc2 = g.choose(escape,self.escapeString,lambda a: a)
-    keys = list(set((theDict.keys())))
-    keys = sorted([g.toUnicode(z) for z in keys if z])
-    s = ''.join([
-        '\t%s: %s,\n' % (esc(key),esc2(theDict.get(key)))
-            for key in keys])
-    if s:
-        s = '\n' + s
-    self.put('%s = {%s}\n\n' % (name,s))
-
-def putDictOfLists (self,name,theDict,strings=False):
-
-    esc = self.escapeString
-    keys = list(set(theDict.keys()))
-    keys = sorted([g.toUnicode(z) for z in keys if z])
-    theList = []
-    for key in keys:
-        if strings:
-            # Not completely general, but it works for the import dict, and that's good enough.
-            s = ''.join(['"%s",' % (item) for item in theDict.get(key)])
-        else:
-             s = ''.join(['%s,' % (item) for item in theDict.get(key)])
-        theList.append('\t%s: [%s],\n' % (esc(key),s))
-    s = ''.join(theList)
-    if s: s = '\n' + s
-    self.put('%s = {%s}\n\n' % (name,s))
-</t>
-<t tx="ekr.20060824111500.125">def putImportDict (self):
-
-    d = {}
-    for ruleset in self.rulesets:
-        prefix = '%s_%s' % (self.modeName,ruleset.name)
-        for rule in ruleset.rules:
-            if rule.name == 'import':
-                delegate = rule.getStrAttrib('delegate').lower()
-                if delegate:
-                    i = delegate.find('::')
-                    delegate_name = g.choose(i==-1,
-                        '%s::%s' % (prefix,delegate), # Can indeed happen.
-                        '%s' % (delegate))
-                    theList = d.get(prefix,[])
-                    if delegate_name not in theList:
-                        theList.append(delegate_name)
-                        d [prefix] = theList
-
-    self.put('# Import dict for %s mode.\n' % (self.modeName))
-    self.putDictOfLists('importDict',d,strings=True)
-</t>
-<t tx="ekr.20060824111500.126">def putKeywordsData (self):
-
-    dd = {}
-    for ruleset in self.rulesets:
-        prefix = '%s_%s' % (self.modeName,ruleset.name)
-        prefix = g.toUnicode(prefix)
-        ignore_case = ruleset.attributes.get('ignore_case','false')
-        if not isinstance(ignore_case, bool):
-            ignore_case = ignore_case.lower() == 'false'
-        self.put('# Keywords dict for %s ruleset.\n' % (prefix))
-        for rule in ruleset.rules:
-            if rule.name == 'keywords':
-                # d = rule.keywordsDict
-                d = { g.toUnicode(key): g.toUnicode(val)
-                    for key, val in rule.keywordsDict.items() if key.strip() }
-                # g.trace()
-                # g.printObj(d)
-                for key in sorted(set(d.keys())):
-                    if ' ' in key or '\t' in key:
-                        del d [key]
-                        g.es_print(f"Ignoring keyword containing whitespace: {key!r}")
-                    elif ignore_case: # New in 4.4.1 final.
-                        # Downcase all keys.
-                        val = d.get(key)
-                        key2 = key.lower()
-                        if key2 != key:
-                            if key in d: del d[key]
-                        d[key2] = val
-                break
-        else:
-            d = {}
-        self.putDict('%s_keywords_dict' % (prefix),d)
-        dd [ prefix ] = '%s_keywords_dict' % (prefix)
-    self.put('# Dictionary of keywords dictionaries for %s mode.\n' % (self.modeName))
-    self.putDict('keywordsDictDict',dd,escape=False)
-</t>
-<t tx="ekr.20060824111500.127">def putList (self,name,theList,escape=True,lineCount=0):
-
-    def comma(i):
-        return ',' # return g.choose(i==len(theList)-1,'',',')
-    def nl(i):
-        return g.choose(lineCount == 0 or ((i%lineCount)==lineCount-1),'\n',' ')
-    def tab(i,n):
-        # return g.choose(i == 0 or nl(i-1) != ' ','\t','')
-        return g.choose(i &gt; 0 and nl(i-1) != ' ','\t','')
-    esc = g.choose(escape,self.escapeString,lambda a:a)
-
-    result = []
-    n = len(theList)
-    for i in range(n):
-        result.append('%s%s%s%s' % (tab(i,n),esc(theList[i]),comma(i),nl(i)))
-
-    vals = ''.join(result)
-    # if n &gt; 1: vals = '\n' + vals
-    self.put('%s = [%s]\n\n' % (name,vals))
-</t>
-<t tx="ekr.20060824111500.128">def putModeProperties (self,language):
-
-    d = {}
-
-    self.put('# Properties for %s mode.\n' % (language))
-
-    for prop in self.modeProperties:
-        d2 = prop.attributes
-        name = d2.get('name')
-        d [name] = d2.get('value')
-
-    self.putDict('properties', d)
-</t>
-<t tx="ekr.20060824111500.129">def putRule (self, rule):
-
-    '''Call the rule creator for the given rule.'''
-
-    d = {
-        'eol_span':         self.putEolSpan,
-        'eol_span_regexp':  self.putEolSpanRegexp,
-        'import':           self.putImport,
-        'keywords':         self.putKeywords,
-        'mark_following':   self.putMarkFollowing,
-        'mark_previous':    self.putMarkPrevious,
-        'seq':              self.putSeq,
-        'seq_regexp':       self.putSeqRegexp,
-        'span':             self.putSpan,
-        'span_regexp':      self.putSpanRegexp,
-        'terminate':        self.putTerminate,
-    }
-
-    # Call the rule creator.
-    f = d.get(rule.name,self.putBadRule)
-    val = f (rule)
-    self.handlerCount += 1
-
-    return val
-</t>
-<t tx="ekr.20060824111500.130">def putBadRule (self,rule):
-
-    self.put('\n\n# *****no output creator for %s*****' % rule.name)
-</t>
-<t tx="ekr.20060824111500.131">def putEolSpan (self,rule):
-
-    quote = self.quoteString
-    seq = rule.getSeq(rule.name)
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_eol_span(s, i, kind=%s, seq=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s,
-        delegate=%s, exclude_match=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(seq),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        quote(self.fullDelegate(rule.getStrAttrib('delegate'))),
-        rule.getBoolAttrib('exclude_match'),
-    )
-
-    self.putTripleString(s)
-    return seq[0]
-</t>
-<t tx="ekr.20060824111500.132">def putEolSpanRegexp (self,rule):
-
-    quote = self.quoteString
-    seq = rule.getSeq(rule.name)
-    hash_char = rule.getStrAttrib('hash_char') or seq[0]
-    # g.trace('hash_char',hash_char)
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_eol_span_regexp(s, i, kind=%s, regexp=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s,
-        delegate=%s, exclude_match=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(seq),
-        # quote(rule.getStrAttrib('hash_char')),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        quote(self.fullDelegate(rule.getStrAttrib('delegate'))),
-        rule.getBoolAttrib('exclude_match'),
-    )
-
-    self.putTripleString(s)
-    return hash_char  # Bug fix: was seq[0]
-</t>
-<t tx="ekr.20060824111500.133"># Do nothing here: putImportDict creates x.importDict.
-
-def putImport (self,rule):
-
-    # Decrement the count to indicate that this method did not generate a rule.
-    self.handlerCount -= 1
-    return ''
-</t>
-<t tx="ekr.20060824111500.134">def putKeywords (self,rule):
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_keywords(s, i)''' % (
-    self.fileModeName,
-    self.handlerCount)
-
-    self.putTripleString(s)
-    return 'keywords'
-</t>
-<t tx="ekr.20060824111500.135">def putMarkFollowing (self,rule):
-
-    quote = self.quoteString
-    seq = rule.getSeq(rule.name)
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_mark_following(s, i, kind=%s, pattern=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s, exclude_match=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(seq),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        rule.getBoolAttrib('exclude_match'),
-    )
-
-    self.putTripleString(s)
-    return seq[0]
-</t>
-<t tx="ekr.20060824111500.136">def putMarkPrevious (self,rule):
-
-    quote = self.quoteString
-    seq = rule.getSeq(rule.name)
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_mark_previous(s, i, kind=%s, pattern=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s, exclude_match=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(seq),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        rule.getBoolAttrib('exclude_match'),
-    )
-
-    self.putTripleString(s)
-    return seq[0]
-</t>
-<t tx="ekr.20060824111500.137">def putSeq (self,rule):
-
-    quote = self.quoteString
-    seq = rule.getSeq(rule.name)
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_seq(s, i, kind=%s, seq=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s, delegate=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(seq),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        quote(self.fullDelegate(rule.getStrAttrib('delegate'))),
-    )
-
-    self.putTripleString(s)
-    return seq[0]
-</t>
-<t tx="ekr.20060824111500.138">def putSeqRegexp (self,rule):
-
-    quote = self.quoteString
-    seq = rule.getSeq(rule.name)
-    hash_char = rule.getStrAttrib('hash_char') or seq[0]
-    # g.trace('hash_char',hash_char)
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_seq_regexp(s, i, kind=%s, regexp=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s, delegate=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(seq),
-        # quote(rule.getStrAttrib('hash_char')),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        quote(self.fullDelegate(rule.getStrAttrib('delegate'))),
-    )
-
-    self.putTripleString(s)
-    return hash_char # Bug fix: was seq[0]
-</t>
-<t tx="ekr.20060824111500.139">def putSpan (self,rule):
-
-    quote = self.quoteString
-    begin,end = rule.getSpan()
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_span(s, i, kind=%s, begin=%s, end=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s,
-        delegate=%s,exclude_match=%s,
-        no_escape=%s, no_line_break=%s, no_word_break=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(begin),quote(end),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        quote(self.fullDelegate(rule.getStrAttrib('delegate'))),
-        rule.getBoolAttrib('exclude_match'),
-        rule.getBoolAttrib('no_escape'),
-        rule.getBoolAttrib('no_line_break'),
-        rule.getBoolAttrib('no_word_break'),
-    )
-
-    self.putTripleString(s)
-    return begin[0]
-</t>
-<t tx="ekr.20060824111500.140">def putSpanRegexp (self,rule):
-
-    quote = self.quoteString
-    begin,end = rule.getSpan()
-    hash_char = rule.getStrAttrib('hash_char') or begin[0]
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_span_regexp(s, i, kind=%s, begin=%s, end=%s,
-        at_line_start=%s, at_whitespace_end=%s, at_word_start=%s,
-        delegate=%s,exclude_match=%s,
-        no_escape=%s, no_line_break=%s, no_word_break=%s)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        quote(begin),quote(end),
-        # quote(rule.getStrAttrib('hash_char')),
-        rule.getBoolAttrib('at_line_start'),
-        rule.getBoolAttrib('at_whitespace_end'),
-        rule.getBoolAttrib('at_word_end'),
-        quote(self.fullDelegate(rule.getStrAttrib('delegate'))),
-        rule.getBoolAttrib('exclude_match'),
-        rule.getBoolAttrib('no_escape'),
-        rule.getBoolAttrib('no_line_break'),
-        rule.getBoolAttrib('no_word_break'),
-    )
-
-    self.putTripleString(s)
-    return hash_char # Bug fix: was begin[0]
-</t>
-<t tx="ekr.20060824111500.141">def putTerminate (self,rule):
-
-    quote = self.quoteString
-
-    n = rule.getIntAttrib('at_char')
-    if n == None: return
-
-    s = '''\n\
-def %s_rule%d(colorer, s, i):
-    return colorer.match_terminate(s, i, kind=%s, at_char=%d)''' % (
-        self.fileModeName,
-        self.handlerCount,
-        quote(rule.getStrAttrib('type').lower()),
-        n)
-
-    self.putTripleString(s)
-</t>
-<t tx="ekr.20060824111500.142">def putRules (self):
-
-    '''Create all rule matchers, a rules dict for each ruleset and x.rulesDictDict.'''
-
-    d = {} ; d2Count = 0
-    for ruleset in self.rulesets:
-        d2 = {}
-        prefix = '%s_%s'% (self.modeName,ruleset.name)
-        self.put('# Rules for %s ruleset.\n' % (prefix))
-        for rule in ruleset.rules:
-            ch = self.putRule(rule)
-            self.put('\n')
-            if ch == 'keywords':
-                for ch in self.keywordChars:
-                    theList = d2.get(ch,[])
-                    theList.append('%s_rule%d' % (self.fileModeName,self.handlerCount-1))
-                    d2 [ch] = theList
-            elif ch:
-                theList = d2.get(ch,[])
-                theList.append('%s_rule%d' % (self.fileModeName,self.handlerCount-1))
-                d2 [ch] = theList
-        # Create the rules dict for the ruleset.
-        self.put('\n# Rules dict for %s ruleset.\n' % (prefix))
-        d2Count += 1
-        name = 'rulesDict%d' % d2Count
-        self.putDictOfLists(name,d2)
-        d [prefix] = name
-    # Create rulesDictDict.
-    self.put('# x.rulesDictDict for %s mode.\n' % (self.modeName))
-    self.putDict('rulesDictDict', d, escape=False)
-</t>
-<t tx="ekr.20060824111500.143">def write (self,theFile,language):
-
-    # Compute all the letters that can occur in a keyword.
-    self.keywordChars = [ch for ch in string.ascii_letters + string.digits + '@']
-    for ruleset in self.rulesets:
-        for rule in ruleset.rules:
-            d = rule.keywordsDict
-            for key in list(d.keys()):
-                key = g.toUnicode(key)
-                for ch in key:
-                    if ch not in self.keywordChars and ch not in (' ','\t','\n'):
-                        self.keywordChars.append(ch)
-        
-    # g.trace('keywordChars',repr(self.keywordChars))
-    self.keywordChars = ''.join(list(set(self.keywordChars)))
-    self.outputFile = theFile
-    self.put('# Leo colorizer control file for %s mode.\n' % language)
-    self.put('# This file is in the public domain.\n\n')
-    self.putModeProperties(language)
-    self.putAttributes()
-    self.putKeywordsData()
-    self.putRules()
-    self.putImportDict()
-</t>
-<t tx="ekr.20060824111500.144"></t>
-<t tx="ekr.20060824111500.145">def printModeAttributes (self):
-
-    self.printAttributesHelper('mode attributes',self.attributes)
-
-def printRulesetAttributes (self,ruleset,tag=None):
-
-    if not tag: tag = 'main ruleset'
-
-    self.printAttributesHelper(tag,ruleset.attributes)
-
-def printAttributesHelper (self,kind,attrs):
-
-    print('%-15s' % (kind),'attrs:',attrs)
-</t>
-<t tx="ekr.20060824111500.146">def printProperty (self,theProperty):
-
-    # A property is a bunch.
-    d = theProperty.attributes
-    if d:
-        self.printAttributesHelper('property',d)
-</t>
-<t tx="ekr.20060824111500.147">def printRule (self,rule):
-
-    # A rule is a g.Bunch.
-    if rule.name == 'keywords':
-        print('%-15s' % ('rule:keywords')) ## ,
-        d = rule.keywordsDict
-        d2 = {}
-        for key in d:
-            val = d.get(key)
-            d2 [val] = d2.get(val,0) + 1
-        keys = list(d2.keys())
-        keys.sort()
-        for key in keys:
-            print('%s: %d' % (key,d2.get(key))) ## ,
-        print()
-    else:
-        d = rule.attributes
-        d2 = rule.contents
-        if d or d2:
-            print('%-15s' % ('rule:'+rule.name)) ## ,
-            if d:  print('attrs:',d) ## ,
-            if d2: print('contents:',d2) ## ,
-            print()
-</t>
-<t tx="ekr.20060824111500.148">def printRuleset (self,ruleset,tag):
-
-    self.printRulesetAttributes(ruleset,tag)
-
-    for rule in self.rulesets[0].rules:
-        self.printRule(rule)
-</t>
-<t tx="ekr.20060824111500.149">def printSummary (self,printStats=True):
-
-    if printStats:
-        print('-' * 10, 'mode statistics')
-        print('elements',self.numberOfElements)
-        print('errors',self.numberOfErrors)
-        print('mode attributes',self.numberOfAttributes)
-        print('property attributes',self.numberOfPropertyAttributes)
-        print('rule attributes',self.numberOfRuleAttributes)
-
-    self.printModeAttributes()
-
-    for bunch in self.modeProperties:
-        self.printProperty(bunch)
-
-    self.printRuleset(self.rulesets[0],tag='main ruleset')
-</t>
-<t tx="ekr.20060824111500.150">def doAttribute (self,name,val):
-
-    name = str(name.lower())
-
-    if name in self.boolAttrs:
-        val = g.choose(val.lower()=='true',True,False)
-    else:
-        val = str(val) # Do NOT lower this value!
-
-    if self.rule:
-        d = self.rule.attributes
-        d [name] = val
-        self.numberOfRuleAttributes += 1
-    elif self.presentProperty:
-        d = self.presentProperty.get('attributes')
-        d [name] = val
-        self.numberOfPropertyAttributes += 1
-    elif self.inRules:
-        self.rulesetAttributes[name] = val
-        self.numberOfAttributes += 1
-    else:
-        self.attributes[name] = val
-        self.numberOfAttributes += 1
-</t>
-<t tx="ekr.20060824111500.151">def doContent (self,elementName,content):
-
-    if not content:
-        return
-
-    name = str(elementName.lower())
-
-    if self.inRule('keywords'):
-        # g.trace('in keywords',name,content)
-        d = self.rule.keywordsDict
-        d [ content ] = name
-
-    elif self.rule:
-        d = self.rule.contents
-        s = d.get(name,'')
-        d [name] = s + g.toUnicode(content)
-        self.contents = d
-</t>
-<t tx="ekr.20060824111500.152">def endElement (self,elementName):
-
-    name = elementName.lower()
-
-    if name == 'props':
-        self.inProps = True
-    if name == 'rules':
-        self.inRules = False
-        ruleset = rulesetClass(self.rulesetAttributes,self.keywords,self.rulesetProperties,self.rules)
-        self.rulesets.append(ruleset)
-        #g.trace('rules...\n',g.listToString(self.rules))
-        #g.trace('ruleset attributes...\n',g.dictToString(self.rulesetAttributes))
-    if name == 'property':
-        bunch = self.presentProperty
-        if bunch:
-            if self.inRules:
-                self.rulesetProperties.append(bunch)
-            else:
-                self.modeProperties.append(bunch)
-        else:
-            self.error('end %s not matched by start %s' % (name,name))
-        self.presentProperty = None
-    if name in self.ruleElements:
-        if self.inRule(name):
-            self.rules.append(self.rule)
-            self.rule = None
-        else:
-            self.error('end %s not matched by start %s' % (name,name))
-</t>
-<t tx="ekr.20060824111500.153">def error (self,message):
-
-    self.numberOfErrors += 1
-
-    self.contentHandler.error(message)
-</t>
-<t tx="ekr.20060824111500.154">def getAttributes (self):
-    return self.attributes
-
-def getAttributesForRuleset (self,ruleset):
-    bunch = ruleset
-    return bunch.attributes
-
-def getFileName (self):
-    return self.fileName
-
-def getKeywords (self,n,ruleset):
-    bunch = ruleset
-    keywords = bunch.keywords
-    if keywords:
-        return keywords.get('keyword%d'%(n),[])
-    return []
-
-def getLanguage (self):
-    path,name = g.os_path_split(self.fileName)
-    language,ext = g.os_path_splitext(name)
-    return language
-
-def getPropertiesForMode (self):
-    return self.props
-
-def getPropertiesForRuleset (self,name=''):
-    bunch = self.getRuleset(name)
-    if bunch:
-        return bunch.properties
-    else:
-        return []
-
-def getRuleset(self,name=''):
-    if not name:
-        return self.rulesets[0] # Return the main ruleset.
-    for ruleset in self.rulesets:
-        if ruleset.name.lower()==name.lower():
-            return ruleset
-    else: return None
-
-def getRulesets(self):
-    return self.rulesets
-
-def getRulesForRuleset (self,name=''):
-    bunch = self.getRuleset(name)
-    if bunch:
-        return bunch.rules
-    else:
-        return []
-</t>
-<t tx="ekr.20060824111500.155">def inRule (self,elementName):
-
-    return self.rule and self.rule.name == elementName
-</t>
-<t tx="ekr.20060824111500.156">def startElement (self,elementName):
-
-    name = elementName.lower()
-
-    if name == 'props':
-        self.inProps = True
-    if name == 'rules':
-        self.inRules = True
-        self.attributes=[]
-        self.keywords=[]
-        self.rulesetProperties=[]
-        self.rules=[]
-    if name == 'property':
-        if self.inProps:
-            self.presentProperty = g.bunch(name=name,attributes={})
-        else:
-            self.error('property not in props element')
-    if name in self.ruleElements:
-        if self.inRules:
-            self.rule = ruleClass(name=name)
-            if name == 'keywords':
-                self.keywords = self.rule
-        else:
-            self.error('%s not in rules element' % name)
-</t>
-<t tx="ekr.20060824111500.157">class rulesetClass:
-
-    @others
-</t>
-<t tx="ekr.20060824111500.158">def __init__ (self,attributes,keywords,properties,rules):
-
-    self.name=munge(attributes.get('set','main'))
-    self.attributes=attributes.copy() # A dict.
-    self.properties=properties[:] # A list.
-    self.keywords=keywords # A bunch.
-    self.rules=rules[:] # A list.
-
-    # g.trace('ruleset',self.name or 'main')
-
-    self.defaultColor = self.attributes.get('default')
-
-def __str__ (self):
-
-    return '&lt;ruleset %s&gt;' % self.name
-
-__repr__ = __str__
-</t>
-<t tx="ekr.20060824111500.159">class ruleClass:
-
-    '''A class to represent one xml rule.'''
-
-    @others
-</t>
-<t tx="ekr.20060824111500.160">def __init__ (self,name):
-
-    self.attributes = {}
-    self.contents = {}
-    self.keywordsDict = {}
-    self.name = name
-
-def __str__ (self):
-
-    return '&lt;rule %s\nattr: %s\ncontents: %s&gt;' % (
-        self.name,g.dictToString(self.attributes),g.dictToString(self.contents))
-
-__repr__ = __str__
-</t>
-<t tx="ekr.20060824111500.161">def getBoolAttrib(self,name):
-    d = self.attributes
-    val = d.get(name)
-    return g.choose(val,'True','False')
-
-def getIntAttrib(self,name):
-    d = self.attributes
-    val = d.get(name)
-    if val is not None:
-        try:
-            val = int(val)
-        except ValueError:
-            g.trace('bad int argument: %s = %s' % (name,val))
-            val = None
-    return val
-
-def getSpan (self):
-    d = self.contents
-    begin = d.get('begin','')
-    end   = d.get('end','')
-    return begin,end
-
-def getStrAttrib(self,name):
-    d = self.attributes
-    val = d.get(name,'')
-    return str(val)
-
-def getSeq(self,kind):
-    # g.trace(repr(self.contents))
-    d = self.contents
-    return d.get(kind,'')
-</t>
-<t tx="ekr.20060824111500.162">class contentHandler (xml.sax.saxutils.XMLGenerator):
-
-    '''A sax content handler class that handles jEdit language-description files.
-
-    Creates mode that can be retrieved using the getMode method.'''
-
-    @others
-</t>
-<t tx="ekr.20060824111500.163">def __init__ (self,c,inputFileName,language):
-
-    self.c = c
-    self.inputFileName = inputFileName
-    self.language = language
-
-    # Init the base class.
-    xml.sax.saxutils.XMLGenerator.__init__(self)
-
-    # Non-mode statistics.
-    self.numberOfAttributes = 0
-    self.numberOfElements = 0
-
-    # Options...
-    self.ignoreWs = True # True: don't print contents with only ws.
-    self.newLineAfterStartElement = [
-        'keywords','mode','props','property','rules','span','eol_span',
-        # 'seq',
-    ]
-
-    # Printing options
-    if opt_print_elements:
-        self.printAllElements = True
-        self.printCharacters = False or self.printAllElements
-        self.printAttributes = False and not self.printAllElements
-        self.printElements = [
-            #'begin','end',
-            #'eol_span',
-            #'keyword1','keyword2','keyword3','keyword4',
-            #'mark_previous',
-            #'mode',
-            #'props',
-            #'property',
-            #'rules',
-            #'span',
-            #'seq',
-        ]
-
-        if self.printAllElements:
-            self.suppressContent = []
-        else:
-            self.suppressContent = ['keyword1','keyword2','keyword3','keyword4']
-    else:
-        self.printAllElements = False
-        self.printCharacters = False
-        self.printAttributes = False
-        self.printElements = []
-
-    # Semantics: most of these should be mode ivars.
-    self.elementStack = []
-    self.errors = 0
-    self.mode = None # The present mode, or None if outside all modes.
-    self.modes = [] # All modes defined here or by imports.
-</t>
-<t tx="ekr.20060824111500.164"></t>
-<t tx="ekr.20060824111500.165">def attrsToList (self,attrs):
-
-    '''Convert the attributes to a list of g.Bunches.
-
-    attrs: an Attributes item passed to startElement.
-
-    sep: the separator charater between attributes.'''
-
-    return [
-        g.Bunch(name=name,val=attrs.getValue(name))
-        for name in attrs.getNames()
-    ]
-</t>
-<t tx="ekr.20060824111500.166">def attrsToString (self,attrs,sep='\n'):
-
-    '''Convert the attributes to a string.
-
-    attrs: an Attributes item passed to startElement.
-
-    sep: the separator charater between attributes.'''
-
-    result = [
-        '%s="%s"' % (bunch.name,bunch.val)
-        for bunch in self.attrsToList(attrs)
-    ]
-
-    return sep.join(result)
-</t>
-<t tx="ekr.20060824111500.167">def clean(self,s):
-
-    return g.toEncodedString(s,"ascii")
-</t>
-<t tx="ekr.20060824111500.168">def error (self, message):
-
-    print()
-    print()
-    print('XML error: %s' % (message))
-    print()
-
-    self.errors += 1
-</t>
-<t tx="ekr.20060824111500.169">def printStartElement(self,name,attrs):
-
-    if attrs.getLength() &gt; 0:
-        print('&lt;%s %s&gt;' % (
-            self.clean(name).strip(),
-            self.attrsToString(attrs,sep=' '))) ## ,
-    else:
-        print('&lt;%s&gt;' % (self.clean(name).strip())) ## ,
-
-    if name.lower() in self.newLineAfterStartElement:
-        print()
-</t>
-<t tx="ekr.20060824111500.170">def printSummary (self):
-
-    print('Summary...')
-    print('-' * 10, 'non- mode statistics')
-    print('modes',len(self.modes))
-    print('elements', self.numberOfElements)
-</t>
-<t tx="ekr.20060824111500.171"></t>
-<t tx="ekr.20060824111500.172"></t>
-<t tx="ekr.20060824111500.173">def ignorableWhitespace(self):
-    g.trace()
-
-def processingInstruction (self,target,data):
-    g.trace()
-
-def skippedEntity(self,name):
-    g.trace(name)
-
-def startElementNS(self,name,qname,attrs):
-    g.trace(name)
-
-def endElementNS(self,name,qname):
-    g.trace(name)
-</t>
-<t tx="ekr.20060824111500.174">def endDocument(self):
-
-    pass
-
-
-</t>
-<t tx="ekr.20060824111500.175">def startDocument(self):
-
-    pass
-</t>
-<t tx="ekr.20060824111500.176">def characters(self,content):
-
-    # content = content.replace('\r','').strip()
-    content = content.replace('\r','')
-    if content.strip(): content = content.strip()
-    content = self.clean(content)
-
-    elementName = self.elementStack and self.elementStack[-1].lower() or '&lt;no element name&gt;'
-
-    if self.printAllElements:
-        print(content) ## ,
-    elif self.printCharacters and content and elementName not in self.suppressContent:
-        print('content:',elementName,repr(content))
-
-    if self.mode:
-        self.mode.doContent(elementName,content)
-    else:
-        self.error('characters outside of mode')
-</t>
-<t tx="ekr.20060824111500.177">def endElement(self,name):
-
-    self.doEndElement(name)
-
-    name2 = self.elementStack.pop()
-    assert name == name2
-</t>
-<t tx="ekr.20060824111500.178">def startElement(self,name,attrs):
-
-    if self.mode:
-        self.mode.numberOfElements += 1
-    else:
-        self.numberOfElements += 1
-
-    self.elementStack.append(name)
-    self.doStartElement(name,attrs)
-</t>
-<t tx="ekr.20060824111500.179">def doStartElement (self,elementName,attrs):
-
-    if self.printAllElements or elementName.lower() in self.printElements:
-        self.printStartElement(elementName,attrs)
-
-    elementName = elementName.lower()
-
-    if elementName == 'mode':
-        if self.mode:
-            self.error('Multiple modes')
-        else:
-            self.mode = modeClass(self,self.inputFileName)
-    elif self.mode:
-        self.mode.startElement(elementName)
-        for bunch in self.attrsToList(attrs):
-            if self.printAttributes:
-                print('attr:',elementName,bunch.name,'=',bunch.val)
-            self.mode.doAttribute(bunch.name,bunch.val)
-    else:
-        self.error('Start element appears outside of Mode:%s' % elementName)
-        for bunch in self.attrsToList(attrs):
-            self.error('Attribute appears outside of Mode:%s' % bunch.name)
-</t>
-<t tx="ekr.20060824111500.180">def doEndElement (self,elementName):
-
-    if self.printAllElements or elementName.lower() in self.printElements:
-        print('&lt;/' + self.clean(elementName).strip() + '&gt;')
-
-    if elementName.lower() == 'mode':
-        if opt_print_summary:
-            self.mode.printSummary()
-    elif self.mode:
-        self.mode.endElement(elementName)
-    else:
-        self.error('End element appears outside of Mode:%s' % elementName)
-        # for bunch in self.attrsToList(attrs):
-        #    self.error('Attribute appears outside of Mode:%s' %bunch.name)
-</t>
-<t tx="ekr.20060824111500.181">def getMode (self):
-
-    if self.errors:
-        return None
-    else:
-        return self.mode
-</t>
-<t tx="ekr.20060827162343">def fullDelegate (self,delegate):
-
-    if delegate:
-        delegate = delegate.lower()
-        i = delegate.find('::')
-        if i == -1:
-            return '%s::%s' % (self.fileModeName.lower(),delegate)
-        else:
-            return delegate
-    else:
-        return ''
-</t>
 <t tx="ekr.20061008055616"></t>
 <t tx="ekr.20070427110751"></t>
 <t tx="ekr.20070615131954"></t>
@@ -3591,44 +2339,6 @@ def format_arguments(self, node):
 <t tx="ekr.20160123185308.91">def visit_Return(self, node):
 
     self.returns.add(node.value)
-</t>
-<t tx="ekr.20160319080102.1">def cleanSaxInputString(s):
-    '''Clean control characters from s.
-    s may be a bytes or a (unicode) string.'''
-    # Note: form-feed ('\f') is 12 decimal.
-    badchars = [chr(ch) for ch in range(32)]
-    badchars.remove('\t')
-    badchars.remove('\r')
-    badchars.remove('\n')
-    flatten = ''.join(badchars)
-    pad = ' ' * len(flatten)
-    # pylint: disable=no-member
-    # Class 'str' has no 'maketrans' member
-    if g.isPython3:
-        flatten = bytes(flatten, 'utf-8')
-        pad = bytes(pad, 'utf-8')
-        transtable = bytes.maketrans(flatten, pad)
-    else:
-        transtable = string.maketrans(flatten, pad)
-    return s.translate(transtable)
-# for i in range(32): print i,repr(chr(i))
-</t>
-<t tx="ekr.20160319081141.1">def main():
-    
-    if not g.isPython3:
-        g.es_print('Python 3 is now required for this script.')
-        return
-    for path1 in files:
-        if path1 in errors:
-            print(f"skipping {path1}")
-            continue
-        path2 = path1[:-3] + 'py'
-        try:
-            convert (c, path1, path2)
-        except Exception:
-            print('Exception creating', path2)
-            g.es_exception()
-    g.es_print('done')
 </t>
 <t tx="ekr.20160923132656.1">@language python
 """Introspect"""
@@ -5969,6 +4679,841 @@ while p:
         break
     p.moveToThreadNext()
 </t>
+<t tx="ekr.20200505051752.1">g.cls()
+
+import re
+
+pat = re.compile(r'^\s*def cmd\(', re.MULTILINE)
+
+def predicate(root):
+    return (
+        root.isAnyAtFileNode() and
+        any(pat.search(p.b) for p in root.self_and_subtree()))
+    
+c.cloneFindByPredicate(c.all_unique_positions, predicate)
+</t>
+<t tx="ekr.20200505051804.1"></t>
+<t tx="ekr.20200505051957.1">"""
+Script to convert @cmd to @g.command in one file, creating
+top-level nodes for each new commands.
+
+This script was an essential part of the abandoned #325:
+https://github.com/leo-editor/leo-editor/issues/325
+
+I am including it in scripts.leo as a model for future scripts.
+"""
+g.cls()
+import re
+&lt;&lt; define patterns &gt;&gt;
+# Data...
+change_file = True
+require_c = True
+fn = 'xxx.py'
+instance = 'xxx'
+root = g.findNodeAnywhere(c, f"@file {fn}")
+assert root
+if 1: # When a file contains only one kind of @cmd decorator.
+    convert_root = root
+else:
+    convert_root = g.findNodeAnywhere(c, "class KeyHandlerClass")
+    assert convert_root
+@others
+command_root = make_command_root(fn, root) if change_file else None
+for p in convert_root.self_and_subtree():
+    any_changed, parts, result = False, find_parts(p), []
+    for i, part in enumerate(parts):
+        new_body, command_lines, headline = do_part(p, part)
+        if command_lines:
+            any_changed = True
+            make_command_node(command_root, command_lines, headline)
+        result.extend(new_body)
+    if any_changed:
+        if change_file:
+            print('-----', p.h)
+            p.b = ''.join(result)
+        else:
+            g.printObj(result, tag=f"new body for {p.h}")
+c.redraw()
+print('')
+print('Remember: delete cmd and update g.cmd_instance_dict')
+</t>
+<t tx="ekr.20200505051957.2"># Invariant patterns...
+cmd_pat = re.compile(r'^@cmd\(\'(.+)\'\)')
+def_pat = re.compile(r'^def (\w+)')
+doc_pat = re.compile(r'(""".*?""")', (re.MULTILINE | re.DOTALL))
+</t>
+<t tx="ekr.20200505051957.3">def dump_parts(p, parts):
+    for i, part in enumerate(parts):
+        g.trace(f"part {i+1} of {len(parts)}: {p.h}")
+        g.printObj(part.head, tag='head')
+        g.printObj(part.commands, tag='commands')
+        g.printObj(part.tail, tag='tail')
+</t>
+<t tx="ekr.20200505051957.4">def find_parts(p):
+    """
+    Return a list of parts g.Bunch(commands, head, tail).
+    """
+    parts = []
+    commands, head, tail = [], [], []
+    for line in g.splitLines(p.b):
+        m = cmd_pat.match(line)
+        if m and tail:
+            # End of previous part.
+            parts.append(g.Bunch(commands=commands, head=head, tail=tail))
+            commands, head, tail = [m], [], []
+        elif m:
+            # Add the command to *this* part.
+            commands.append(m)
+        elif commands:
+            # Append to tail.
+            tail.append(line)
+        else:
+            # Append to head.
+            head.append(line)
+    # End the previous part.
+    if head or commands or tail:
+        parts.append(g.Bunch(commands=commands, head=head, tail=tail))
+    return parts</t>
+<t tx="ekr.20200505051957.5">def make_command_node(command_root, command_lines, headline):
+
+    if change_file:
+        p = command_root.insertAsLastChild()
+        p.b += ''.join(command_lines)
+        p.h = headline
+    else:
+        g.trace('-----', headline)
+        g.printObj(command_lines)
+</t>
+<t tx="ekr.20200505051957.6">def make_command_root(fn, root):
+    """Find or make the node containing commands."""
+    h = f"commands: {fn}"
+    p = g.findNodeAnywhere(c, h)
+    if not p:
+        p = root.insertAsLastChild()
+        p.h = h
+    return p
+</t>
+<t tx="ekr.20200505051957.7">def do_part(p, part):
+    """
+    Handle the next part of node p.
+    Return (new_body, command, headline)
+    """
+    commands, head, tail = part.commands, part.head, part.tail
+    if not commands:
+        return [], [], []
+    #
+    # Let block.
+    def_line = tail.pop(0) if tail else ''
+    m = def_pat.match(def_line)
+    def_name = m.group(1) if m else '&lt;no name&gt;'
+    call = f"{instance}.{m.group(1)}(event)" if m else 'pass'
+    headline = f"'{commands[0].group(1)}'"
+    #
+    # Define the body lines first, so we can copy the docstring later.
+    body_lines = head + [def_line] + tail
+    body_s = ''.join(body_lines)
+    #
+    # Create the command_lines
+    command_lines = [
+        f"@g.command('{z.group(1)}')" + '\n' for z in commands
+    ]
+    command_lines += [
+        f"def {def_name}(event):" + '\n',
+    ]
+    # Copy the doc part from body_s, *not* p.b!
+    doc = doc_pat.search(body_s)
+    if doc:
+        doc_lines = g.splitLines(doc.group(1))
+        command_lines += ['    ' + doc_lines[0]]
+        command_lines += doc_lines[1:]
+        command_lines += ['\n']
+    if require_c:
+        command_lines += [
+            f"    c = event.get('c')" + '\n',
+            f"    if not c:" + '\n',
+            f"        return" + '\n',
+        ]
+    command_lines += [
+        f"    {call}" + '\n',
+        '\n',
+    ]
+    return body_lines, command_lines, headline
+</t>
+<t tx="ekr.20201030065542.1"></t>
+<t tx="ekr.20201030065548.10">from os      import environ
+from os      import getcwd
+from os      import mkdir
+from os      import system
+from os      import unlink
+from os.path import exists
+from os.path import join
+from pickle  import dump
+from pickle  import load
+from sys     import argv
+from sys     import exit
+
+"""
+from subprocess import Popen, PIPE
+"""
+</t>
+<t tx="ekr.20201030065548.11">CWD         = getcwd()
+DATA_NAME   = "data.dat"
+DATA_FILE   = join(CWD,DATA_NAME)
+DIAL_REPO   = "https://github.com/flexxui/dialite.git"
+SOURCES     = "sources"
+VIRTUAL_ENV ="/home/bridge1/Virtual/leowapp/env"
+ar1         = ar2 = ar3 = None
+
+</t>
+<t tx="ekr.20201030065548.12">repo_list = (
+(
+"dialite",
+"master",
+"/home/bridge1/Virtual/leowapp/zips/dialite-master.zip",
+"https://github.com/flexxui/dialite.git",
+),
+(
+"pscript",
+"master",
+"/home/bridge1/Virtual/leowapp/zips/pscript-master.zip",
+"https://github.com/flexxui/pscript.git",
+),
+(
+"tornado",
+"master",
+"/home/bridge1/Virtual/leowapp/zips/tornado-master.zip",
+"https://github.com/tornadoweb/tornado.git",
+),
+(
+"webruntime",
+"master",
+"/home/bridge1/Virtual/leowapp/zips/webruntime-master.zip",
+"https://github.com/flexxui/webruntime.git",
+),
+(
+"flexx",
+"master",
+"/home/bridge1/Virtual/leowapp/zips/flexx-master.zip",
+"https://github.com/flexxui/flexx.git",
+),
+(
+"leo-editor",
+"skeleton",
+"/home/bridge1/Virtual/leowapp/zips/leo-editor-skeleton.zip",
+"https://github.com/leo-editor/leo-editor.git",
+),
+)
+
+order = (
+"dialzip",
+"dialgit",
+"dialins",
+"pscrzip",
+"pscrgit",
+"pscrins",
+"tornzip",
+"torngit",
+"tornins",
+"webrzip",
+"webrgit",
+"webrins",
+"flexzip",
+"flexgit",
+"flexins",
+"leozip",
+"leogit",
+"leoins",
+"leocpy",
+)
+
+data = {
+"dialzip":("setup_zip('dialite')",
+           "Unzip the dialite zip and place it in the correct directory",
+           False),
+"dialgit":("setup_git('dialite')",
+           "Setup the dialite github repo.",
+           False),
+"dialins":("install('dialite')",
+           "Using pip, install dialite from the sources directory",
+           False),
+"pscrzip":("setup_zip('pscript')",
+           "Unzip the pscript zip and place it in the correct directory",
+           False),
+"pscrgit":("setup_git('pscript')",
+           "Setup the pcscript github repo.",
+           False),
+"pscrins":("install('pscript')",
+           "Using pip, install pscript from the sources directory",
+           False),
+"tornzip":("setup_zip('tornado')",
+           "Unzip the tornado zip and place it in the correct directory",
+           False),
+"torngit":("setup_git('tornado')",
+           "Setup the tornado github repo.",
+           False),
+"tornins":("install('tornado')",
+           "Using pip, install tornado from the sources directory",
+           False),
+"webrzip":("setup_zip('webruntime')",
+           "Unzip the webruntime zip and place it in the correct directory",
+           False),
+"webrgit":("setup_git('webruntime')",
+           "Setup the webruntime github repo.",
+           False),
+"webrins":("install('webruntime')",
+           "Using pip, install webruntime from the sources directory",
+           False),
+"flexzip":("setup_zip('flexx')",
+           "Unzip the flexx zip and place it in the correct directory",
+           False),
+"flexgit":("setup_git('flexx')",
+           "Setup the flexx github repo.",
+           False),
+"flexins":("install('flexx')",
+           "Using pip, install flexx from the sources directory",
+           False),
+"leozip" :("setup_zip('leo-editor')",
+           "Unzip the leo-editor zip and place it in the correct directory",
+           False),
+"leogit": ("setup_git('leo-editor')",
+           "Setup the leo-editor github repo.",
+           False),
+"leoins": ("install('leo-editor')",
+           "Using pip, install leo-editor from the sources directory",
+           False),
+"leocpy": ("leo_copy_test()",
+           "Copy the leo test directory, which is used by leowapp, but"\
+           " is not part of the leo github distribution in the master"\
+           " branch",
+           False),
+}
+
+if exists(DATA_FILE):
+    with open(DATA_FILE, "rb") as f:
+        data = load(f)
+</t>
+<t tx="ekr.20201030065548.13">def usage():
+    print(u)
+
+def get_args():
+    global ar1,ar2,ar3
+    try:
+        ar1 = argv[0]
+        #print("ar1 = " + ar1)
+        ar2 = argv[1]
+        #print("ar2 = " + ar2)
+        ar3 = argv[2]
+        #print("ar3 = " + ar3)
+    except:
+        pass        
+
+def dump_opts():
+    for item in order:
+        print("{}: {}".format(item.ljust(7," "),data[item][1]))
+    print("")
+
+def save_data():
+    with open(DATA_FILE, "wb") as f:
+        dump(data,f,protocol=0)
+
+def do_step(item):
+    # Do this step in the process, regardless of whether it has been done
+    # or not. If it completes without failure, mark it done.
+    val = data[item]
+    print
+    print("{}: {}".format(item,val[1]))
+    print(val[0])
+    exec(val[0])
+    print
+    data[item] = (val[0],val[1],True)
+
+def run():
+    # ar2 is the step name.
+    global ar2
+
+    get_args()
+
+    if not ar2:
+        # If there is no step name, just show usage and the steps
+        usage()
+        dump_opts()
+
+    elif ar2 in data:
+        # If the step name is in the list, just do this step and
+        # mark it done
+        do_step(ar2)
+        save_data()
+
+    if ar2 == "next":
+        # do the next step in the process that hasn't been done already,
+        # then mark it done
+        for item in order:
+            if data[item][2] == False:
+                do_step(item)
+                save_data()
+                break
+
+    if ar2 == "steps":
+        # list all the steps
+        print("")
+        dump_opts()
+
+    if ar2 == "show":
+        # show the next step in the process that hasn't been done already
+        for item in order:
+            if data[item][2] == False:
+                print("\n{}: {}\n".format(item,data[item][1]))
+                break
+
+    if ar2 == "restart":
+        # delete data.dat from the current directory
+        if exists(DATA_FILE):
+            unlink(DATA_FILE)
+
+    if ar2 == "commands":
+        # show some interesting command lines used by this script
+        print(cmds)
+</t>
+<t tx="ekr.20201030065548.14">@others
+</t>
+<t tx="ekr.20201030065548.15">def setup_dirs():
+    for item in dir_list:
+        create_dir(item)
+</t>
+<t tx="ekr.20201030065548.16">def leo_copy_test():
+    """
+    TODO: Copy the entire directory:
+        sources/leo-editor-skeleton/test to
+    site-packages/leo/test
+    """
+    pass
+</t>
+<t tx="ekr.20201030065548.17">def create_dir(item):
+    name = join(CWD,item)
+    if not exists(name):
+        print("creating {}".format(name))
+        mkdir(name)
+</t>
+<t tx="ekr.20201030065548.18">def run_env_cmd(cmd):
+    msg = "\n\nERROR! Pip install must be run under the "\
+          "virtual environment:\n'{}'!\n\n".format(VIRTUAL_ENV)
+    try:
+        if not environ['VIRTUAL_ENV'] == VIRTUAL_ENV:
+            barf # raise exception
+    except:
+        print(msg)
+        exit(0)
+    print(cmd)
+    system(cmd)
+</t>
+<t tx="ekr.20201030065548.19">def clone_repo(name,branch,git_name):
+    git_dir = join(CWD,SOURCES,"{}-{}/.git".format(name,branch))
+    if not exists(git_dir):
+        mkdir(git_dir)
+    cmd =  "cd {} &amp;&amp; git clone --bare --single-branch -b {} --depth=1 --shallow-submodules {} .".format(git_dir,branch,git_name)
+    print(cmd)
+    system(cmd)
+    return
+</t>
+<t tx="ekr.20201030065548.2">"""Remove all sensitive material in this outline, except for this node."""
+# Warning: This script is dangerous! Use on a copy of your outline.
+n = 1
+v0 = c.p.v
+for p in c.all_unique_positions():
+    if p.v != v0:
+        p.h = f"node {n}"
+        p.b = ''
+        n += 1
+c.redraw()</t>
+<t tx="ekr.20201030065548.20">"""
+Clone a bare .git directory for the github repo
+"""
+def setup_git(repo_name):
+    name,branch,zip_name,git_name = get_names(repo_name)
+    if not name:
+        return
+    clone_repo(name,branch,git_name)
+    pull_repo(name,branch,git_name)
+    return
+</t>
+<t tx="ekr.20201030065548.21">def unzip(name):
+    dest = join(CWD,SOURCES)
+    cmd = "unzip -o {} -d {}".format(name,dest)
+    print(cmd)
+    system(cmd)
+    return
+    src  = join(CWD,"zips","{}.zip".format(name))
+    dest = join(CWD,SOURCES)
+    #print(src)
+
+</t>
+<t tx="ekr.20201030065548.22">def get_names(repo_name):
+    for item in repo_list:
+        (name,branch,zip_name,git_name) = item
+        if name == repo_name:
+            stub = "name:{}\nbranch:{}\nzip: {}\ngit: {}"
+            print(stub.format(name,branch,zip_name,git_name))
+            return name,branch,zip_name,git_name
+    return None,None,None,None
+</t>
+<t tx="ekr.20201030065548.23">"""
+Unzip a master zip file into its source directory
+"""
+def setup_zip(repo_name):
+    name,branch,zip_name,git_name = get_names(repo_name)
+    if not name:
+        return
+    unzip(zip_name)
+</t>
+<t tx="ekr.20201030065548.24">def pull_repo(name,branch,git_name):
+    print("pull_repo")
+    repo_dir = join(CWD,SOURCES,"{}-{}".format(name,branch))
+    cmd =  "cd {} &amp;&amp; git init".format(repo_dir)
+    print(cmd)
+    system(cmd)
+    cmd =  "cd {} &amp;&amp; git pull --depth=1 --allow-unrelated-histories {}  {}".format(repo_dir,git_name,branch)
+    print(cmd)
+    system(cmd)
+    return
+</t>
+<t tx="ekr.20201030065548.25">def install(repo_name):
+
+    name,branch,zip_name,git_name = get_names(repo_name)
+    if not name:
+        return
+    src = join(CWD, SOURCES,"{}-{}".format(name,branch))
+    cmd = "pip install --upgrade --no-deps --force-reinstall {}"
+    cmd = cmd.format(src)
+    run_env_cmd(cmd)
+</t>
+<t tx="ekr.20201030065548.26">at = c.atFileCommands
+p = g.findNodeAnywhere(c, '@clean at_clean_test.py')
+assert p
+at.write(p, kind='@clean', nosentinels=True, toString=False)
+for p2 in p.self_and_subtree():
+    p2.v.clearDirty()
+c.redraw()</t>
+<t tx="ekr.20201030065548.27">@others # changed.
+</t>
+<t tx="ekr.20201030065548.28">def spam():
+    pass # changed 3
+</t>
+<t tx="ekr.20201030065548.29">def eggs():
+    pass
+
+</t>
+<t tx="ekr.20201030065548.3" __bookmarks="7d7100580700000069735f6475706571014930300a732e">d = c.config.settingsDict
+sources = list(set([gs.path for gs in d.d.values() if gs.path is not None]))
+    # Yes, gs.path can be None.
+#
+# Compute the summary dict.
+summary = {}
+for path in sources:
+    inner_d = g.TypedDict(
+        name=g.shortFileName(path),
+        keyType=str,
+        valType=g.GeneralSetting)
+    summary [path] = inner_d
+    for key, val in d.items():
+        if val.path == path:
+            inner_d [key] = val
+#
+# Show the summary dict.
+if 1:
+    # Brief: good for quck checks.
+    g.printObj([str(z) for z in summary.values()])
+else:
+    # Complete. Good for deep debugging.
+    g.printObj(summary)</t>
+<t tx="ekr.20201030065548.4">"""Remove icons for the node whose headline is h"""
+h = 'my headline'
+p = g.findNodeAnywhere(c, h)
+if p:
+    c.editCommands.deleteNodeIcons(p=p)
+    c.redraw_now()
+else:
+    g.es_print('not found', h)</t>
+<t tx="ekr.20201030065548.5">height, width = 682, 1264
+w = c.frame.top
+while w.parent():
+    w = w.parent()
+w.resize(1264, 682)
+w.move(200, 200)
+</t>
+<t tx="ekr.20201030065548.6">@language python
+@tabwidth -4
+&lt;&lt; docstring &gt;&gt;
+&lt;&lt; usage &gt;&gt;
+&lt;&lt; commands &gt;&gt;
+@others
+run()
+</t>
+<t tx="ekr.20201030065548.7">@language rest
+@wrap
+
+"""
+install.py
+
+Version 1.0
+Copyright David Speed Ream 25 November 2018
+This file is released to public domain.
+
+
+Install leowapp into a virtual python virtual environment on Ubuntu or
+Debian.
+
+run python install.py for usage information.
+
+This install does not depend upon or install QT.
+This install does require git to be installed.
+
+To use this script to install leowapp in a NOT python virtual environment,
+go to the routine:
+    run_env_cmd()
+
+and comment out everything except the last two lines. Make sure to examine
+the consequences of doing this prior to doing it. Or make a backup first.
+    
+After this install is completed, new updates to any of the projects
+(except tornado) can be pulled from github, getting only the most recent
+changes, additions or deletions to any of the project files. After such a
+change, the project must be reinstalled again using pip using one of the
+script commands. For example, after pulling a change to leowapp, reinstall
+leowapp again by:
+    starting the virtual environment
+    running python install.py leoins
+
+This install method requires manually getting zip files for each project
+and placing them into the ./zips folder.
+
+All the flexx project zips come from github flexxui. Leo which comes from
+github leo-editor. Tornado comes from tornadoweb.
+
+In the ./zips directory, place the following zip files:
+ dialite-master.zip
+ flexx-master.zip
+ leo-editor-skeleton.zip
+ pscript-master.zip
+ tornado-master.zip
+ webruntime-master.zip
+
+The directory structure when starting this script:
+
+~/anydir
+~/anydir/zips
+~/anydir/zips/dialite-master.zip
+~/anydir/zips/flexx-master.zip
+~/anydir/zips/leo-editor-skeleton.zip
+~/anydir/zips/pscript-master.zip
+~/anydir/zips/tornado-master.zip
+~/anydir/zips/webruntime-master.zip
+
+Creathing the python virtual environment:
+    This is what I did on Ubuntu 18.10
+
+cd ~/anydir
+
+python3 -m venv env
+
+Prior to running this install script, and always prior to running leowapp,
+enter the virtual env by:
+
+cd ~/anydir
+source env/bin/activate
+
+After done with work:
+cd ~/anydir
+deactivate
+"""
+</t>
+<t tx="ekr.20201030065548.8">@language rest
+@wrap
+
+u = \
+"""
+Basic Usage:
+
+cd ~/this_directory
+
+python3 install.py
+    print this usage message, then:
+    list all available steps
+
+python3 install.py show
+    show the next step in the sequence
+
+python3 install.py next
+    do the next step in the sequence
+
+python3 install.py &lt;step name&gt;
+    do the given step
+
+python3 install.py restart
+    Restart the process over from the start. This deletes the file data.dat
+    from the current directory.
+
+python3 install.py commands
+    show some interesting command lines used by this script
+
+"""
+
+</t>
+<t tx="ekr.20201030065548.9">@language rest
+@wrap
+
+"""
+The following lines are displayed by entering:
+    python install.py commands
+
+"""
+
+cmds = \
+"""
+
+unzip, force overwrite, to destination folder.
+
+unzip -o myzip.zip -d /home/me/working_stuff/destination_folder
+
+From an existing empty project folder, create a valid .git folder for an
+existing github project.
+
+-mkdir /home/me/stuff/my-project/.git
+-cd /home/me/stuff/my-project/.git
+-git clone --bare --single-branch -b mybranch --depth=1 --shallow-submodules https://github.com/my-project/my-project.git .
+
+After making a valid .git folder for the project, and after extracting the
+source files from a git zip into the project folder, setup the project for
+use and get any recent changes to the project from github.
+
+-cd /home/me/stuff/my-project
+-git init
+-git reset HEAD
+-git pull --depth=1 --allow-unrelated-histories https://github.com/my-project/my-project.git mybranch
+-git status
+-After running git status, if any items are marked 'modified' or 'deleted',
+then manually run git: checkout &lt;item&gt;
+-keep running status and checkout until all items are up to date
+
+Using pip, install a package downloaded via the github process above into
+the current python installation without pulling in other dependencies.
+Please note that all the given command line options must be used, even when installing a package for the first time.
+
+-pip install --upgrade --no-deps --force-reinstall /home/me/stuff/my-project
+"""
+</t>
+<t tx="ekr.20201110014825.1">"""Add tags for all matches of '# #[0-9]+'"""
+g.cls()
+import re
+d_all = {}
+d_added = {}
+tc = c.theTagController
+pat = re.compile(r'# #([0-9]+)')
+for p in c.all_unique_positions():
+    u = p.v.u
+    tags = set(u.get(tc.TAG_LIST_KEY, set([])))
+    for m in pat.finditer(p.b):
+        tag = m.group(1)
+        aSet = d_all.get(tag, set())
+        aSet.add(p.h)
+        d_all [int(tag)] = aSet
+        # Add the tag. tc.add_tag is way too slow.
+        if tag not in tags:
+            tags.add(tag)
+            u[tc.TAG_LIST_KEY] = tags
+            aSet = d_added.get(tag, set())
+            aSet.add(p.h)
+            d_added [int(tag)] = aSet
+if 1: # Print all added tags.
+    print('Added tags...')
+    for key in sorted(d_added):
+        aList = d_added.get(key)
+        for h in sorted(aList):
+            print(f"{key:&gt;8} {h}")
+if 1: # Print all tags.
+    print('All tags...')
+    for key in sorted(d_all):
+        aList = d_all.get(key)
+        for h in sorted(aList):
+            print(f"{key:&gt;8} {h}")
+print('done')</t>
+<t tx="ekr.20201110014834.1">"""Remove all tags."""
+g.cls()
+tc = c.theTagController
+for p in c.all_unique_positions():
+    u = p.v.u
+    tags = set(u.get(tc.TAG_LIST_KEY, set([])))
+    for tag in tags:
+        print(f"remove {tag:10} {p.h}")
+        tc.remove_tag(p, tag)
+print('done')</t>
+<t tx="ekr.20210118070851.1">"""
+Convert defs in LeoFind to pep8 names.
+- Don't change defs containing underscores.
+- Check for existing target.
+"""
+# Contains a few hacks related specifically to leoFind.py.
+g.cls()
+import re
+h = 'class LeoFind (LeoFind.py)'
+root = g.findNodeAnywhere(c, h)
+@others
+if root:
+    main(root)
+else:
+    print('not found:', root)</t>
+<t tx="ekr.20210118070851.2">def convert(old_func, new_func, root):
+    print(f"{old_func} =&gt; {new_func}\n")
+    for p in root.subtree():
+        pattern = rf"\b{old_func}\b"
+        p.h = re.sub(pattern, new_func, p.h)
+        p.b = re.sub(pattern, new_func, p.b)
+        # g.printObj(g.splitLines(s2), tag='p.h')
+    print('')</t>
+<t tx="ekr.20210118070851.3">def main(root):
+    pattern = re.compile(r'^def\s+(\w+)', re.MULTILINE)
+    for pass_n in (0, 1):
+        n = 0
+        for p in root.subtree():
+            for m in re.finditer(pattern, p.b):
+                target = m.group(0)
+                old_func = m.group(1)
+                if '_' in target:
+                    continue
+                if target.islower():
+                    continue
+                if old_func == 'finishCreate':  # Special case.
+                    return
+                new_func = new_name(old_func)
+                if new_func == old_func:
+                    continue
+                if pass_n == 0:
+                    if exists(new_func, root):
+                        g.trace(f"already exists: {old_func} {new_func}")
+                        g.trace('aborting')
+                        return
+                else:
+                    n += 1
+                    convert(old_func, new_func, root)
+    g.trace(f"converted {n} function names")
+    c.redraw()
+            </t>
+<t tx="ekr.20210118070851.4">def new_name(s):
+    """Return the new name of s."""
+    assert ' ' not in s
+    # Convert s to underscore style.
+    result = []
+    for i, ch in enumerate(s):
+        if i &gt; 0 and ch.isupper():
+            result.append('_')
+        result.append(ch.lower())
+    return ''.join(result).replace('i_search', 'isearch')
+</t>
+<t tx="ekr.20210118070851.5">def exists(s, root):
+    """Return True if s exists in any of root's nodes."""
+    for p in root.self_and_subtree():
+        if s in p.b:
+            return True
+    return False</t>
 <t tx="lkj.20190712002811.1"></t>
 <t tx="maphew.20190209160547.1">gnx: maphew.20130809155103.2863
 </t>

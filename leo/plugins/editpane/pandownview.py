@@ -9,7 +9,7 @@ languages, but this just does markdown.
 """
 from subprocess import Popen, PIPE
 
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 assert g
 # from leo.core.leoQt import QtCore, QtGui, QtWidgets, QtConst
 
@@ -36,18 +36,18 @@ def to_html(text, from_='markdown'):
         str: html
     """
 
-    cmd = "pandoc --smart --standalone --mathjax --from %s --to html" % from_
+    cmd = f"pandoc --smart --standalone --mathjax --from {from_} --to html"
     cmd = cmd.split()
     proc = Popen(cmd, stdin=PIPE, stdout=PIPE)
     out, err = proc.communicate(text)
     return out
 
 # see if Pandoc's installed
+
 try:
     to_html("test")
-except:
+except:  # pylint: disable=raise-missing-from
     raise ImportError
-
 #@+node:tbrown.20171028115505.3: ** class LEP_PanDownView
 class LEP_PanDownView(HtmlView):
     """LEP_MarkdownView -
@@ -59,10 +59,9 @@ class LEP_PanDownView(HtmlView):
     #@+node:tbrown.20171028115505.4: *3* __init__
     def __init__(self, c=None, lep=None, *args, **kwargs):
         """set up"""
-        super(LEP_PanDownView, self).__init__(c=c, lep=lep, *args, **kwargs)
+        super().__init__(c=c, lep=lep, *args, **kwargs)
         self.c = c
         self.lep = lep
-
     #@+node:tbrown.20171028115505.5: *3* new_text
     def new_text(self, text):
         """new_text - update for new text
@@ -71,7 +70,6 @@ class LEP_PanDownView(HtmlView):
             text (str): new text
         """
         self.setHtml(to_html(text, from_=self.from_fmt))
-
     #@+node:tbrown.20171028115505.6: *3* update_text
     def update_text(self, text):
         """update_text - update for current text
@@ -84,8 +82,6 @@ class LEP_PanDownView(HtmlView):
         self.new_text(text)
         # self.horizontalScrollBar().setValue(h)
         # self.verticalScrollBar().setValue(v)
-
-
     #@-others
 #@+node:tbrown.20171028115505.7: ** class LEP_PanDownHtmlView
 class LEP_PanDownHtmlView(TextView):
@@ -98,10 +94,9 @@ class LEP_PanDownHtmlView(TextView):
     #@+node:tbrown.20171028115505.8: *3* __init__
     def __init__(self, c=None, lep=None, *args, **kwargs):
         """set up"""
-        super(LEP_PanDownHtmlView, self).__init__(c=c, lep=lep, *args, **kwargs)
+        super().__init__(c=c, lep=lep, *args, **kwargs)
         self.c = c
         self.lep = lep
-
     #@+node:tbrown.20171028115505.9: *3* new_text
     def new_text(self, text):
         """new_text - update for new text
@@ -110,9 +105,6 @@ class LEP_PanDownHtmlView(TextView):
             text (str): new text
         """
         self.setPlainText(to_html(text, from_=self.from_fmt))
-
-
-
     #@-others
 #@+node:tbrown.20171128074654.1: ** class LEP_PanRstView
 class LEP_PanRstView(LEP_PanDownView):

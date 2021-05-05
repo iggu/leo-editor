@@ -8,25 +8,17 @@
 from codecs import open  # To use a consistent encoding
 import os
 import platform
+import sys
 # from shutil import rmtree
 from setuptools import setup, find_packages  # Always prefer setuptools over distutils
-import sys
 
 # Ensure setup.py's folder is in module search path else import leo fails
 # required for pip >v10 and pyproject.toml
+# pylint: disable=wrong-import-position
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-import leo.core.leoGlobals as g
-import leo.core.leoVersion as leoVersion
-#@+node:mhw-nc.20190126224021.1: ** setup janitor
-try:
-   from setupext_janitor import janitor
-   CleanCommand = janitor.CleanCommand
-except ImportError:
-   CleanCommand = None
+from leo.core import leoGlobals as g
+from leo.core import leoVersion
 
-cmd_classes = {}
-if CleanCommand is not None:
-   cmd_classes['clean'] = CleanCommand
 #@+node:maphew.20181010203342.385: ** get_version & helper (setup.py)
 def get_version(file, version=None):
     """Determine current Leo version. Use git if in checkout, else internal Leo"""
@@ -65,8 +57,8 @@ def clean_git_tag(tag):
             v5.3           -->	5.3
             Fixed-bug-149  -->  Fixed-bug-149
     """
-    if tag.lower().startswith('leo-'): tag = tag[4 :]
-    if tag.lower().startswith('v'): tag = tag[1 :]
+    if tag.lower().startswith('leo-'): tag = tag[4:]
+    if tag.lower().startswith('v'): tag = tag[1:]
     return tag
 #@+node:maphew.20180224170149.1: *3* get_semver
 def get_semver(tag):
@@ -78,9 +70,10 @@ def get_semver(tag):
             # 5.6b2 --> 5.6-b2
     except(ImportError, ValueError) as err:
         print('\n', err)
-        print('''*** Failed to parse Semantic Version from git tag '{0}'.
-        Expecting tag name like '5.7b2', 'leo-4.9.12', 'v4.3' for releases.
-        This version can't be uploaded to PyPi.org.'''.format(tag))
+        print(
+            f"*** Failed to parse Semantic Version from git tag '{tag}'.\n"
+            "Expecting tag name like '5.7b2', 'leo-4.9.12', 'v4.3' for releases.\n"
+            "This version can't be uploaded to PyPi.org.")
         version = tag
     return version
 #@+node:maphew.20171006124415.1: ** Get description
@@ -106,15 +99,14 @@ setup_requires = []
     # setup_requires no longer needed with PEP-518 and pip >v10
 #@+node:maphew.20171120133429.1: ** User requirements
 user_requires = [
-    'PyQt5 >= 5.12, < 5.13',  # v5.12+ to close #1217
-    'PyQtWebEngine < 5.13',  # #1202 QtWebKit needs to be installed separately starting Qt 5.6
-    'asttokens', # abstract syntax tree text parsing
+    'PyQt5 >= 5.12',  # v5.12+ to close #1217
+    'PyQtWebEngine',  # #1202 QtWebKit needs to be installed separately starting Qt 5.6
+    'asttokens',  # abstract syntax tree text parsing
     'docutils',  # used by Sphinx, rST plugin
     'flexx',  # for LeoWapp browser gui
     'meta',  # for livecode.py plugin, which is enabled by default
     'nbformat',  # for Jupyter notebook integration
     'pylint', 'pyflakes', 'black',  # coding syntax standards
-    'setupext-janitor >= 1.1',  # extend `setup.py clean` #1055,#1255
     'pyshortcuts >= 1.7',  # desktop integration (#1243)
     'sphinx',  # rST plugin
     'windows-curses; platform_system=="Windows"',  # for console mode on Windows
@@ -122,8 +114,7 @@ user_requires = [
 #@+node:maphew.20190207205714.1: ** define_entry_points
 def define_entry_points(entry_points=None):
     """
-    1. Define scripts that get installed to PYTHONHOME/Scripts.
-    2. Extend `python setup.py clean` to remove more files (issue #1055)
+    Define scripts that get installed to PYTHONHOME/Scripts.
     """
     print('Creating entry_points for [OS name - system]: {} - {}'.format(
         platform.os.name, platform.system()))
@@ -139,10 +130,6 @@ def define_entry_points(entry_points=None):
         x.append('leo-m = leo.core.runLeo:run')
         x.append('leo-messages = leo.core.runLeo:run')
         entry_points.update({'console_scripts': x})
-
-    entry_points.update({
-            'distutils.commands': [
-            'clean = setupext_janitor.janitor:CleanCommand']})
 
     return entry_points
 #@-others
@@ -166,10 +153,8 @@ setup(
     setup_requires=setup_requires,
     install_requires=user_requires,
     entry_points=define_entry_points(),
-    cmdclass={'clean': janitor.CleanCommand},  # clean more than setuptools, #1055
     python_requires='>=3.6',
 )
-
 #@@language python
 #@@tabwidth -4
 #@-leo

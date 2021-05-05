@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20060831165821: * @file slideshow.py
+#@+node:ekr.20060831165821: * @file ../plugins/slideshow.py
 #@+<< docstring >>
 #@+node:ekr.20060831165845.1: ** << docstring >>
 ''' Supports slideshows in Leo outlines.
@@ -30,7 +30,7 @@ __version__ = '0.4'
 #@+node:ekr.20060831165845.2: ** << version history >>
 #@@killcolor
 #@+at
-# 
+#
 # 0.01 EKR: Initial version.
 # 0.02 EKR: Improved docstring and added todo notes.
 # 0.03 EKR: Simplified createCommands.
@@ -45,7 +45,7 @@ __version__ = '0.4'
 #@-<< version history >>
 #@+<< imports >>
 #@+node:ekr.20060831165845.3: ** << imports >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 #@-<< imports >>
 #@+others
 #@+node:ekr.20060831165845.4: ** init
@@ -208,7 +208,7 @@ class slideshowController:
         #c.expandAllAncestors(p)
         #c.selectPosition(p)
         c.redraw(p)
-        w.see('1.0')
+        w.see(0)
         if h.startswith('@slideshow'):
             self.slideShowRoot = p.copy()
         self.slide = p.copy()

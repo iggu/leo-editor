@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:danr7.20060912105041.1: * @file paste_as_headlines.py
+#@+node:danr7.20060912105041.1: * @file ../plugins/paste_as_headlines.py
 #@@first
 
 #@+<< docstring >>
@@ -30,7 +30,7 @@ under the existing Paste option.
 #@-<< version history >>
 #@+<< imports >>
 #@+node:danr7.20060912105041.4: ** << imports >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 #@-<< imports >>
 
@@ -91,9 +91,9 @@ def paste_as_headlines(c):
             cur_pos = insertNode.copy()
             if len(tempHead)>50:
                 c.setHeadString(insertNode,tempHead[:50])
-                c.setBodyString(insertNode,tempHead)
+                insertNode.b = tempHead
             else:
-                c.setHeadString(insertNode,tempHead)
+                insertNode.h = tempHead
     currentPos.expand()
     c.redraw()
 #@-others

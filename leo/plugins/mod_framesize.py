@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20101110093301.5818: * @file mod_framesize.py
+#@+node:ekr.20101110093301.5818: * @file ../plugins/mod_framesize.py
 """ Sets a hardcoded frame size.
 
 Prevents Leo from setting custom frame size (e.g. from an external .leo
@@ -14,7 +14,7 @@ document)
 def init():
     '''Return True if the plugin has loaded successfully.'''
     from leo.core import leoGlobals as g
-    import leo.plugins.qt_frame as qt_frame
+    from leo.plugins import qt_frame
     ok = g.app.gui.guiName() == "qt"
     if ok:
         setattr(qt_frame.LeoQtFrame,'setTopGeometry',setTopGeometry_mod_framesize)

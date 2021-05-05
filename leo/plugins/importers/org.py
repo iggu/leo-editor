@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20140723122936.18146: * @file importers/org.py
+#@+node:ekr.20140723122936.18146: * @file ../plugins/importers/org.py
 '''The @auto importer for the org language.'''
 import re
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 #@+others
 #@+node:ekr.20140723122936.18072: ** class Org_Importer

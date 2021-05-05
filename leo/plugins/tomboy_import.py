@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20090503124249.1: * @file tomboy_import.py
+#@+node:ville.20090503124249.1: * @file ../plugins/tomboy_import.py
 ''' Allows imports of notes created in Tomboy / gnote.
 
 Usage:
@@ -15,10 +15,9 @@ Usage:
 
 #@+<< imports >>
 #@+node:ville.20090503124249.4: ** << imports >>
-import leo.core.leoGlobals as g
-import xml.etree.ElementTree as ET
 import html.parser as HTMLParser
-
+import xml.etree.ElementTree as ET
+from leo.core import leoGlobals as g
 from leo.core import leoPlugins
     # Uses leoPlugins.TryNext
 #@-<< imports >>
@@ -60,7 +59,9 @@ def parsenote(cont):
     tree = ET.parse(cont)
     #ET.dump(tree)
     title = tree.findtext('{http://beatniksoftware.com/tomboy}title')
-    body  = tree.getiterator('{http://beatniksoftware.com/tomboy}note-content')[0]
+    ### EKR: I'm not sure that finditer is correct, but geiterator no longer exists.
+    ### body  = tree.getiterator('{http://beatniksoftware.com/tomboy}note-content')[0]
+    body  = tree.iterfind('{http://beatniksoftware.com/tomboy}note-content')[0]
     #b = "".join(el.text for el in body.getiterator())
     b = ET.tostring(body)
     b = strip_tags(b)

@@ -1,15 +1,15 @@
 #@+leo-ver=5-thin
-#@+node:ville.20120604212857.4215: * @file notebook.py
+#@+node:ville.20120604212857.4215: * @file ../plugins/notebook.py
 ''' QML Notebook
 
 Edit several nodes at once, in a pannable "notebook" view.
 
 Use <Alt-x>nb-<tab> to see the list of commands.
 '''
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
+from leo.core.leoQt import isQt5, QtCore, QtDeclarative, QtGui
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')
-from leo.core.leoQt import isQt5, QtCore, QtDeclarative, QtGui
 
 controllers = {}
     # keys are c.hash(), values are NavControllers

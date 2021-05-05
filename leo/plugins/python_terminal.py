@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:peckj.20150428142633.1: * @file python_terminal.py
+#@+node:peckj.20150428142633.1: * @file ../plugins/python_terminal.py
 #@@language python
 #@@tabwidth -4
 
@@ -8,10 +8,6 @@
 
 # This code from http://stackoverflow.com/questions/12431555
 # with modifications from Jake Peck and EKR.
-
-use_rlcompleter = False
-    # A workaround for #1212: segfaults at startup when importing this file.
-    # True: enable tab completion, at the risk of segfaults.
 
 #@+<< docstring >>
 #@+node:peckj.20150428142633.2: ** << docstring >>
@@ -51,19 +47,22 @@ with some modifications made for Leo embedding.
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:peckj.20150428142729.2: ** << imports >>
-import leo.core.leoGlobals as g
-
-# import os
 import re
 import sys
 import code
 
+from leo.core import leoGlobals as g
+from leo.core.leoQt import QtWidgets,QtCore
+
+use_rlcompleter = False
+    # A workaround for #1212: segfaults at startup when importing this file.
+    # True: enable tab completion, at the risk of segfaults.
+
+# Third-party imports.
 if use_rlcompleter:
     from rlcompleter import Completer
 else:
     Completer = None
-
-from leo.core.leoQt import QtWidgets,QtCore
 #@-<< imports >>
 
 #@+others
@@ -73,7 +72,7 @@ if QtWidgets:
     class MyInterpreter(QtWidgets.QWidget):
     
         def __init__(self, parent, c):
-            super(MyInterpreter, self).__init__(parent)
+            super().__init__(parent)
             hBox = QtWidgets.QHBoxLayout()
             self.setLayout(hBox)
             self.textEdit = PyInterp(self, c)
@@ -291,7 +290,7 @@ if QtWidgets:
                     self.doEnter(event)
                     return
                 # allow all other key events
-                super(PyInterp, self).keyPressEvent(event)
+                super().keyPressEvent(event)
             except Exception:
                 g.es_exception()
 

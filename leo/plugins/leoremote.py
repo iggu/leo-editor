@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20091009202416.10040: * @file leoremote.py
+#@+node:ville.20091009202416.10040: * @file ../plugins/leoremote.py
 #@+<< docstring >>
 #@+node:ville.20091009202416.10041: ** << docstring >> (leoremote.py)
 ''' Remote control for Leo.
@@ -32,11 +32,11 @@ Example client::
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:ekr.20160519045636.1: ** << imports >> (leoremote.py)
-import leo.core.leoGlobals as g
-from leo.external import lproto
 import os
 import socket # For a test of its capabilities.
 import tempfile
+from leo.external import lproto
+from leo.core import leoGlobals as g
 #@-<< imports >>
 #@+others
 #@+node:ville.20091009202416.10045: ** init

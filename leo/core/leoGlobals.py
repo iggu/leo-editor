@@ -7,58 +7,51 @@ Global constants, variables and utility functions used throughout Leo.
 
 Important: This module imports no other Leo module.
 """
-import sys
-isPython3 = sys.version_info >= (3, 0, 0)
-minimum_python_version = '3.6'
-    # #1215.
-isMac = sys.platform.startswith('darwin')
-isWindows = sys.platform.startswith('win')
-#@+<< global switches >>
-#@+node:ekr.20120212060348.10374: **  << global switches >> (leoGlobals.py)
-in_bridge = False
-    # Set to True in leoBridge.py just before importing leo.core.leoApp.
-    # This tells leoApp to load a null Gui.
-#@-<< global switches >>
 #@+<< imports >>
 #@+node:ekr.20050208101229: ** << imports >> (leoGlobals)
-# This is now done in run.
-    # import leo.core.leoGlobals as g # So code can use g below.
-#
 # Don't import leoTest here: it messes up Leo's startup code.
-    # import leo.core.leoTest as leoTest
+    # from leo.core import leoTest
 import binascii
 import codecs
+import fnmatch
 from functools import reduce
-try:
-    import gc
-except ImportError:
-    gc = None
-try:
-    import gettext
-except ImportError:  # does not exist in jython.
-    gettext = None
+import gc
+import gettext
 import glob
-import io
-StringIO = io.StringIO
 import importlib
 import inspect
+import io
 import operator
 import os
-#
-# Do NOT import pdb here!  We shall define pdb as a _function_ below.
-    # import pdb
+from pathlib import Path
+# import pdb  # Do NOT import pdb here!
+              # We shall define pdb as a _function_ below.
 import re
 import shlex
 import shutil
 import string
+import sys
 import subprocess
 import tempfile
 import time
 import traceback
 import types
+from typing import Any, Callable, Dict, List, Optional, Set
+import unittest
 import urllib
 import urllib.parse as urlparse
+import webbrowser
+#
+# Abbreviations...
+StringIO = io.StringIO
 #@-<< imports >>
+in_bridge = False
+    # Set to True in leoBridge.py just before importing leo.core.leoApp.
+    # This tells leoApp to load a null Gui.
+minimum_python_version = '3.6'  # #1215.
+isPython3 = sys.version_info >= (3, 0, 0)
+isMac = sys.platform.startswith('darwin')
+isWindows = sys.platform.startswith('win')
 #@+<< define g.globalDirectiveList >>
 #@+node:EKR.20040610094819: ** << define g.globalDirectiveList >>
 # Visible externally so plugins may add to the list of directives.
@@ -82,23 +75,24 @@ globalDirectiveList = [
     'tabwidth', 'terse',
     'unit', 'verbose', 'wrap',
 ]
+
+directives_pat = None  # Set below.
 #@-<< define g.globalDirectiveList >>
 #@+<< define global decorator dicts >>
 #@+node:ekr.20150510103918.1: ** << define global decorator dicts >> (leoGlobals.py)
 #@@nobeautify
-
+#@@language rest
 #@+at
-# The cmd_instance_dict supports the @cmd decorators in various files. For
-# example, the following appears in leo.commands.
-# 
+# The cmd_instance_dict supports per-class @cmd decorators. For example, the
+# following appears in leo.commands.
+#
 #     def cmd(name):
 #         """Command decorator for the abbrevCommands class."""
 #         return g.new_cmd_decorator(name, ['c', 'abbrevCommands',])
-# 
-# **Important**: All *new* commands should be defined using @g.command, but
-# this dict will remain forever so as not to break existing code.  See this
-# discussion https://github.com/leo-editor/leo-editor/issues/325
+#
+# For commands based on functions, use the @g.command decorator.
 #@@c
+#@@language python
 
 global_commands_dict = {}
 
@@ -152,6 +146,7 @@ def callback(func):
             return func(*args, **keys)
         except Exception:
             g.es_exception()
+            return None
 
     return callback_wrapper
 #@+node:ekr.20150510104148.1: *3* g.check_cmd_instance_dict
@@ -196,6 +191,7 @@ class Command:
             for c in app.commanders():
                 c.k.registerCommand(self.name, func)
         # Inject ivars for plugins_menu.py.
+        func.__func_name__ = func.__name__  # For leoInteg.
         func.is_command = True
         func.command_name = self.name
         return func
@@ -204,7 +200,7 @@ command = Command
 #@+node:ekr.20171124070654.1: *3* g.command_alias
 def command_alias(alias, func):
     """Create an alias for the *already defined* method in the Commands class."""
-    import leo.core.leoCommands as leoCommands
+    from leo.core import leoCommands
     assert hasattr(leoCommands.Commands, func.__name__)
     funcToMethod(func, leoCommands.Commands, alias)
 #@+node:ekr.20171123095526.1: *3* g.commander_command (decorator)
@@ -238,12 +234,12 @@ class CommanderCommand:
             method(event=event)
 
         # Inject ivars for plugins_menu.py.
-
-        commander_command_wrapper.__name__ = f"commander_command_wrapper: {self.name}"
+        commander_command_wrapper.__func_name__ = func.__name__  # For leoInteg.
+        commander_command_wrapper.__name__ = self.name
         commander_command_wrapper.__doc__ = func.__doc__
         global_commands_dict[self.name] = commander_command_wrapper
         if app:
-            import leo.core.leoCommands as leoCommands
+            from leo.core import leoCommands
             funcToMethod(func, leoCommands.Commands)
             for c in app.commanders():
                 c.k.registerCommand(self.name, func)
@@ -279,6 +275,9 @@ def new_cmd_decorator(name, ivars):
     """
     Return a new decorator for a command with the given name.
     Compute the class *instance* using the ivar string or list.
+    
+    Don't even think about removing the @cmd decorators!
+    See https://github.com/leo-editor/leo-editor/issues/325
     """
 
     def _decorator(func):
@@ -293,7 +292,8 @@ def new_cmd_decorator(name, ivars):
             except Exception:
                 g.es_exception()
 
-        new_cmd_wrapper.__name__ = f"wrapper: {name}"
+        new_cmd_wrapper.__func_name__ = func.__name__  # For leoInteg.
+        new_cmd_wrapper.__name__ = name
         new_cmd_wrapper.__doc__ = func.__doc__
         global_commands_dict[name] = new_cmd_wrapper
             # Put the *wrapper* into the global dict.
@@ -303,15 +303,63 @@ def new_cmd_decorator(name, ivars):
     return _decorator
 #@-others
 #@-<< define g.decorators >>
-tree_popup_handlers = []  # Set later.
-user_dict = {}
+#@+<< define regex's >>
+#@+node:ekr.20200810093517.1: ** << define regex's >>
+g_language_pat = re.compile(r'^@language\s+(\w+)+', re.MULTILINE)
+    # Regex used by this module, and in leoColorizer.py.
+#
+# Patterns used only in this module...
+g_is_directive_pattern = re.compile(r'^\s*@([\w-]+)\s*')
+    # This pattern excludes @encoding.whatever and @encoding(whatever)
+    # It must allow @language python, @nocolor-node, etc.
+g_noweb_root = re.compile('<' + '<' + '*' + '>' + '>' + '=', re.MULTILINE)
+g_pos_pattern = re.compile(r':(\d+),?(\d+)?,?([-\d]+)?,?(\d+)?$')
+g_tabwidth_pat = re.compile(r'(^@tabwidth)', re.MULTILINE)
+#@-<< define regex's >>
+tree_popup_handlers: List[Callable] = []  # Set later.
+user_dict: Dict[Any, Any] = {}
     # Non-persistent dictionary for free use by scripts and plugins.
-# g = None
-app = None  # The singleton app object. Set by runLeo.py.
+app: Any = None  # The singleton app object. Set by runLeo.py.
 # Global status vars.
 inScript = False  # A synonym for app.inScript
 unitTesting = False  # A synonym for app.unitTesting.
 #@+others
+#@+node:ekr.20201211182722.1: ** g.Backup
+#@+node:ekr.20201211182659.1: *3* g.standard_timestamp
+def standard_timestamp():
+    """Return a reasonable timestamp."""
+    return time.strftime("%Y%m%d-%H%M%S")
+#@+node:ekr.20201211183100.1: *3* g.get_backup_directory
+def get_backup_path(sub_directory):
+    """
+    Return the full path to the subdirectory of the main backup directory.
+    
+    The main backup directory is computed as follows:
+        
+    1. os.environ['LEO_BACKUP']
+    2. ~/Backup
+    """
+    # Compute the main backup directory.
+    # First, try the LEO_BACKUP directory.
+    backup = None
+    try:
+        backup = os.environ['LEO_BACKUP']
+        if not os.path.exists(backup):
+            backup = None
+    except KeyError:
+        pass
+    except Exception:
+        g.es_exception()
+    # Second, try ~/Backup.
+    if not backup:
+        backup = os.path.join(str(Path.home()), 'Backup')
+        if not os.path.exists(backup):
+            backup = None
+    if not backup:
+        return None
+    # Compute the path to backup/sub_directory
+    directory = os.path.join(backup, sub_directory)
+    return directory if os.path.exists(directory) else None
 #@+node:ekr.20140711071454.17644: ** g.Classes & class accessors
 #@+node:ekr.20120123115816.10209: *3* class g.BindingInfo & isBindingInfo
 class BindingInfo:
@@ -324,8 +372,15 @@ class BindingInfo:
     # so it is convenient to define it in leoGlobals.py.
     #@+others
     #@+node:ekr.20120129040823.10254: *4* bi.__init__
-    def __init__(self, kind, commandName='', func=None, nextMode=None, pane=None, stroke=None):
-
+    def __init__(
+        self,
+        kind,
+        commandName='',
+        func=None,
+        nextMode=None,
+        pane=None,
+        stroke=None,
+    ):
         if not g.isStrokeOrNone(stroke):
             g.trace('***** (BindingInfo) oops', repr(stroke))
         self.kind = kind
@@ -345,7 +400,7 @@ class BindingInfo:
     __str__ = __repr__
 
     def dump(self):
-        result = [f'BindingInfo {self.kind:17}']
+        result = [f"BindingInfo {self.kind:17}"]
         # Print all existing ivars.
         table = ('commandName', 'func', 'nextMode', 'pane', 'stroke')
         for ivar in table:
@@ -355,35 +410,31 @@ class BindingInfo:
                     if ivar == 'func':
                         # pylint: disable=no-member
                         val = val.__name__
-                    s = f'{ivar}: {val!r}'
+                    s = f"{ivar}: {val!r}"
                     result.append(s)
         # Clearer w/o f-string.
-        return f'[%s]' % ' '.join(result).strip()
+        return "[%s]" % ' '.join(result).strip()
     #@+node:ekr.20120129040823.10226: *4* bi.isModeBinding
     def isModeBinding(self):
         return self.kind.startswith('*mode')
     #@-others
-
 def isBindingInfo(obj):
     return isinstance(obj, BindingInfo)
 #@+node:ekr.20031218072017.3098: *3* class g.Bunch (Python Cookbook)
-#@+at
-# From The Python Cookbook:
-# 
-# Create a Bunch whenever you want to group a few variables:
-# 
-#     point = Bunch(datum=y, squared=y*y, coord=x)
-# 
-# You can read/write the named attributes you just created, add others,
-# del some of them, etc:
-#     if point.squared > threshold:
-#         point.isok = True
-#@@c
-
 class Bunch:
-    """A class that represents a colection of things.
+    """
+    From The Python Cookbook:
 
-    Especially useful for representing a collection of related variables."""
+        Create a Bunch whenever you want to group a few variables:
+        
+            point = Bunch(datum=y, squared=y*y, coord=x)
+        
+        You can read/write the named attributes you just created, add others,
+        del some of them, etc::
+        
+            if point.squared > threshold:
+                point.isok = True
+    """
 
     def __init__(self, **keywords):
         self.__dict__.update(keywords)
@@ -407,6 +458,7 @@ class Bunch:
         result = [f'g.Bunch({tag or ""})']
         result.extend(entries)
         return '\n    '.join(result) + '\n'
+
     # Used by new undo code.
 
     def __setitem__(self, key, value):
@@ -445,9 +497,9 @@ class EmergencyDialog:
         self.top = None  # The toplevel Tk widget.
         self.createTopFrame()
         buttons = [{
-            "text" : "OK",
-            "command" : self.okButton,
-            "default" : True,
+            "text": "OK",
+            "command": self.okButton,
+            "default": True,
         }]
         self.createButtons(buttons)
         self.top.bind("<Key>", self.onKey)
@@ -503,65 +555,20 @@ class EmergencyDialog:
     def run(self):
         """Run the modal emergency dialog."""
         # Suppress f-stringify.
-        self.top.geometry(f"%dx%d%+d%+d" % (300, 200, 50, 50))
+        self.top.geometry("%dx%d%+d%+d" % (300, 200, 50, 50))
         self.top.lift()
         self.top.grab_set()  # Make the dialog a modal dialog.
         self.root.wait_window(self.top)
     #@-others
-#@+node:ekr.20191013145307.1: *3* class g.TkIDDialog (EmergencyDialog)
-class TkIDDialog(EmergencyDialog):
-    """A class that creates an tkinter dialog to get the Leo ID."""
-
-    message = (
-        "leoID.txt not found\n\n"
-        "Please enter an id that identifies you uniquely.\n"
-        "Your git/cvs/bzr login name is a good choice.\n\n"
-        "Leo uses this id to uniquely identify nodes.\n\n"
-        "Your id should contain only letters and numbers\n"
-        "and must be at least 3 characters in length.")
-
-    title = 'Enter Leo id'
-
-    def __init__(self):
-        super().__init__(self.title, self.message)
-        self.val = ''
-
-    #@+others
-    #@+node:ekr.20191013145710.1: *4* leo_id_dialog.onKey
-    def onKey(self, event):
-        """Handle Key events in askOk dialogs."""
-        if event.char in '\n\r':
-            self.okButton()
-    #@+node:ekr.20191013145757.1: *4* leo_id_dialog.createTopFrame
-    def createTopFrame(self):
-        """Create the Tk.Toplevel widget for a leoTkinterDialog."""
-        import tkinter as Tk
-        self.root = Tk.Tk()
-        self.top = Tk.Toplevel(self.root)
-        self.top.title(self.title)
-        self.root.withdraw()
-        self.frame = Tk.Frame(self.top)
-        self.frame.pack(side="top", expand=1, fill="both")
-        label = Tk.Label(self.frame, text=self.message, bg='white')
-        label.pack(pady=10)
-        self.entry = Tk.Entry(self.frame)
-        self.entry.pack()
-        self.entry.focus_set()
-    #@+node:ekr.20191013150158.1: *4* leo_id_dialog.okButton
-    def okButton(self):
-        """Do default click action in ok button."""
-        self.val = self.entry.get()
-            # Return is not possible.
-        self.top.destroy()
-        self.top = None
-    #@-others
-#@+node:ekr.20040331083824.1: *3* class g.FileLikeObject
-# Note: we could use StringIo for this.
-
+#@+node:ekr.20040331083824.1: *3* class g.FileLikeObject (Deprecated)
 class FileLikeObject:
-    """Define a file-like object for redirecting writes to a string.
+    """
+    This class is deprecated: use io.StringIO(initial_value='', newline='\n')
 
-    The caller is responsible for handling newlines correctly."""
+    Define a file-like object for redirecting writes to a string.
+
+    The caller is responsible for handling newlines correctly.
+    """
     #@+others
     #@+node:ekr.20050404151753: *4*  ctor (g.FileLikeObject)
     def __init__(self, encoding='utf-8', fromString=None):
@@ -612,6 +619,7 @@ fileLikeObject = FileLikeObject
 # Important: The startup code uses this class,
 # so it is convenient to define it in leoGlobals.py.
 
+
 class GeneralSetting:
     """A class representing any kind of setting except shortcuts."""
 
@@ -637,8 +645,8 @@ class GeneralSetting:
         # Better for g.printObj.
         val = str(self.val).replace('\n', ' ')
         return (
-            f'GS: {g.shortFileName(self.path):20} '
-            f'{self.kind:7} = {g.truncate(val, 50)}')
+            f"GS: {g.shortFileName(self.path):20} "
+            f"{self.kind:7} = {g.truncate(val, 50)}")
 
     dump = __repr__
     __str__ = __repr__
@@ -690,10 +698,11 @@ class KeyStroke:
     def __hash__(self):
         return self.s.__hash__() if self.s else 0
     #@+node:ekr.20120204061120.10067: *4* ks.__repr___ & __str__
-    def __str__(self):
-        return f'<KeyStroke: {repr(self.s)}>'
+    def __repr__(self):
+        return f"<KeyStroke: {repr(self.s)}>"
 
-    __repr__ = __str__
+    def __str__(self):
+        return repr(self.s)
     #@+node:ekr.20180417160703.1: *4* ks.dump
     def dump(self):
         """Show results of printable chars."""
@@ -701,7 +710,7 @@ class KeyStroke:
             s = chr(i)
             stroke = g.KeyStroke(s)
             if stroke.s != s:
-                print(f'{i:2} {s!r:10} {stroke.s!r}')
+                print(f"{i:2} {s!r:10} {stroke.s!r}")
         for ch in ('backspace', 'linefeed', 'return', 'tab'):
             stroke = g.KeyStroke(ch)
             print(f'{"":2} {ch!r:10} {stroke.s!r}')
@@ -714,9 +723,9 @@ class KeyStroke:
         s = self.strip_mods(binding)
         s = self.finalize_char(s)
             # May change self.mods.
-        mods = ''.join([f'{z.capitalize()}+' for z in self.mods])
+        mods = ''.join([f"{z.capitalize()}+" for z in self.mods])
         if trace and 'meta' in self.mods:
-            g.trace(f'{binding:20}:{self.mods:>20} ==> {mods+s}')
+            g.trace(f"{binding:20}:{self.mods:>20} ==> {mods+s}")
         return mods + s
     #@+node:ekr.20180415083926.1: *4* ks.finalize_char & helper
     def finalize_char(self, s):
@@ -919,8 +928,8 @@ class KeyStroke:
             kind = aList[0]
             for mod in aList:
                 for suffix in '+-':
-                    if s.find(mod+suffix) > -1:
-                        s = s.replace(mod+suffix, '')
+                    if s.find(mod + suffix) > -1:
+                        s = s.replace(mod + suffix, '')
                         result.append(kind)
                         break
         return result
@@ -932,7 +941,6 @@ class KeyStroke:
     #@+node:ekr.20120203053243.10121: *4* ks.isFKey
     def isFKey(self):
         return self.s in g.app.gui.FKeys
-       
     #@+node:ekr.20180417102341.1: *4* ks.isPlainKey (does not handle alt-ctrl chars)
     def isPlainKey(self):
         """
@@ -957,7 +965,7 @@ class KeyStroke:
         if s == 'BackSpace':
             return False
         return True
-    #@+node:ekr.20180511092713.1: *4* ks.isNumPadKey, ks.isPlainNumPad & ks.removeNumPadModier
+    #@+node:ekr.20180511092713.1: *4* ks.isNumPadKey, ks.isPlainNumPad & ks.removeNumPadModifier
     def isNumPadKey(self):
         return self.s.find('Keypad+') > -1
 
@@ -995,7 +1003,7 @@ class KeyStroke:
                 target = mod + suffix
                 i = s.lower().find(target)
                 if i > -1:
-                    s = s[: i] + s[i + len(target):]
+                    s = s[:i] + s[i + len(target) :]
                     break
         return s
     #@+node:ekr.20120203053243.10125: *4* ks.toGuiChar
@@ -1559,7 +1567,7 @@ class RedirectClass:
     #@+node:ekr.20041012091252: *5* rawPrint
     def rawPrint(self, s):
         if self.old:
-            self.old.write(s+'\n')
+            self.old.write(s + '\n')
         else:
             g.pr(s)
     #@+node:ekr.20041012082437.3: *5* redirect
@@ -1586,12 +1594,13 @@ class RedirectClass:
             if app.log:
                 app.log.put(s, from_redirect=True)
             else:
-                self.old.write(s+'\n')
+                self.old.write(s + '\n')
         else:
             # Can happen when g.batchMode is True.
             g.pr(s)
     #@-others
     #@-<< RedirectClass methods >>
+
 # Create two redirection objects, one for each stream.
 
 redirectStdErrObj = RedirectClass()
@@ -1667,10 +1676,21 @@ class SherlockTracer:
     Being able to zero in on the code of interest can be a big help in
     studying other people's code. This is a non-invasive method: no tracing
     code needs to be inserted anywhere.
+    
+    Usage:
+        
+    g.SherlockTracer(patterns).run()
     """
     #@+others
     #@+node:ekr.20121128031949.12602: *4* __init__
-    def __init__(self, patterns, dots=True, show_args=True, show_return=True, verbose=True):
+    def __init__(
+        self,
+        patterns,
+        dots=True,
+        show_args=True,
+        show_return=True,
+        verbose=True,
+    ):
         """SherlockTracer ctor."""
         self.bad_patterns = []  # List of bad patterns.
         self.dots = dots  # True: print level dots.
@@ -1697,14 +1717,14 @@ class SherlockTracer:
         """Report a bad Sherlock pattern."""
         if pattern not in self.bad_patterns:
             self.bad_patterns.append(pattern)
-            print(f'\nignoring bad pattern: {pattern}\n')
+            print(f"\nignoring bad pattern: {pattern}\n")
     #@+node:ekr.20140326100337.16847: *4* sherlock.check_pattern
     def check_pattern(self, pattern):
         """Give an error and return False for an invalid pattern."""
         try:
             for prefix in ('+:', '-:', '+', '-'):
                 if pattern.startswith(prefix):
-                    re.match(pattern[len(prefix):], 'xyzzy')
+                    re.match(pattern[len(prefix) :], 'xyzzy')
                     return True
             self.bad_pattern(pattern)
             return False
@@ -1718,43 +1738,44 @@ class SherlockTracer:
             self.do_call(frame, arg)
         elif event == 'return' and self.show_return:
             self.do_return(frame, arg)
-        elif True and event == 'line' and self.trace_lines:
+        elif event == 'line' and self.trace_lines:
             self.do_line(frame, arg)
         # Queue the SherlockTracer instance again.
         return self
     #@+node:ekr.20121128031949.12603: *4* sherlock.do_call & helper
     def do_call(self, frame, unused_arg):
         """Trace through a function call."""
-        import os
         frame1 = frame
         code = frame.f_code
-        fn = code.co_filename
+        file_name = code.co_filename
         locals_ = frame.f_locals
-        name = code.co_name
-        full_name = self.get_full_name(locals_, name)
-        if self.is_enabled(fn, full_name, self.patterns):
-            n = 0  # The number of callers of this def.
-            while frame:
-                frame = frame.f_back
-                n += 1
-            # g_callers = ','.join(self.g.callers(5).split(',')[:-1])
-            dots = '.' * max(0, n-self.n) if self.dots else ''
-            path = f'{os.path.basename(fn):>20}' if self.verbose else ''
-            leadin = '+' if self.show_return else ''
-            # Clearer w/o fstring.
-            args = f'(%s)' % self.get_args(frame1) if self.show_args else ''
-            print(f"{path}{dots}{leadin}{full_name}{args}")
+        function_name = code.co_name
+        try:
+            full_name = self.get_full_name(locals_, function_name)
+        except Exception:
+            full_name = function_name
+        if not self.is_enabled(file_name, full_name, self.patterns):
+            # 2020/09/09: Don't touch, for example, __ methods.
+            return
+        n = 0  # The number of callers of this def.
+        while frame:
+            frame = frame.f_back
+            n += 1
+        dots = '.' * max(0, n - self.n) if self.dots else ''
+        path = f"{os.path.basename(file_name):>20}" if self.verbose else ''
+        leadin = '+' if self.show_return else ''
+        args = "(%s)" % self.get_args(frame1) if self.show_args else ''
+        print(f"{path}:{dots}{leadin}{full_name}{args}")
         # Always update stats.
-        d = self.stats.get(fn, {})
+        d = self.stats.get(file_name, {})
         d[full_name] = 1 + d.get(full_name, 0)
-        self.stats[fn] = d
+        self.stats[file_name] = d
     #@+node:ekr.20130111185820.10194: *5* sherlock.get_args
     def get_args(self, frame):
         """Return name=val for each arg in the function call."""
         code = frame.f_code
         locals_ = frame.f_locals
         name = code.co_name
-        # fn = code.co_filename
         n = code.co_argcount
         if code.co_flags & 4: n = n + 1
         if code.co_flags & 8: n = n + 1
@@ -1766,40 +1787,50 @@ class SherlockTracer:
                 if arg:
                     if isinstance(arg, (list, tuple)):
                         # Clearer w/o f-string
-                        val = f'[%s]' % ','.join([self.show(z) for z in arg if self.show(z)])
+                        val = "[%s]" % ','.join(
+                            [self.show(z) for z in arg if self.show(z)])
                     else:
                         val = self.show(arg)
                     if val:
                         result.append(f"{name}={val}")
         return ','.join(result)
-    #@+node:ekr.20140402060647.16845: *4* sherlock.do_line
+    #@+node:ekr.20140402060647.16845: *4* sherlock.do_line (not used)
+    bad_fns: List[str] = []
+
     def do_line(self, frame, arg):
         """print each line of enabled functions."""
+        if 1:
+            return
         code = frame.f_code
-        fn = code.co_filename
+        file_name = code.co_filename
         locals_ = frame.f_locals
         name = code.co_name
         full_name = self.get_full_name(locals_, name)
-        if self.is_enabled(fn, full_name, self.patterns):
-            n = frame.f_lineno - 1  # Apparently, the first line is line 1.
-            d = self.contents_d
-            lines = d.get(fn)
-            if not lines:
-                with open(fn) as f:
+        if not self.is_enabled(file_name, full_name, self.patterns):
+            return
+        n = frame.f_lineno - 1  # Apparently, the first line is line 1.
+        d = self.contents_d
+        lines = d.get(file_name)
+        if not lines:
+            print(file_name)
+            try:
+                with open(file_name) as f:
                     s = f.read()
-                lines = g.splitLines(s)
-                d[fn] = lines
-            line = lines[n].rstrip() if n < len(lines) else '<EOF>'
-            if 1:
-                # i = full_name.find('::')
-                # name = full_name if i == -1 else full_name[i+2:]
-                print(f'{name:3} {line}')
-            else:
-                print(f"{g.shortFileName(fn)} {n} {full_name} {line}")
+            except Exception:
+                if file_name not in self.bad_fns:
+                    self.bad_fns.append(file_name)
+                    print(f"open({file_name}) failed")
+                return
+            lines = g.splitLines(s)
+            d[file_name] = lines
+        line = lines[n].rstrip() if n < len(lines) else '<EOF>'
+        if 0:
+            print(f"{name:3} {line}")
+        else:
+            print(f"{g.shortFileName(file_name)} {n} {full_name} {line}")
     #@+node:ekr.20130109154743.10172: *4* sherlock.do_return & helper
     def do_return(self, frame, arg):  # Arg *is* used below.
         """Trace a return statement."""
-        import os
         code = frame.f_code
         fn = code.co_filename
         locals_ = frame.f_locals
@@ -1810,8 +1841,8 @@ class SherlockTracer:
             while frame:
                 frame = frame.f_back
                 n += 1
-            dots = '.' * max(0, n-self.n) if self.dots else ''
-            path = f'{os.path.basename(fn):>20}' if self.verbose else ''
+            dots = '.' * max(0, n - self.n) if self.dots else ''
+            path = f"{os.path.basename(fn):>20}" if self.verbose else ''
             if name and name == '__init__':
                 try:
                     ret1 = locals_ and locals_.get('self', None)
@@ -1829,37 +1860,63 @@ class SherlockTracer:
                 ret = '<generator>'
             elif isinstance(arg, (tuple, list)):
                 # Clearer w/o f-string.
-                ret = f'[%s]' % ','.join([self.show(z) for z in arg])
+                ret = "[%s]" % ','.join([self.show(z) for z in arg])
                 if len(ret) > 40:
                     # Clearer w/o f-string.
-                    ret = f'[\n%s]' % ('\n,'.join([self.show(z) for z in arg]))
+                    ret = "[\n%s]" % ('\n,'.join([self.show(z) for z in arg]))
             elif arg:
                 ret = self.show(arg)
                 if len(ret) > 40:
-                    ret = f'\n    {ret}'
+                    ret = f"\n    {ret}"
             else:
                 ret = '' if arg is None else repr(arg)
         except Exception:
             exctype, value = sys.exc_info()[:2]
-            s = f'<**exception: {exctype.__name__}, {value} arg: {arg !r}**>'
-            # Clearer w/o f-string.
-            ret = f' ->\n    %s' % s if len(s) > 40 else f" -> {s}"
+            s = f"<**exception: {exctype.__name__}, {value} arg: {arg !r}**>"
+            ret = f" ->\n    {s}" if len(s) > 40 else f" -> {s}"
         return f" -> {ret}"
-    #@+node:ekr.20121128111829.12185: *4* sherlock.fn_is_enabled
-    def fn_is_enabled(self, fn, patterns):
-        """
-        Return True if tracing for fn is enabled.
-        Used only to enable *statistics* for fn.
-        """
-        import re
+    #@+node:ekr.20121128111829.12185: *4* sherlock.fn_is_enabled (not used)
+    def fn_is_enabled(self, func, patterns):
+        """Return True if tracing for the given function is enabled."""
+        if func in self.ignored_functions:
+            return False
+
+        def ignore_function():
+            if func not in self.ignored_functions:
+                self.ignored_functions.append(func)
+                print(f"Ignore function: {func}")
+        #
+        # New in Leo 6.3. Never trace dangerous functions.
+        table = (
+            '_deepcopy.*',
+            # Unicode primitives.
+            'encode\b', 'decode\b',
+            # System functions
+            '.*__next\b',
+            '<frozen>', '<genexpr>', '<listcomp>',
+            # '<decorator-gen-.*>',
+            'get\b',
+            # String primitives.
+            'append\b', 'split\b', 'join\b',
+            # File primitives...
+            'access_check\b', 'expanduser\b', 'exists\b', 'find_spec\b',
+            'abspath\b', 'normcase\b', 'normpath\b', 'splitdrive\b',
+        )
+        g.trace('=====', func)
+        for z in table:
+            if re.match(z, func):
+                ignore_function()
+                return False
+        #
+        # Legacy code.
         try:
             enabled, pattern = False, None
             for pattern in patterns:
                 if pattern.startswith('+:'):
-                    if re.match(pattern[2:], fn):
+                    if re.match(pattern[2:], func):
                         enabled = True
                 elif pattern.startswith('-:'):
-                    if re.match(pattern[2:], fn):
+                    if re.match(pattern[2:], func):
                         enabled = False
             return enabled
         except Exception:
@@ -1876,25 +1933,74 @@ class SherlockTracer:
         except Exception:
             pass
         return full_name
-    #@+node:ekr.20121128111829.12183: *4* is_enabled
-    def is_enabled(self, fn, name, patterns=None):
-        """Return True if tracing for name in fn is enabled."""
-        import re
+    #@+node:ekr.20121128111829.12183: *4* sherlock.is_enabled
+    ignored_files: List[str] = []  # List of files.
+    ignored_functions: List[str] = []  # List of files.
+
+    def is_enabled(self, file_name, function_name, patterns=None):
+        """Return True if tracing for function_name in the given file is enabled."""
+        #
+        # New in Leo 6.3. Never trace through some files.
+        if not os:
+            return False  # Shutting down.
+        base_name = os.path.basename(file_name)
+        if base_name in self.ignored_files:
+            return False
+
+        def ignore_file():
+            if not base_name in self.ignored_files:
+                self.ignored_files.append(base_name)
+                # print(f"Ignore file: {base_name}")
+
+        def ignore_function():
+            if function_name not in self.ignored_functions:
+                self.ignored_functions.append(function_name)
+                # print(f"Ignore function: {function_name}")
+
+        if f"{os.sep}lib{os.sep}" in file_name:
+            ignore_file()
+            return False
+        if base_name.startswith('<') and base_name.endswith('>'):
+            ignore_file()
+            return False
+        #
+        # New in Leo 6.3. Never trace dangerous functions.
+        table = (
+            '_deepcopy.*',
+            # Unicode primitives.
+            'encode\b', 'decode\b',
+            # System functions
+            '.*__next\b',
+            '<frozen>', '<genexpr>', '<listcomp>',
+            # '<decorator-gen-.*>',
+            'get\b',
+            # String primitives.
+            'append\b', 'split\b', 'join\b',
+            # File primitives...
+            'access_check\b', 'expanduser\b', 'exists\b', 'find_spec\b',
+            'abspath\b', 'normcase\b', 'normpath\b', 'splitdrive\b',
+        )
+        for z in table:
+            if re.match(z, function_name):
+                ignore_function()
+                return False
+        #
+        # Legacy code.
         enabled = False
         if patterns is None: patterns = self.patterns
         for pattern in patterns:
             try:
                 if pattern.startswith('+:'):
-                    if re.match(pattern[2:], fn):
+                    if re.match(pattern[2:], file_name):
                         enabled = True
                 elif pattern.startswith('-:'):
-                    if re.match(pattern[2:], fn):
+                    if re.match(pattern[2:], file_name):
                         enabled = False
                 elif pattern.startswith('+'):
-                    if re.match(pattern[1:], name):
+                    if re.match(pattern[1:], function_name):
                         enabled = True
                 elif pattern.startswith('-'):
-                    if re.match(pattern[1:], name):
+                    if re.match(pattern[1:], function_name):
                         enabled = False
                 else:
                     self.bad_pattern(pattern)
@@ -1911,21 +2017,21 @@ class SherlockTracer:
             if self.fn_is_enabled(fn, patterns):
                 result = sorted(d.keys())
             else:
-                result = [key for key in sorted(d.keys()) if self.is_enabled(fn, key, patterns)]
+                result = [key for key in sorted(d.keys())
+                    if self.is_enabled(fn, key, patterns)]
             if result:
                 print('')
                 fn = fn.replace('\\', '/')
                 parts = fn.split('/')
                 print('/'.join(parts[-2:]))
                 for key in result:
-                    print(f'{d.get(key):4} {key}')
+                    print(f"{d.get(key):4} {key}")
     #@+node:ekr.20121128031949.12614: *4* run
     # Modified from pdb.Pdb.set_trace.
 
     def run(self, frame=None):
         """Trace from the given frame or the caller's frame."""
-        import sys
-        print(f'SherlockTracer.run:patterns:\n%s' % '\n'.join(self.patterns))
+        print("SherlockTracer.run:patterns:\n%s" % '\n'.join(self.patterns))
         if frame is None:
             frame = sys._getframe().f_back
         # Compute self.n, the number of frames to ignore.
@@ -1969,8 +2075,54 @@ class SherlockTracer:
     #@+node:ekr.20121128093229.12616: *4* stop
     def stop(self):
         """Stop all tracing."""
-        import sys
         sys.settrace(None)
+    #@-others
+#@+node:ekr.20191013145307.1: *3* class g.TkIDDialog (EmergencyDialog)
+class TkIDDialog(EmergencyDialog):
+    """A class that creates an tkinter dialog to get the Leo ID."""
+
+    message = (
+        "leoID.txt not found\n\n"
+        "Please enter an id that identifies you uniquely.\n"
+        "Your git/cvs/bzr login name is a good choice.\n\n"
+        "Leo uses this id to uniquely identify nodes.\n\n"
+        "Your id should contain only letters and numbers\n"
+        "and must be at least 3 characters in length.")
+
+    title = 'Enter Leo id'
+
+    def __init__(self):
+        super().__init__(self.title, self.message)
+        self.val = ''
+
+    #@+others
+    #@+node:ekr.20191013145710.1: *4* leo_id_dialog.onKey
+    def onKey(self, event):
+        """Handle Key events in askOk dialogs."""
+        if event.char in '\n\r':
+            self.okButton()
+    #@+node:ekr.20191013145757.1: *4* leo_id_dialog.createTopFrame
+    def createTopFrame(self):
+        """Create the Tk.Toplevel widget for a leoTkinterDialog."""
+        import tkinter as Tk
+        self.root = Tk.Tk()
+        self.top = Tk.Toplevel(self.root)
+        self.top.title(self.title)
+        self.root.withdraw()
+        self.frame = Tk.Frame(self.top)
+        self.frame.pack(side="top", expand=1, fill="both")
+        label = Tk.Label(self.frame, text=self.message, bg='white')
+        label.pack(pady=10)
+        self.entry = Tk.Entry(self.frame)
+        self.entry.pack()
+        self.entry.focus_set()
+    #@+node:ekr.20191013150158.1: *4* leo_id_dialog.okButton
+    def okButton(self):
+        """Do default click action in ok button."""
+        self.val = self.entry.get()
+            # Return is not possible.
+        self.top.destroy()
+        self.top = None
     #@-others
 #@+node:ekr.20080531075119.1: *3* class g.Tracer
 class Tracer:
@@ -2007,7 +2159,7 @@ class Tracer:
             else:
                 tag = 'leo.core.'
                 if module_name.startswith(tag):
-                    module_name = module_name[len(tag):]
+                    module_name = module_name[len(tag) :]
                 result.append(module_name)
         try:
             # This can fail during startup.
@@ -2026,11 +2178,11 @@ class Tracer:
         g.pr('\ncallDict...')
         for key in sorted(self.callDict):
             # Print the calling function.
-            g.pr(f'{self.calledDict.get(key,0):d}', key)
+            g.pr(f"{self.calledDict.get(key,0):d}", key)
             # Print the called functions.
             d = self.callDict.get(key)
             for key2 in sorted(d):
-                g.pr(f'{d.get(key2):8d}', key2)
+                g.pr(f"{d.get(key2):8d}", key2)
     #@+node:ekr.20080531075119.5: *4* stop
     def stop(self):
         sys.settrace(None)
@@ -2040,7 +2192,7 @@ class Tracer:
         """A function to be passed to sys.settrace."""
         n = len(self.stack)
         if event == 'return':
-            n = max(0, n-1)
+            n = max(0, n - 1)
         pad = '.' * n
         if event == 'call':
             if not self.inited:
@@ -2088,7 +2240,6 @@ class Tracer:
     #@-others
 
 def startTracer(limit=0, trace=False, verbose=False):
-    import sys
     t = g.Tracer(limit=limit, trace=trace, verbose=verbose)
     sys.settrace(t.tracer)
     return t
@@ -2127,7 +2278,7 @@ class NullObject:
     def __setitem__(self, key, val): pass
     def __iter__(self): return self
     def __len__(self): return 0
-    # Iteration methods: 
+    # Iteration methods:
     def __next__(self): raise StopIteration
     
 
@@ -2147,7 +2298,7 @@ class TracingNullObject:
             suppress = ('PyQt5.QtGui.QIcon', 'LeoQtTree.onItemCollapsed',)
             for z in suppress:
                 if z not in repr(args):
-                    print(f'%30s'  % 'NullObject.__call__:', args, kwargs)
+                    print("%30s"  % 'NullObject.__call__:', args, kwargs)
         return self
     def __repr__(self):
         return f'TracingNullObject: {tracing_tags.get(id(self), "<NO TAG>")}'
@@ -2233,22 +2384,22 @@ def null_object_print_attr(id_, attr):
         # Print everything.
         suppress_callers = []
         suppress_attrs = []
-   
+
     tag = tracing_tags.get(id_, "<NO TAG>")
     callers = g.callers(3).split(',')
     callers = ','.join(callers[:-1])
-    in_callers = any([z in callers for z in suppress_callers])
+    in_callers = any(z in callers for z in suppress_callers)
     s = f"{tag}.{attr}"
     if suppress:
         # Filter traces.
         if not in_callers and s not in suppress_attrs:
-            g.pr(f'{s:40} {callers}')
+            g.pr(f"{s:40} {callers}")
     else:
         # Print each signature once.  No need to filter!
-        signature = f'{tag}.{attr}:{callers}'
+        signature = f"{tag}.{attr}:{callers}"
         if signature not in tracing_signatures:
-            tracing_signatures [signature] = True
-            g.pr(f'{s:40} {callers}')
+            tracing_signatures[signature] = True
+            g.pr(f"{s:40} {callers}")
 #@+node:ekr.20190330072832.1: *4* g.null_object_print
 def null_object_print(id_, kind, *args):
     tag = tracing_tags.get(id_, "<NO TAG>")
@@ -2260,14 +2411,13 @@ def null_object_print(id_, kind, *args):
         # Always print:
         if args:
             args = ', '.join([repr(z) for z in args])
-            ### FAIL: \t\t should be replaced by blanks.
-            g.pr(f'{s:40} {callers}\n\t\t\targs: {args}')
+            g.pr(f"{s:40} {callers}\n\t\t\targs: {args}")
         else:
-            g.pr(f'{s:40} {callers}')
+            g.pr(f"{s:40} {callers}")
     elif signature not in tracing_signatures:
         # Print each signature once.
-        tracing_signatures [signature] = True
-        g.pr(f'{s:40} {callers}')
+        tracing_signatures[signature] = True
+        g.pr(f"{s:40} {callers}")
 #@+node:ekr.20120129181245.10220: *3* class g.TypedDict
 class TypedDict:
     """
@@ -2295,21 +2445,20 @@ class TypedDict:
         self._name = name  # For __repr__ only.
         self.keyType = keyType
         self.valType = valType
-
     #@+others
     #@+node:ekr.20120205022040.17770: *4* td.__repr__ & __str__
     def __str__(self):
         """Concise: used by repr."""
         return (
-            f'<TypedDict name:{self._name} '
-            f'keys:{self.keyType.__name__} '
-            f'values:{self.valType.__name__} '
-            f'len(keys): {len(list(self.keys()))}>'
+            f"<TypedDict name:{self._name} "
+            f"keys:{self.keyType.__name__} "
+            f"values:{self.valType.__name__} "
+            f"len(keys): {len(list(self.keys()))}>"
         )
 
     def __repr__(self):
         """Suitable for g.printObj"""
-        return f'{g.dictToString(self.d)}\n{str(self)}\n'
+        return f"{g.dictToString(self.d)}\n{str(self)}\n"
     #@+node:ekr.20120205022040.17774: *4* td.__setitem__
     def __setitem__(self, key, val):
         """Allow d[key] = val"""
@@ -2346,12 +2495,11 @@ class TypedDict:
             self._reportTypeError(val, self.valType)
 
     def _reportTypeError(self, obj, objType):
-        # print(f'Type mismatch: obj: {obj.__class__}, objType: {objType}')
+        # print(f"Type mismatch: obj: {obj.__class__}, objType: {objType}")
         return (
-            f'{self._name} '
-            f'expected {obj.__class__.__name__} '
-            f'got {objType.__name__}'
-        )
+            f"{self._name}\n"
+            f"expected: {obj.__class__.__name__}\n"
+            f"     got: {objType.__name__}")
     #@+node:ekr.20120223062418.10422: *4* td.copy
     def copy(self, name=None):
         """Return a new dict with the same contents."""
@@ -2400,12 +2548,44 @@ class UiTypeException(Exception):
 def assertUi(uitype):
     if not g.app.gui.guiName() == uitype:
         raise UiTypeException
+#@+node:ekr.20200219071828.1: *3* class TestLeoGlobals (leoGlobals.py)
+class TestLeoGlobals(unittest.TestCase):
+    """Tests for leoGlobals.py."""
+    #@+others
+    #@+node:ekr.20200219071958.1: *4* test_comment_delims_from_extension
+    def test_comment_delims_from_extension(self):
+
+        # pylint: disable=import-self
+        from leo.core import leoGlobals as leo_g
+        from leo.core import leoApp
+        leo_g.app = leoApp.LeoApp()
+        assert leo_g.comment_delims_from_extension(".py") == ('#', '', '')
+        assert leo_g.comment_delims_from_extension(".c") == ('//', '/*', '*/')
+        assert leo_g.comment_delims_from_extension(".html") == ('', '<!--', '-->')
+    #@+node:ekr.20200219072957.1: *4* test_is_sentinel
+    def test_is_sentinel(self):
+
+        # pylint: disable=import-self
+        from leo.core import leoGlobals as leo_g
+        # Python.
+        py_delims = leo_g.comment_delims_from_extension('.py')
+        assert leo_g.is_sentinel("#@+node", py_delims)
+        assert not leo_g.is_sentinel("#comment", py_delims)
+        # C.
+        c_delims = leo_g.comment_delims_from_extension('.c')
+        assert leo_g.is_sentinel("//@+node", c_delims)
+        assert not g.is_sentinel("//comment", c_delims)
+        # Html.
+        html_delims = leo_g.comment_delims_from_extension('.html')
+        assert leo_g.is_sentinel("<!--@+node-->", html_delims)
+        assert not leo_g.is_sentinel("<!--comment-->", html_delims)
+    #@-others
 #@+node:ekr.20140904112935.18526: *3* g.isTextWrapper & isTextWidget
 def isTextWidget(w):
-    return w and g.app.gui.isTextWidget(w)
+    return g.app.gui.isTextWidget(w)
 
 def isTextWrapper(w):
-    return w and g.app.gui.isTextWrapper(w)
+    return g.app.gui.isTextWrapper(w)
 #@+node:ekr.20140711071454.17649: ** g.Debugging, GC, Stats & Timing
 #@+node:ekr.20031218072017.3104: *3* g.Debugging
 #@+node:ekr.20031218072017.3105: *4* g.alert (deprecated)
@@ -2469,10 +2649,9 @@ def callers(n=4, count=0, excludeCaller=True, verbose=False):
         i += 1
     result.reverse()
     if count > 0:
-        result = result[: count]
+        result = result[:count]
     if verbose:
-        ### Fail.
-        return ''.join([f'\n  {z}' for z in result])
+        return ''.join([f"\n  {z}" for z in result])
     return ','.join(result)
 #@+node:ekr.20031218072017.3107: *5* g._callerName
 def _callerName(n, verbose=False):
@@ -2487,7 +2666,7 @@ def _callerName(n, verbose=False):
         if verbose:
             obj = locals_.get('self')
             full_name = f"{obj.__class__.__name__}.{name}" if obj else name
-            return f'line {line:4} {sfn:>30} {full_name}'
+            return f"line {line:4} {sfn:>30} {full_name}"
         return name
     except ValueError:
         return ''
@@ -2499,7 +2678,7 @@ def _callerName(n, verbose=False):
 #@+node:ekr.20180328170441.1: *5* g.caller
 def caller(i=1):
     """Return the caller name i levels up the stack."""
-    return g.callers(i+1).split(',')[0]
+    return g.callers(i + 1).split(',')[0]
 #@+node:ekr.20031218072017.3109: *4* g.dump
 def dump(s):
     out = ""
@@ -2522,27 +2701,27 @@ def oldDump(s):
 def dump_encoded_string(encoding, s):
     """Dump s, assumed to be an encoded string."""
     # Can't use g.trace here: it calls this function!
-    print(f'dump_encoded_string: {g.callers()}')
-    print(f'dump_encoded_string: encoding {encoding}\n')
+    print(f"dump_encoded_string: {g.callers()}")
+    print(f"dump_encoded_string: encoding {encoding}\n")
     print(s)
     in_comment = False
     for ch in s:
         if ch == '#':
             in_comment = True
         elif not in_comment:
-            print(f'{ord(ch):02x} {repr(ch)}')
+            print(f"{ord(ch):02x} {repr(ch)}")
         elif ch == '\n':
             in_comment = False
 #@+node:ekr.20031218072017.1317: *4* g.file/module/plugin_date
 def module_date(mod, format=None):
     theFile = g.os_path_join(app.loadDir, mod.__file__)
     root, ext = g.os_path_splitext(theFile)
-    return g.file_date(root+".py", format=format)
+    return g.file_date(root + ".py", format=format)
 
 def plugin_date(plugin_mod, format=None):
     theFile = g.os_path_join(app.loadDir, "..", "plugins", plugin_mod.__file__)
     root, ext = g.os_path_splitext(theFile)
-    return g.file_date(root+".py", format=format)
+    return g.file_date(root + ".py", format=format)
 
 def file_date(theFile, format=None):
     if theFile and g.os_path_exists(theFile):
@@ -2564,7 +2743,8 @@ def get_line(s, i):
         nl = "[nl]"
     j = g.find_line_start(s, i)
     k = g.skip_to_end_of_line(s, i)
-    return nl + s[j : k]
+    return nl + s[j:k]
+
 # Important: getLine is a completely different function.
 # getLine = get_line
 
@@ -2574,7 +2754,7 @@ def get_line_after(s, i):
         i = g.skip_nl(s, i)
         nl = "[nl]"
     k = g.skip_to_end_of_line(s, i)
-    return nl + s[i : k]
+    return nl + s[i:k]
 
 getLineAfter = get_line_after
 #@+node:ekr.20080729142651.1: *4* g.getIvarsDict and checkUnchangedIvars
@@ -2633,15 +2813,15 @@ def dictToString(d, indent='', tag=None):
     indent2 = indent + ' ' * 4
     n = 2 + len(indent) + max([len(repr(z)) for z in d.keys()])
     for i, key in enumerate(sorted(d, key=lambda z: repr(z))):
-        pad = ' ' * max(0, (n-len(repr(key))))
+        pad = ' ' * max(0, (n - len(repr(key))))
         result.append(f"{pad}{key}:")
         result.append(objToString(d.get(key), indent=indent2))
         if i + 1 < len(d.keys()):
             result.append(',')
         result.append('\n')
-    result.append(indent+'}')
+    result.append(indent + '}')
     s = ''.join(result)
-    return f'{tag}...\n{s}\n' if tag else s
+    return f"{tag}...\n{s}\n" if tag else s
 #@+node:ekr.20041126060136: *4* g.listToString
 def listToString(obj, indent='', tag=None):
     """Pretty print a Python list to a string."""
@@ -2651,15 +2831,15 @@ def listToString(obj, indent='', tag=None):
     indent2 = indent + ' ' * 4
     # I prefer not to compress lists.
     for i, obj2 in enumerate(obj):
-        result.append('\n'+indent2)
+        result.append('\n' + indent2)
         result.append(objToString(obj2, indent=indent2))
         if i + 1 < len(obj) > 1:
             result.append(',')
         else:
-            result.append('\n'+indent)
+            result.append('\n' + indent)
     result.append(']')
     s = ''.join(result)
-    return f'{tag}...\n{s}\n' if tag else s
+    return f"{tag}...\n{s}\n" if tag else s
 #@+node:ekr.20050819064157: *4* g.objToSTring & g.toString
 def objToString(obj, indent='', printCaller=False, tag=None):
     """Pretty print any Python object to a string."""
@@ -2771,37 +2951,24 @@ def tupleToString(obj, indent='', tag=None):
     indent2 = indent + ' ' * 4
     for i, obj2 in enumerate(obj):
         if len(obj) > 1:
-            result.append('\n'+indent2)
+            result.append('\n' + indent2)
         result.append(objToString(obj2, indent=indent2))
         if len(obj) == 1 or i + 1 < len(obj):
             result.append(',')
         elif len(obj) > 1:
-            result.append('\n'+indent)
+            result.append('\n' + indent)
     result.append(')')
     s = ''.join(result)
-    return f'{tag}...\n{s}\n' if tag else s
+    return f"{tag}...\n{s}\n" if tag else s
 #@+node:ekr.20031218072017.1588: *3* g.Garbage Collection
-lastObjectCount = 0
-lastObjectsDict = {}
-lastTypesDict = {}
-lastFunctionsDict = {}
 #@+node:ekr.20031218072017.1589: *4* g.clearAllIvars
 def clearAllIvars(o):
     """Clear all ivars of o, a member of some class."""
     if o:
         o.__dict__.clear()
-#@+node:ekr.20031218072017.1590: *4* g.collectGarbage
-def collectGarbage():
-    try:
-        gc.collect()
-    except Exception:
-        pass
 #@+node:ekr.20060127162818: *4* g.enable_gc_debug
-def enable_gc_debug(event=None):
-    # pylint: disable=no-member
-    if not gc:
-        g.error('can not import gc module')
-        return
+def enable_gc_debug():
+
     gc.set_debug(
         gc.DEBUG_STATS |  # prints statistics.
         gc.DEBUG_LEAK |  # Same as all below.
@@ -2810,182 +2977,57 @@ def enable_gc_debug(event=None):
         # gc.DEBUG_INSTANCES |
         # gc.DEBUG_OBJECTS |
         gc.DEBUG_SAVEALL)
-#@+node:ekr.20190609113810.1: *4* g.GetRepresentativeObjects
-def getRepresentativeLiveObjects():
-    """
-    Return a dict.
-    Keys classes.
-    Values are the first (representative) live object for each type.
-    """
-    d = {}  # Keys are types, values are the *first* instance.
-    for obj in gc.get_objects():
-        t = type(obj)
-        if t not in d and hasattr(obj, '__class__'):
-            d[t] = obj
-    return d
 #@+node:ekr.20031218072017.1592: *4* g.printGc
 # Formerly called from unit tests.
 
-def printGc(tag=None):
-    tag = tag or g._callerName(n=2)
-    printGcObjects(tag=tag)
-    printGcRefs(tag=tag)
-    printGcVerbose(tag=tag)
-#@+node:ekr.20031218072017.1593: *5* g.printGcRefs
-def printGcRefs(tag=''):
-    verbose = False
-    refs = gc.get_referrers(app.windowList[0])
-    g.pr('-'*30, tag)
-    if verbose:
-        g.pr("refs of", app.windowList[0])
-        for ref in refs:
-            g.pr(type(ref))
-    else:
-        g.pr(f"{len(refs):d} referers")
-#@+node:ekr.20060202161935: *4* g.printGcAll
-def printGcAll(full=False, sort_by_n=True):
-    """Print a summary of all presently live objects."""
-    if g.unitTesting:
-        return
-    t1 = time.process_time()
-    objects = gc.get_objects()
-    d = {}  # Keys are types, values are ints (number of instances).
-    for obj in objects:
-        t = type(obj)
-        if hasattr(obj, '__class__'):
-            d[t] = d.get(t, 0) + 1
-    t2 = time.process_time()
-    if full:
-        if sort_by_n:  # Sort by n
-            items = list(d.items())
-            items.sort(key=lambda x: x[1])
-            for z in reversed(items):
-                print(f'{z[1]:8} {z[0]}')
-        else:  # Sort by type
-            g.printObj(d)
-    #
-    # Summarize
-    print(
-        f'\nprintGcAll: {len(objects):d} objects '
-        f'in {t2-t1:5.2f} sec. ')
+def printGc():
+    """Called from trace_gc_plugin."""
+    g.printGcSummary()
+    g.printGcObjects()
+    g.printGcRefs()
 #@+node:ekr.20060127164729.1: *4* g.printGcObjects
-def printGcObjects(tag=''):
-    """Print newly allocated objects."""
-    tag = tag or g._callerName(n=2)
-    global lastObjectCount
-    try:
-        n = len(gc.garbage)
-        n2 = len(gc.get_objects())
-        delta = n2 - lastObjectCount
-        if delta == 0: return
-        lastObjectCount = n2
-        #@+<< print number of each type of object >>
-        #@+node:ekr.20040703054646: *5* << print number of each type of object >>
-        global lastTypesDict
-        typesDict = {}
-        for obj in gc.get_objects():
-            t = type(obj)
-            # pylint: disable=no-member
-            if t == 'instance' and t != types.UnicodeType:  # NOQA
-                try: t = obj.__class__
-                except Exception: pass
-            if t != types.FrameType:  # NOQA
-                r = repr(t)  # was type(obj) instead of repr(t)
-                n = typesDict.get(r, 0)
-                typesDict[r] = n + 1
-        # Create the union of all the keys.
-        keys = {}
-        for key in lastTypesDict:
-            if key not in typesDict:
-                keys[key] = None
-        empty = True
-        for key in keys:
-            n3 = lastTypesDict.get(key, 0)
-            n4 = typesDict.get(key, 0)
-            delta2 = n4 - n3
-            if delta2 != 0:
-                empty = False
-                break
-        if not empty:
-            g.pr('-'*30)
-            g.pr(f"{tag}: garbage: {n}, objects: {n2}, delta: {delta}")
-            if 0:
-                for key in sorted(keys):
-                    n1 = lastTypesDict.get(key, 0)
-                    n2 = typesDict.get(key, 0)
-                    delta2 = n2 - n1
-                    if delta2 != 0:
-                        g.pr(f"{delta2:6d} ={n2:7d} {key}")
-        lastTypesDict = typesDict
-        typesDict = {}
-        #@-<< print number of each type of object >>
-        if 0:
-            #@+<< print added functions >>
-            #@+node:ekr.20040703065638: *5* << print added functions >>
-            global lastFunctionsDict
-            funcDict = {}
-            getspec = inspect.getfullargspec
-            n = 0  # Don't print more than 50 objects.
-            for obj in gc.get_objects():
-                if isinstance(obj, types.FunctionType):
-                    n += 1
-                    key = repr(obj)  # Don't create a pointer to the object!
-                    funcDict[key] = None
-                    if n < 50 and key not in lastFunctionsDict:
-                        g.pr(obj)
-                        args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = getspec(obj)
-                        g.pr("args", args)
-                        if varargs: g.pr("varargs", varargs)
-                        if varkw: g.pr("varkw", varkw)
-                        if defaults:
-                            g.pr("defaults...")
-                            for s in defaults: g.pr(s)
-            lastFunctionsDict = funcDict
-            funcDict = {}
-            #@-<< print added functions >>
-    except Exception:
-        traceback.print_exc()
+lastObjectCount = 0
 
-printNewObjects = pno = printGcObjects
+def printGcObjects():
+    """Print a summary of GC statistics."""
+    global lastObjectCount
+    n = len(gc.garbage)
+    n2 = len(gc.get_objects())
+    delta = n2 - lastObjectCount
+    print('-' * 30)
+    print(f"garbage: {n}")
+    print(f"{delta:6d} = {n2:7d} totals")
+    # print number of each type of object.
+    count, d = 0, {}
+    for obj in gc.get_objects():
+        key = str(type(obj))
+        n = d.get(key, 0)
+        d[key] = n + 1
+        count += 1
+    print(f"{count:7} objects...")
+    # Invert the dict.
+    d2 = {v: k for k, v in d.items()}
+    for key in reversed(sorted(d2.keys())):
+        val = d2.get(key)
+        print(f"{key:7} {val}")
+    lastObjectCount = count
+    return delta
+#@+node:ekr.20031218072017.1593: *4* g.printGcRefs
+def printGcRefs():
+
+    refs = gc.get_referrers(app.windowList[0])
+    print(f"{len(refs):d} referers")
 #@+node:ekr.20060205043324.1: *4* g.printGcSummary
-def printGcSummary(tag=''):
-    tag = tag or g._callerName(n=2)
+def printGcSummary():
+
     g.enable_gc_debug()
     try:
         n = len(gc.garbage)
         n2 = len(gc.get_objects())
-        s = f"{tag}: printGCSummary: garbage: {n}, objects: {n2}"
-        g.pr(s)
+        s = f"printGCSummary: garbage: {n}, objects: {n2}"
+        print(s)
     except Exception:
         traceback.print_exc()
-#@+node:ekr.20060127165509: *4* g.printGcVerbose
-# WARNING: the id trick is not proper because newly allocated objects
-#          can have the same address as old objets.
-
-def printGcVerbose(tag=''):
-    tag = tag or g._callerName(n=2)
-    global lastObjectsDict
-    objects = gc.get_objects()
-    newObjects = [o for o in objects if id(o) not in lastObjectsDict]
-    lastObjectsDict = {}
-    for o in objects:
-        lastObjectsDict[id(o)] = o
-    dicts = 0; seqs = 0
-    i = 0; n = len(newObjects)
-    while i < 100 and i < n:
-        o = newObjects[i]
-        if isinstance(o, dict):
-            dicts += 1
-        elif isinstance(o, (list, tuple)):
-            #g.pr(id(o),repr(o))
-            seqs += 1
-        #else:
-        #    g.pr(o)
-        i += 1
-    g.pr('='*40)
-    g.pr(f"dicts: {dicts}, sequences: {seqs}")
-    g.pr(f"{tag}: {len(newObjects)} new, {len(objects)} total objects")
-    g.pr('-'*40)
 #@+node:ekr.20180528151850.1: *3* g.printTimes
 def printTimes(times):
     """
@@ -2996,7 +3038,7 @@ def printTimes(times):
     for n, junk in enumerate(times[:-1]):
         t = times[n + 1] - times[n]
         if t > 0.1:
-            g.trace(f'*** {n} {t:5.4f} sec.')
+            g.trace(f"*** {n} {t:5.4f} sec.")
 #@+node:ekr.20031218072017.3133: *3* g.Statistics
 #@+node:ekr.20031218072017.3134: *4* g.clearStats
 def clearStats():
@@ -3029,7 +3071,7 @@ def printStats(event=None, name=None):
     d = g.app.statsDict
     d2 = {val: key for key, val in d.iteritems()}
     for key in reversed(sorted(d2.keys())):
-        print(f'{key:7} {d2.get(key)}')
+        print(f"{key:7} {d2.get(key)}")
 #@+node:ekr.20031218072017.3136: *4* g.stat
 def stat(name=None):
     """Increments the statistic for name in g.app.statsDict
@@ -3059,27 +3101,15 @@ def printDiffTime(message, start):
 def timeSince(start):
     return f"{time.time()-start:5.2f} sec."
 #@+node:ekr.20031218072017.1380: ** g.Directives
-# New in Leo 4.6:
-# g.findAtTabWidthDirectives, g.findLanguageDirectives and
-# g.get_directives_dict use re module for faster searching.
+# Weird pylint bug, activated by TestLeoGlobals class.
+# Disabling this will be safe, because pyflakes will still warn about true redefinitions
+# pylint: disable=function-redefined
 #@+node:EKR.20040504150046.4: *3* g.comment_delims_from_extension
 def comment_delims_from_extension(filename):
     """
     Return the comment delims corresponding to the filename's extension.
-
-    >>> import leo.core.leoGlobals as g
-    >>> g.comment_delims_from_extension(".py")
-    ('#', '', '')
-
-    >>> g.comment_delims_from_extension(".c")
-    ('//', '/*', '*/')
-
-    >>> g.comment_delims_from_extension(".html")
-    ('', '<!--', '-->')
-
     """
     if filename.startswith('.'):
-        # Python 2.6 changes how splitext works.
         root, ext = None, filename
     else:
         root, ext = os.path.splitext(filename)
@@ -3093,9 +3123,18 @@ def comment_delims_from_extension(filename):
         f"filename: {filename!r}, "
         f"root: {root!r}")
     return '', '', ''
+#@+node:ekr.20170201150505.1: *3* g.findAllValidLanguageDirectives
+def findAllValidLanguageDirectives(p):
+    """Return list of all valid @language directives in p.b"""
+    if not p:
+        return []
+    languages = set()
+    for m in g.g_language_pat.finditer(p.b):
+        language = m.group(1)
+        if g.isValidLanguage(language):
+            languages.add(language)
+    return list(sorted(languages))
 #@+node:ekr.20090214075058.8: *3* g.findAtTabWidthDirectives (must be fast)
-g_tabwidth_pat = re.compile(r'(^@tabwidth)', re.MULTILINE)
-
 def findTabWidthDirectives(c, p):
     """Return the language in effect at position p."""
     if c is None:
@@ -3110,21 +3149,56 @@ def findTabWidthDirectives(c, p):
             for m in anIter:
                 word = m.group(0)
                 i = m.start(0)
-                j = g.skip_ws(s, i+len(word))
+                j = g.skip_ws(s, i + len(word))
                 junk, w = g.skip_long(s, j)
                 if w == 0: w = None
     return w
+#@+node:ekr.20170127142001.5: *3* g.findFirstAtLanguageDirective
+def findFirstValidAtLanguageDirective(p):
+    """Return the first *valid* @language directive in p.b."""
+    if not p:
+        return None
+    for m in g.g_language_pat.finditer(p.b):
+        language = m.group(1)
+        if g.isValidLanguage(language):
+            return language
+    return None
 #@+node:ekr.20090214075058.6: *3* g.findLanguageDirectives (must be fast)
-g_language_pat = re.compile(r'^@language\s+(\w+)', re.MULTILINE)
-
 def findLanguageDirectives(c, p):
     """Return the language in effect at position p."""
-    if c is None:
+    if c is None or p is None:
         return None  # c may be None for testing.
-    for p in p.self_and_parents(copy=False):
-        for s in p.h, p.b:
+
+    v0 = p.v
+
+    def find_language(p_or_v):
+        for s in p_or_v.h, p_or_v.b:
             for m in g_language_pat.finditer(s):
-                return m.group(1)
+                language = m.group(1)
+                if g.isValidLanguage(language):
+                    return language
+        return None
+
+    # First, search up the tree.
+    for p in p.self_and_parents(copy=False):
+        language = find_language(p)
+        if language:
+            return language
+    # #1625: Second, expand the search for cloned nodes.
+    seen = []  # vnodes that have already been searched.
+    parents = v0.parents[:]  # vnodes whose ancestors are to be searched.
+    while parents:
+        parent_v = parents.pop()
+        if parent_v in seen:
+            continue
+        seen.append(parent_v)
+        language = find_language(parent_v)
+        if language:
+            return language
+        for grand_parent_v in parent_v.parents:
+            if grand_parent_v not in seen:
+                parents.append(grand_parent_v)
+    # Finally, fall back to the defaults.
     return c.target_language.lower() if c.target_language else 'python'
 #@+node:ekr.20031218072017.1385: *3* g.findReference
 # Called from the syntax coloring method that colorizes section references.
@@ -3152,26 +3226,24 @@ def findReference(name, root):
 #@+node:ekr.20090214075058.9: *3* g.get_directives_dict (must be fast)
 # The caller passes [root_node] or None as the second arg.
 # This allows us to distinguish between None and [None].
-g_noweb_root = re.compile(
-    '<'+'<'+'*'+'>'+'>'+'=',
-    re.MULTILINE)
 
 def get_directives_dict(p, root=None):
     """
-    Scan p for @directives found in globalDirectiveList.
+    Scan p for Leo directives found in globalDirectiveList.
 
     Returns a dict containing the stripped remainder of the line
     following the first occurrence of each recognized directive
     """
-    if root: root_node = root[0]
-    # c = p and p.v and p.v.context
+    if root:
+        root_node = root[0]
     d = {}
-    # Do this every time so plugins can add directives.
-    pat = g.compute_directives_re()
-    directives_pat = re.compile(pat, re.MULTILINE)
+    #
+    # #1688:    legacy: Always compute the pattern.
+    #           g.directives_pat is updated whenever loading a plugin.
+    #
     # The headline has higher precedence because it is more visible.
     for kind, s in (('head', p.h), ('body', p.b)):
-        anIter = directives_pat.finditer(s)
+        anIter = g.directives_pat.finditer(s)
         for m in anIter:
             word = m.group(1).strip()
             i = m.start(1)
@@ -3182,7 +3254,7 @@ def get_directives_dict(p, root=None):
                     # Not a valid directive: just ignore it.
                     # A unit test tests that @path:any is invalid.
             k = g.skip_line(s, j)
-            val = s[j : k].strip()
+            val = s[j:k].strip()
             if word in ('root-doc', 'root-code'):
                 d['root'] = val  # in addition to optioned version
             d[word] = val
@@ -3197,20 +3269,6 @@ def get_directives_dict(p, root=None):
                 g.es(f'{g.angleBrackets("*")} may only occur in a topmost node (i.e., without a parent)')
             break
     return d
-#@+node:ekr.20090214075058.10: *4* g.compute_directives_re
-def compute_directives_re():
-    """
-    Return an re pattern which word matches all Leo directives.
-    Only g.get_directives_dict uses this pattern.
-    """
-    global globalDirectiveList
-    # Use a pattern that guarantees word matches.
-    aList = [
-        r'\b%s\b' % (z) for z in globalDirectiveList
-            if z != 'others'
-    ]
-    # Clearer w/o f-strings.
-    return f"^@(%s)" % "|".join(aList)
 #@+node:ekr.20080827175609.1: *3* g.get_directives_dict_list (must be fast)
 def get_directives_dict_list(p):
     """Scans p and all its ancestors for directives.
@@ -3227,16 +3285,49 @@ def get_directives_dict_list(p):
 #@+node:ekr.20111010082822.15545: *3* g.getLanguageFromAncestorAtFileNode
 def getLanguageFromAncestorAtFileNode(p):
     """
-    Return the language in effect as determined
-    by the file extension of the nearest enclosing @<file> node.
+    Return the language in effect from the nearest enclosing @<file> node:
+    1. An unambiguous @language directive of the @<file> node.
+    2. The file extension of the @<file> node.
     """
-    for p in p.self_and_parents(copy=False):
+    v0 = p.v
+
+    def find_language(p):
+        # #1693: First, scan p.b for an *unambiguous* @language directive.
+        if p.b.strip():
+            languages = g.findAllValidLanguageDirectives(p)
+            if len(languages) == 1:  # An unambiguous language
+                language = languages[0]
+                return language
+        # Second: use the file's extension.
         if p.isAnyAtFileNode():
             name = p.anyAtFileNodeName()
             junk, ext = g.os_path_splitext(name)
             ext = ext[1:]  # strip the leading .
             language = g.app.extension_dict.get(ext)
+            if g.isValidLanguage(language):
+                return language
+        return None
+
+    # First, look at the direct parents.
+    for p in p.self_and_parents(copy=False):
+        language = find_language(p)
+        if language:
             return language
+    #
+    # #1625: Expand the search for cloned nodes.
+    seen = []  # vnodes that have already been searched.
+    parents = v0.parents[:]  # vnodes whose ancestors are to be searched.
+    while parents:
+        parent_v = parents.pop()
+        if parent_v in seen:
+            continue
+        seen.append(parent_v)
+        language = find_language(parent_v)
+        if language:
+            return language
+        for grand_parent_v in parent_v.parents:
+            if grand_parent_v not in seen:
+                parents.append(grand_parent_v)
     return None
 #@+node:ekr.20150325075144.1: *3* g.getLanguageFromPosition
 def getLanguageAtPosition(c, p):
@@ -3276,21 +3367,31 @@ def getOutputNewline(c=None, name=None):
     else: s = '\n'  # Default for erroneous values.
     assert isinstance(s, str), repr(s)
     return s
+#@+node:ekr.20200521075143.1: *3* g.inAtNosearch
+def inAtNosearch(p):
+    """Return True if p or p's ancestors contain an @nosearch directive."""
+    for p in p.self_and_parents():
+        if p.is_at_ignore() or re.search(r'(^@|\n@)nosearch\b', p.b):
+            return True
+    return False
 #@+node:ekr.20131230090121.16528: *3* g.isDirective
-# This pattern excludes @encoding.whatever and @encoding(whatever)
-# It must allow @language python, @nocolor-node, etc.
-g_is_directive_pattern = re.compile(r'^\s*@([\w-]+)\s*')
-
 def isDirective(s):
     """Return True if s starts with a directive."""
     m = g_is_directive_pattern.match(s)
     if m:
-        s2 = s[m.end(1):]
+        s2 = s[m.end(1) :]
         if s2 and s2[0] in ".(":
             return False
         return bool(m.group(1) in g.globalDirectiveList)
     return False
-
+#@+node:ekr.20200810074755.1: *3* g.isValidLanguage (new)
+def isValidLanguage(language):
+    """True if language exists in leo/modes."""
+    # 2020/08/12: A hack for c++
+    if language in ('c++', 'cpp'):
+        language = 'cplusplus'
+    fn = g.os_path_join(g.app.loadDir, '..', 'modes', f"{language}.py")
+    return g.os_path_exists(fn)
 #@+node:ekr.20080827175609.52: *3* g.scanAtCommentAndLanguageDirectives
 def scanAtCommentAndAtLanguageDirectives(aList):
     """
@@ -3392,7 +3493,7 @@ def scanAtRootOptions(s, i, err_flag=False):
         while i < len(s) and s[i] not in (' ', '\t', '\n', '-'):
             i += 1
         if err > -1 and err_flag:
-            z_opt = s[err : i]
+            z_opt = s[err:i]
             z_line = g.get_line(s, i)
             g.es("unknown option:", z_opt, "in", z_line)
         #@-<< scan another @root option >>
@@ -3510,7 +3611,7 @@ def set_delims_from_string(s):
         while i < len(s) and not g.is_ws(s[i]) and not g.is_nl(s, i):
             i += 1
         if j == i: break
-        delims[count] = s[j : i] or ''
+        delims[count] = s[j:i] or ''
         count += 1
     # 'rr 09/25/02
     if count == 2:  # delims[0] is always the single-line delim.
@@ -3553,7 +3654,7 @@ def set_language(s, i, issue_errors_flag=False):
     i = g.skip_ws(s, i)
     j = i; i = g.skip_c_id(s, i)
     # Allow tcl/tk.
-    arg = s[j : i].lower()
+    arg = s[j:i].lower()
     if app.language_delims_dict.get(arg):
         language = arg
         delim1, delim2, delim3 = g.set_delims_from_language(language)
@@ -3611,9 +3712,22 @@ def stripPathCruft(path):
         (path[0] == '"' and path[-1] == '"') or
         (path[0] == "'" and path[-1] == "'")
     ):
-        path = path[1 : -1].strip()
+        path = path[1:-1].strip()
     # We want a *relative* path, not an absolute path.
     return path
+#@+node:ekr.20090214075058.10: *3* g.update_directives_pat (new)
+def update_directives_pat():
+    """Init/update g.directives_pat"""
+    global globalDirectiveList, directives_pat
+    # Use a pattern that guarantees word matches.
+    aList = [
+        fr"\b{z}\b" for z in globalDirectiveList if z != 'others'
+    ]
+    pat = "^@(%s)" % "|".join(aList)
+    directives_pat = re.compile(pat, re.MULTILINE)
+
+# #1688: Initialize g.directives_pat
+update_directives_pat()
 #@+node:ekr.20031218072017.3116: ** g.Files & Directories
 #@+node:ekr.20080606074139.2: *3* g.chdir
 def chdir(path):
@@ -3644,7 +3758,7 @@ def computeStandardDirectories():
 #@+node:ekr.20031218072017.3103: *3* g.computeWindowTitle
 def computeWindowTitle(fileName):
 
-    branch = g.gitBranchName(path=g.os_path_dirname(fileName))
+    branch, commit = g.gitInfoForFile(fileName)  # #1616
     if not fileName:
         return branch + ": untitled" if branch else 'untitled'
     path, fn = g.os_path_split(fileName)
@@ -3676,6 +3790,17 @@ def create_temp_file(textMode=False):
         g.es_exception()
         theFile, theFileName = None, ''
     return theFile, theFileName
+#@+node:ekr.20210307060731.1: *3* g.createHiddenCommander
+def createHiddenCommander(fn):
+    """Read the file into a hidden commander (Similar to g.openWithFileName)."""
+    from leo.core.leoCommands import Commands
+    c = Commands(fn, gui=g.app.nullGui)
+    theFile = g.app.loadManager.openAnyLeoFile(fn)
+    if theFile:
+        c.fileCommands.openLeoFile(
+            theFile, fn, readAtFileNodesFlag=True, silent=True)
+        return c
+    return None
 #@+node:vitalije.20170714085545.1: *3* g.defaultLeoFileExtension
 def defaultLeoFileExtension(c=None):
     conf = c.config if c else g.app.config
@@ -3706,6 +3831,7 @@ def fullPath(c, p, simulate=False):
         if fn:
             # Fix #102: expand path expressions.
             fn = c.expand_path_expression(fn)  # #1341.
+            fn = os.path.expanduser(fn)  # 1900.
             return g.os_path_finalize_join(path, fn)  # #1341.
     return ''
 #@+node:ekr.20190327192721.1: *3* g.get_files_in_directory
@@ -3725,14 +3851,13 @@ def get_files_in_directory(directory, kinds=None, recursive=True):
             kinds = ['*.py']
         if recursive:
             # Works for all versions of Python.
-            import fnmatch
             for root, dirnames, filenames in os.walk(directory):
                 for kind in kinds:
                     for filename in fnmatch.filter(filenames, kind):
                         files.append(os.path.join(root, filename))
         else:
             for kind in kinds:
-                files.extend(glob.glob(directory+sep+kind))
+                files.extend(glob.glob(directory + sep + kind))
         return list(set(sorted(files)))
     except Exception:
         g.es_exception()
@@ -3789,9 +3914,11 @@ def guessExternalEditor(c=None):
         return "notepad"
     if platform.startswith('linux'):
         return 'gedit'
-    g.es('''No editor set.
+    g.es(
+        '''No editor set.
 Please set LEO_EDITOR or EDITOR environment variable,
-or do g.app.db['LEO_EDITOR'] = "gvim"''')
+or do g.app.db['LEO_EDITOR'] = "gvim"''',
+    )
     return None
 #@+node:ekr.20160330204014.1: *3* g.init_dialog_folder
 def init_dialog_folder(c, p, use_at_path=True):
@@ -3833,39 +3960,13 @@ def is_binary_string(s):
     return bool(s.translate(None, aList))
 #@+node:EKR.20040504154039: *3* g.is_sentinel
 def is_sentinel(line, delims):
-    #@+<< is_sentinel doc tests >>
-    #@+node:ekr.20040719161756: *4* << is_sentinel doc tests >>
-    """
-
-    Return True if line starts with a sentinel comment.
-
-    >>> import leo.core.leoGlobals as g
-    >>> py_delims = g.comment_delims_from_extension('.py')
-    >>> g.is_sentinel("#@+node",py_delims)
-    True
-    >>> g.is_sentinel("#comment",py_delims)
-    False
-
-    >>> c_delims = g.comment_delims_from_extension('.c')
-    >>> g.is_sentinel("//@+node",c_delims)
-    True
-    >>> g.is_sentinel("//comment",c_delims)
-    False
-
-    >>> html_delims = g.comment_delims_from_extension('.html')
-    >>> g.is_sentinel("<!--@+node-->",html_delims)
-    True
-    >>> g.is_sentinel("<!--comment-->",html_delims)
-    False
-
-    """
-    #@-<< is_sentinel doc tests >>
+    """Return True if line starts with a sentinel comment."""
     delim1, delim2, delim3 = delims
     line = line.lstrip()
     if delim1:
-        return line.startswith(delim1+'@')
+        return line.startswith(delim1 + '@')
     if delim2 and delim3:
-        i = line.find(delim2+'@')
+        i = line.find(delim2 + '@')
         j = line.find(delim3)
         return 0 == i < j
     g.error(f"is_sentinel: can not happen. delims: {repr(delims)}")
@@ -3873,7 +3974,7 @@ def is_sentinel(line, delims):
 #@+node:ekr.20031218072017.3119: *3* g.makeAllNonExistentDirectories
 def makeAllNonExistentDirectories(theDir):
     """
-    A wrapper from os.makedirs (new in Python 3.2).
+    A wrapper from os.makedirs.
     Attempt to make all non-existent directories.
 
     Return True if the directory exists or was created successfully.
@@ -3892,9 +3993,9 @@ def makeAllNonExistentDirectories(theDir):
 #@+node:ekr.20071114113736: *3* g.makePathRelativeTo
 def makePathRelativeTo(fullPath, basePath):
     if fullPath.startswith(basePath):
-        s = fullPath[len(basePath):]
+        s = fullPath[len(basePath) :]
         if s.startswith(os.path.sep):
-            s = s[len(os.path.sep):]
+            s = s[len(os.path.sep) :]
         return s
     return fullPath
 #@+node:ekr.20090520055433.5945: *3* g.openWithFileName
@@ -3984,7 +4085,7 @@ def readFileIntoUnicodeString(fn, encoding=None, silent=False):
     return None
 #@+node:ekr.20031218072017.3120: *3* g.readlineForceUnixNewline
 #@+at Stephen P. Schaefer 9/7/2002
-# 
+#
 # The Unix readline() routine delivers "\r\n" line end strings verbatim,
 # while the windows versions force the string to use the Unix convention
 # of using only "\n". This routine causes the Unix readline to do the
@@ -3998,7 +4099,7 @@ def readlineForceUnixNewline(f, fileName=None):
         g.trace(f"UnicodeDecodeError: {fileName}", f, g.callers())
         s = ''
     if len(s) >= 2 and s[-2] == "\r" and s[-1] == "\n":
-        s = s[0 : -2] + "\n"
+        s = s[0:-2] + "\n"
     return s
 #@+node:ekr.20031218072017.3124: *3* g.sanitize_filename
 def sanitize_filename(s):
@@ -4137,7 +4238,7 @@ def find_word(s, word, i=0):
         i += len(word)
         assert progress < i
     return -1
-#@+node:ekr.20170220103251.1: *3* g.findRootWithPredicate
+#@+node:ekr.20170220103251.1: *3* g.findRootsWithPredicate
 def findRootsWithPredicate(c, root, predicate=None):
     """
     Commands often want to find one or more **roots**, given a position p.
@@ -4158,7 +4259,6 @@ def findRootsWithPredicate(c, root, predicate=None):
             return p.isAnyAtFileNode() and p.h.strip().endswith('.py')
 
     # 1. Search p's tree.
-
     for p in root.self_and_subtree(copy=False):
         if predicate(p) and p.v not in seen:
             seen.append(p.v)
@@ -4197,38 +4297,30 @@ def recursiveUNLSearch(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
         return True, maxdepth, maxp
 
     def moveToP(c, p, unlList):
-
-        def focus_callback(timer, c=c, p=p.copy(), unlList=unlList):
-            """Idle-time handler for g.recursiveUNLSearch"""
-            c.expandAllAncestors(p)
-            c.selectPosition(p)
-            nth_sib, nth_same, nth_line_no, nth_col_no = recursiveUNLParts(unlList[-1])
-            if nth_line_no:
-                if nth_line_no < 0:
-                    c.goToLineNumber(-nth_line_no)
-                    if nth_col_no:
-                        pos = c.frame.body.wrapper.getInsertPoint() + nth_col_no
-                        c.frame.body.wrapper.setInsertPoint(pos)
-                else:
-                    pos = sum(len(i)+1 for i in p.b.split('\n')[:nth_line_no-1])
-                    if nth_col_no:
-                        pos += nth_col_no
+        # Process events, to calculate new sizes.
+        g.app.gui.qtApp.processEvents()
+        c.expandAllAncestors(p)
+        c.selectPosition(p)
+        nth_sib, nth_same, nth_line_no, nth_col_no = recursiveUNLParts(unlList[-1])
+        if nth_line_no:
+            if nth_line_no < 0:
+                c.goToLineNumber(-nth_line_no)
+                if nth_col_no:
+                    pos = c.frame.body.wrapper.getInsertPoint() + nth_col_no
                     c.frame.body.wrapper.setInsertPoint(pos)
-            if p.hasChildren():
-                p.expand()
-                # n = min(3, p.numberOfChildren())
-            c.redraw()
-            c.frame.bringToFront()
-            c.bodyWantsFocusNow()
-            timer.stop()
-
-        timer = g.IdleTime(focus_callback, delay=0.1, tag='g.recursiveUNLSearch')
-        if timer: timer.start()
+            else:
+                pos = sum(len(i) + 1 for i in p.b.split('\n')[: nth_line_no - 1])
+                if nth_col_no:
+                    pos += nth_col_no
+                c.frame.body.wrapper.setInsertPoint(pos)
+        if p.hasChildren():
+            p.expand()
+        c.redraw()
+        c.frame.bringToFront()
+        c.bodyWantsFocusNow()
 
     found, maxdepth, maxp = recursiveUNLFind(
-        unlList, c, depth, p, maxdepth, maxp,
-        soft_idx=soft_idx, hard_idx=hard_idx
-    )
+        unlList, c, depth, p, maxdepth, maxp, soft_idx=soft_idx, hard_idx=hard_idx)
     if maxp:
         moveToP(c, maxp, unlList)
     return found, maxdepth, maxp
@@ -4274,7 +4366,7 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
     except IndexError:
         target = ''
     try:
-        target = pos_pattern.sub('', unlList[depth])
+        target = g_pos_pattern.sub('', unlList[depth])
         nth_sib, nth_same, nth_line_no, nth_col_no = recursiveUNLParts(unlList[depth])
         pos = nth_sib is not None
     except IndexError:
@@ -4282,7 +4374,7 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
         pos = False
     if pos:
         use_idx_mode = True  # ok to use hard/soft_idx
-        target = re.sub(pos_pattern, "", target).replace('--%3E', '-->')
+        target = re.sub(g_pos_pattern, "", target).replace('--%3E', '-->')
         if hard_idx:
             if nth_sib < len(heads):
                 order.append(nth_sib)
@@ -4318,7 +4410,7 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
                 maxdepth = depth + 1
                 maxp = nd.copy()
             found, maxdepth, maxp = g.recursiveUNLFind(
-                unlList, c, depth+1, nd,
+                unlList, c, depth + 1, nd,
                 maxdepth, maxp, soft_idx=soft_idx, hard_idx=hard_idx)
             if found:
                 return found, maxdepth, maxp
@@ -4328,7 +4420,7 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
     if soft_idx and depth + 2 < len(unlList):
         aList = []
         for p in c.all_unique_positions():
-            if any([p.h.replace('--%3E', '-->') in unl for unl in unlList]):
+            if any(p.h.replace('--%3E', '-->') in unl for unl in unlList):
                 aList.append((p.copy(), p.get_UNL(False, False, True)))
         maxcount = 0
         singleMatch = True
@@ -4336,7 +4428,7 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
             count = 0
             compare_list = unlList[:]
             for header in reversed(iter_unl[1].split('-->')):
-                if (re.sub(pos_pattern, "", header).replace('--%3E', '-->') ==
+                if (re.sub(g_pos_pattern, "", header).replace('--%3E', '-->') ==
                      compare_list[-1]
                 ):
                     count = count + 1
@@ -4353,8 +4445,6 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
             maxdepth = p.level()
     return False, maxdepth, maxp
 #@+node:tbrown.20171221094755.1: *4* g.recursiveUNLParts
-pos_pattern = re.compile(r':(\d+),?(\d+)?,?([-\d]+)?,?(\d+)?$')
-
 def recursiveUNLParts(text):
     """recursiveUNLParts - return index, occurence, line_number, col_number
     from an UNL fragment.  line_number is allowed to be negative to indicate
@@ -4364,9 +4454,9 @@ def recursiveUNLParts(text):
     :return: index, occurence, line_number, col_number
     :rtype: (int, int, int, int) or (None, None, None, None)
     """
-    pos = re.findall(pos_pattern, text)
+    pos = re.findall(g_pos_pattern, text)
     if pos:
-        return tuple(int(i)if i else 0 for i in pos[0])
+        return tuple(int(i) if i else 0 for i in pos[0])
     return (None, None, None, None)
 #@+node:ekr.20031218072017.3156: *3* g.scanError
 # It is dubious to bump the Tangle error count here, but it really doesn't hurt.
@@ -4389,6 +4479,19 @@ def scanf(s, pat):
         if part and len(result) < count:
             result.append(part)
     return result
+#@+node:ekr.20201127143342.1: *3* g.see_more_lines
+def see_more_lines(s, ins, n=4):
+    """
+    Extend index i within string s to include n more lines.
+    """
+    # Show more lines, if they exist.
+    if n > 0:
+        for z in range(n):
+            if ins >= len(s):
+                break
+            i, j = g.getLine(s, ins)
+            ins = j
+    return max(0, min(ins, len(s)))
 #@+node:ekr.20031218072017.3195: *3* g.splitLines & g.joinLines
 def splitLines(s):
     """Split s into lines, preserving the number of lines and
@@ -4410,7 +4513,7 @@ joinlines = joinLines
 # will call g.es if they find an error. g.scanError() also bumps
 # c.tangleCommands.errors, which is harmless if we aren't tangling, and
 # useful if we are.
-# 
+#
 # These routines are called by the Import routines and the Tangle routines.
 #@+node:ekr.20031218072017.3159: *4* skip_block_comment
 # Scans past a block comment (an old_style C comment).
@@ -4420,7 +4523,7 @@ def skip_block_comment(s, i):
     j = i; i += 2; n = len(s)
     k = s.find("*/", i)
     if k == -1:
-        g.scanError("Run on block comment: "+s[j : i])
+        g.scanError("Run on block comment: " + s[j:i])
         return n
     return k + 2
 #@+node:ekr.20031218072017.3160: *4* skip_braces
@@ -4450,7 +4553,11 @@ def skip_braces(s, i):
         elif g.match(s, i, '//'): i = g.skip_to_end_of_line(s, i)
         elif g.match(s, i, '/*'): i = g.skip_block_comment(s, i)
         # 7/29/02: be more careful handling conditional code.
-        elif g.match_word(s, i, "#if") or g.match_word(s, i, "#ifdef") or g.match_word(s, i, "#ifndef"):
+        elif (
+            g.match_word(s, i, "#if") or
+            g.match_word(s, i, "#ifdef") or
+            g.match_word(s, i, "#ifndef")
+        ):
             i, delta = g.skip_pp_if(s, i)
             level += delta
         else: i += 1
@@ -4502,7 +4609,7 @@ def skip_pascal_begin_end(s, i):
                 return i
             i = g.skip_c_id(s, i)
         elif g.is_c_id(ch):
-            j = i; i = g.skip_c_id(s, i); name = s[j : i]
+            j = i; i = g.skip_c_id(s, i); name = s[j:i]
             if name in ["begin", "case", "class", "record", "try"]:
                 level += 1
         else:
@@ -4517,7 +4624,7 @@ def skip_pascal_block_comment(s, i):
     i = s.find("*)", i)
     if i > -1:
         return i + 2
-    g.scanError("Run on comment"+s[j : i])
+    g.scanError("Run on comment" + s[j:i])
     return len(s)
 #@+node:ekr.20031218072017.3165: *4* skip_pascal_string : called by tangle
 def skip_pascal_string(s, i):
@@ -4527,21 +4634,20 @@ def skip_pascal_string(s, i):
         if s[i] == delim:
             return i + 1
         i += 1
-    g.scanError("Run on string: "+s[j : i])
+    g.scanError("Run on string: " + s[j:i])
     return i
 #@+node:ekr.20031218072017.3166: *4* skip_heredoc_string : called by php import (Dave Hein)
 #@+at 08-SEP-2002 DTHEIN:  added function skip_heredoc_string
 # A heredoc string in PHP looks like:
-# 
+#
 #   <<<EOS
 #   This is my string.
 #   It is mine. I own it.
 #   No one else has it.
 #   EOS
-# 
+#
 # It begins with <<< plus a token (naming same as PHP variable names).
 # It ends with the token on a line by itself (must start in first position.
-# 
 #@@c
 
 def skip_heredoc_string(s, i):
@@ -4558,7 +4664,7 @@ def skip_heredoc_string(s, i):
     while i < n and not g.match(s, i, delim):
         i = g.skip_line(s, i)  # 14-SEP-2002 DTHEIN: move past \n
     if i >= n:
-        g.scanError("Run on string: "+s[j : i])
+        g.scanError("Run on string: " + s[j:i])
     elif g.match(s, i, delim):
         i += len(delim)
     return i
@@ -4606,7 +4712,11 @@ def skip_pp_part(s, i):
     delta = 0
     while i < len(s):
         c = s[i]
-        if g.match_word(s, i, "#if") or g.match_word(s, i, "#ifdef") or g.match_word(s, i, "#ifndef"):
+        if (
+            g.match_word(s, i, "#if") or
+            g.match_word(s, i, "#ifdef") or
+            g.match_word(s, i, "#ifndef")
+        ):
             i, delta1 = g.skip_pp_if(s, i)
             delta += delta1
         elif g.match_word(s, i, "#else") or g.match_word(s, i, "#endif"):
@@ -4627,7 +4737,7 @@ def skip_python_string(s, i, verbose=True):
         k = s.find(delim, i)
         if k > -1: return k + 3
         if verbose:
-            g.scanError("Run on triple quoted string: "+s[j : i])
+            g.scanError("Run on triple quoted string: " + s[j:i])
         return len(s)
     # 2013/09/08: honor the verbose argument.
     return g.skip_string(s, i, verbose=verbose)
@@ -4645,7 +4755,7 @@ def skip_string(s, i, verbose=True):
         else: i += 1
     if i >= n:
         if verbose:
-            g.scanError("Run on string: "+s[j : i])
+            g.scanError("Run on string: " + s[j:i])
     elif s[i] == delim:
         i += 1
     return i
@@ -4693,7 +4803,7 @@ def find_line_start(s, i):
     if i < 0:
         return 0  # New in Leo 4.4.5: add this defensive code.
     # bug fix: 11/2/02: change i to i+1 in rfind
-    i = s.rfind('\n', 0, i+1)  # Finds the highest index in the range.
+    i = s.rfind('\n', 0, i + 1)  # Finds the highest index in the range.
     return 0 if i == -1 else i + 1
     # if i == -1: return 0
     # else: return i + 1
@@ -4731,35 +4841,38 @@ def is_ws_or_nl(s, i):
 # Warning: this code makes no assumptions about what follows pattern.
 
 def match(s, i, pattern):
-    return s and pattern and s.find(pattern, i, i+len(pattern)) == i
+    return s and pattern and s.find(pattern, i, i + len(pattern)) == i
 #@+node:ekr.20031218072017.3182: *4* match_c_word
 def match_c_word(s, i, name):
     n = len(name)
     return (
         name and
         name == s[i : i + n] and
-        (i + n == len(s) or not g.is_c_id(s[i+n]))
+        (i + n == len(s) or not g.is_c_id(s[i + n]))
     )
 #@+node:ekr.20031218072017.3183: *4* match_ignoring_case
 def match_ignoring_case(s1, s2):
     return s1 and s2 and s1.lower() == s2.lower()
-#@+node:ekr.20031218072017.3184: *4* g.match_word
+#@+node:ekr.20031218072017.3184: *4* g.match_word & g.match_words
 def match_word(s, i, pattern):
 
     # Using a regex is surprisingly tricky.
     if pattern is None:
         return False
-    if i > 0 and g.isWordChar(s[i-1]):  # Bug fix: 2017/06/01.
+    if i > 0 and g.isWordChar(s[i - 1]):  # Bug fix: 2017/06/01.
         return False
     j = len(pattern)
     if j == 0:
         return False
-    if s.find(pattern, i, i+j) != i:
+    if s.find(pattern, i, i + j) != i:
         return False
     if i + j >= len(s):
         return True
     ch = s[i + j]
     return not g.isWordChar(ch)
+
+def match_words(s, i, patterns):
+    return any(g.match_word(s, i, pattern) for pattern in patterns)
 #@+node:ekr.20031218072017.3185: *4* skip_blank_lines
 # This routine differs from skip_ws_and_nl in that
 # it does not advance over whitespace at the start
@@ -4819,7 +4932,8 @@ def skip_to_start_of_line(s, i):
         return len(s)
     if i <= 0:
         return 0
-    i = s.rfind('\n', 0, i)  # Don't find s[i], so it doesn't matter if s[i] is a newline.
+    # Don't find s[i], so it doesn't matter if s[i] is a newline.
+    i = s.rfind('\n', 0, i)
     if i == -1:
         return 0
     return i + 1
@@ -4840,7 +4954,7 @@ def skip_long(s, i):
     while i < n and s[i].isdigit():
         i += 1
     try:  # There may be no digits.
-        val = int(s[j : i])
+        val = int(s[j:i])
         return i, val
     except Exception:
         return i, None
@@ -4873,7 +4987,7 @@ def skip_to_char(s, i, ch):
     j = s.find(ch, i)
     if j == -1:
         return len(s), s[i:]
-    return j, s[i : j]
+    return j, s[i:j]
 #@+node:ekr.20031218072017.3194: *4* skip_ws, skip_ws_and_nl
 def skip_ws(s, i):
     n = len(s)
@@ -4890,8 +5004,6 @@ def skip_ws_and_nl(s, i):
 #@+node:ekr.20180325025502.1: *3* g.backupGitIssues
 def backupGitIssues(c, base_url=None):
     """Get a list of issues from Leo's GitHub site."""
-    import time
-
     if base_url is None:
         base_url = 'https://api.github.com/repos/leo-editor/leo-editor/issues'
 
@@ -4908,21 +5020,26 @@ def execGitCommand(command, directory=None):
     """Execute the given git command in the given directory."""
     git_dir = g.os_path_finalize_join(directory, '.git')
     if not g.os_path_exists(git_dir):
-        g.trace('not found:', git_dir)
+        g.trace('not found:', git_dir, g.callers())
         return []
     if '\n' in command:
         g.trace('removing newline from', command)
         command = command.replace('\n', '')
+    # #1777: Save/restore os.curdir
+    old_dir = os.path.normpath(os.path.abspath(os.curdir))
     if directory:
         os.chdir(directory)
-    p = subprocess.Popen(
-        shlex.split(command),
-        stdout=subprocess.PIPE,
-        stderr=None,  # Shows error traces.
-        shell=False,
-    )
-    out, err = p.communicate()
-    lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
+    try:
+        p = subprocess.Popen(
+            shlex.split(command),
+            stdout=subprocess.PIPE,
+            stderr=None,  # Shows error traces.
+            shell=False,
+        )
+        out, err = p.communicate()
+        lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
+    finally:
+        os.chdir(old_dir)
     return lines
 #@+node:ekr.20180126043905.1: *3* g.getGitIssues
 def getGitIssues(c,
@@ -4974,7 +5091,11 @@ class GitIssueController:
     #@+node:ekr.20180325024334.1: *5* git.get_all_issues
     def get_all_issues(self, label_list, root, state, limit=100):
         """Get all issues for the base url."""
-        import requests
+        try:
+            import requests
+        except Exception:
+            g.trace('requests not found: `pip install requests`')
+            return
         label = None
         assert state in ('open', 'closed')
         page_url = self.base_url + '?&state=%s&page=%s'
@@ -4985,7 +5106,7 @@ class GitIssueController:
             try:
                 done, n = self.get_one_page(label, page, r, root)
                 # Do not remove this trace. It's reassuring.
-                g.trace(f'done: {done:5} page: {page:3} found: {n} label: {label}')
+                g.trace(f"done: {done:5} page: {page:3} found: {n} label: {label}")
             except AttributeError:
                 g.trace('Possible rate limit')
                 self.print_header(r)
@@ -5009,7 +5130,11 @@ class GitIssueController:
     #@+node:ekr.20180126043719.3: *5* git.get_one_issue
     def get_one_issue(self, label, state, limit=20):
         """Create a list of issues with the given label."""
-        import requests
+        try:
+            import requests
+        except Exception:
+            g.trace('requests not found: `pip install requests`')
+            return
         root = self.root.insertAsLastChild()
         page, total = 1, 0
         page_url = self.base_url + '?labels=%s&state=%s&page=%s'
@@ -5019,7 +5144,7 @@ class GitIssueController:
             try:
                 done, n = self.get_one_page(label, page, r, root)
                 # Do not remove this trace. It's reassuring.
-                g.trace(f'done: {done:5} page: {page:3} found: {n:3} label: {label}')
+                g.trace(f"done: {done:5} page: {page:3} found: {n:3} label: {label}")
             except AttributeError:
                 g.trace('Possible rate limit')
                 self.print_header(r)
@@ -5067,7 +5192,7 @@ class GitIssueController:
             print('Link', r.headers.get('Link'))
         else:
             for key in r.headers:
-                print(f'{key:35}: {r.headers.get(key)}')
+                print(f"{key:35}: {r.headers.get(key)}")
     #@-others
 #@+node:ekr.20190428173354.1: *3* g.getGitVersion
 def getGitVersion(directory=None):
@@ -5129,6 +5254,19 @@ def gitCommitNumber(path=None):
     """
     branch, commit = g.gitInfo(path)
     return commit
+#@+node:ekr.20200724132432.1: *3* g.gitInfoForFile
+def gitInfoForFile(filename):
+    """
+    Return the git (branch, commit) info associated for the given file.
+    """
+    # g.gitInfo and g.gitHeadPath now do all the work.
+    return g.gitInfo(filename)
+#@+node:ekr.20200724133754.1: *3* g.gitInfoForOutline
+def gitInfoForOutline(c):
+    """
+    Return the git (branch, commit) info associated for commander c.
+    """
+    return g.gitInfoForFile(c.fileName())
 #@+node:maphew.20171112205129.1: *3* g.gitDescribe
 def gitDescribe(path=None):
     """
@@ -5146,29 +5284,36 @@ def gitDescribe(path=None):
     commit = commit.rstrip()
     return tag, distance, commit
 #@+node:ekr.20170414034616.6: *3* g.gitHeadPath
-def gitHeadPath(path=None):
+def gitHeadPath(path):
     """
-    Compute the path to the .git/HEAD directory given the path to another
-    directory. If no path is given, use the path to *this* file. This code
-    can *not* use g.app.loadDir because it is called too early in Leo's
-    startup code.
+    Compute the path to .git/HEAD given the path.
     """
-    if not path:
-        path = g.os_path_dirname(__file__)
-    head = g.os_path_finalize_join(path, '..', '..', '.git', 'HEAD')
-    exists = g.os_path_exists(head)
-    return head if exists else None
+    path = Path(path)
+    # #1780: Look up the directory tree, looking the .git directory.
+    while os.path.exists(path):
+        head = os.path.join(path, '.git', 'HEAD')
+        if os.path.exists(head):
+            return head
+        if path == path.parent:
+            break
+        path = path.parent
+    return None
 #@+node:ekr.20170414034616.3: *3* g.gitInfo
 def gitInfo(path=None):
     """
-    Path is a .git/HEAD directory, or None.
+    Path may be a directory or file.
 
     Return the branch and commit number or ('', '').
     """
     branch, commit = '', ''  # Set defaults.
+    if path is None:
+        # Default to leo/core.
+        path = os.path.dirname(__file__)
+    if not os.path.isdir(path):
+        path = os.path.dirname(path)
     # Does path/../ref exist?
     path = g.gitHeadPath(path)
-    if not path or not g.os_path_exists(path):
+    if not path:
         return branch, commit
     try:
         with open(path) as f:
@@ -5190,15 +5335,15 @@ def gitInfo(path=None):
         path = g.os_path_finalize_join(git_dir, pointer)
         with open(path) as f:
             s = f.read()
-        commit = s.strip()[0 : 12]
+        commit = s.strip()[0:12]
         # shorten the hash to a unique shortname
     except IOError:
         try:
             path = g.os_path_finalize_join(git_dir, 'packed-refs')
             with open(path) as f:
                 for line in f:
-                    if line.strip().endswith(' '+pointer):
-                        commit = line.split()[0][0 : 12]
+                    if line.strip().endswith(' ' + pointer):
+                        commit = line.split()[0][0:12]
                         break
         except IOError:
             pass
@@ -5207,13 +5352,14 @@ def gitInfo(path=None):
 #@+node:ekr.20101028131948.5860: *3* g.act_on_node
 def dummy_act_on_node(c, p, event):
     pass
+
 # This dummy definition keeps pylint happy.
 # Plugins can change this.
 
 act_on_node = dummy_act_on_node
 #@+node:ville.20120502221057.7500: *3* g.childrenModifiedSet, g.contentModifiedSet
-childrenModifiedSet = set()
-contentModifiedSet = set()
+childrenModifiedSet: Set[bool] = set()
+contentModifiedSet: Set[bool] = set()
 #@+node:ekr.20031218072017.1596: *3* g.doHook
 def doHook(tag, *args, **keywords):
     """
@@ -5362,12 +5508,10 @@ def idleTimeHookHandler(timer):
 def cantImport(moduleName, pluginName=None, verbose=True):
     """Print a "Can't Import" message and return None."""
     s = f"Can not import {moduleName}"
-    ### Fail: extra ws
     if pluginName: s = s + f" from {pluginName}"
     if not g.app or not g.app.gui:
         print(s)
     elif g.unitTesting:
-        # print s
         return
     else:
         g.warning('', s)
@@ -5416,7 +5560,7 @@ def convertRowColToPythonIndex(s, row, col, lines=None):
     col = min(col, len(lines[row]))
     # A big bottleneck
     prev = 0
-    for line in lines[: row]:
+    for line in lines[:row]:
         prev += len(line)
     return prev + col
 #@+node:ekr.20061031102333.2: *4* g.getWord & getLine
@@ -5440,9 +5584,10 @@ def getLine(s, i):
     s[i] is a newline only if the line is empty.
     s[j] is a newline unless there is no trailing newline.
     """
-    if i > len(s): i = len(s) - 1  # Bug fix: 10/6/07 (was if i >= len(s))
+    if i > len(s): i = len(s) - 1
     if i < 0: i = 0
-    j = s.rfind('\n', 0, i)  # A newline *ends* the line, so look to the left of a newline.
+    # A newline *ends* the line, so look to the left of a newline.
+    j = s.rfind('\n', 0, i)
     if j == -1: j = 0
     else: j += 1
     k = s.find('\n', i)
@@ -5468,7 +5613,7 @@ def toPythonIndex(s, index):
     if len(data) == 2:
         row, col = data
         row, col = int(row), int(col)
-        i = g.convertRowColToPythonIndex(s, row-1, col)
+        i = g.convertRowColToPythonIndex(s, row - 1, col)
         return i
     g.trace(f"bad string index: {index}")
     return 0
@@ -5565,7 +5710,7 @@ def longestCommonPrefix(s1, s2):
     """Find the longest prefix common to strings s1 and s2."""
     prefix = ''
     for ch in s1:
-        if s2.startswith(prefix+ch):
+        if s2.startswith(prefix + ch):
             prefix = prefix + ch
         else:
             return prefix
@@ -5604,7 +5749,7 @@ def removeTrailing(s, chars):
     while i >= 0 and s[i] in chars:
         i -= 1
     i += 1
-    return s[: i]
+    return s[:i]
 #@+node:ekr.20060410112600: *4* g.stripBrackets
 def stripBrackets(s):
     """Strip leading and trailing angle brackets."""
@@ -5644,14 +5789,14 @@ def checkUnicode(s, encoding=None):
         return s
     tag = 'g.checkUnicode'
     if not isinstance(s, bytes):
-        g.error(f'{tag}: unexpected argument: {s!r}')
+        g.error(f"{tag}: unexpected argument: {s!r}")
         return ''
     #
     # Report the unexpected conversion.
     callers = g.callers(1)
     if callers not in checkUnicode_dict:
         g.trace(g.callers())
-        g.error(f'\n{tag}: expected unicode. got: {s!r}\n')
+        g.error(f"\n{tag}: expected unicode. got: {s!r}\n")
         checkUnicode_dict[callers] = True
     #
     # Convert to unicode, reporting all errors.
@@ -5663,11 +5808,11 @@ def checkUnicode(s, encoding=None):
         # https://wiki.python.org/moin/UnicodeDecodeError
         s = s.decode(encoding, 'replace')
         g.trace(g.callers())
-        g.error(f'{tag}: unicode error. encoding: {encoding!r}, s:\n{s!r}')
+        g.error(f"{tag}: unicode error. encoding: {encoding!r}, s:\n{s!r}")
     except Exception:
         g.trace(g.callers())
         g.es_excption()
-        g.error(f'{tag}: unexpected error! encoding: {encoding!r}, s:\n{s!r}')
+        g.error(f"{tag}: unexpected error! encoding: {encoding!r}, s:\n{s!r}")
     return s
 #@+node:ekr.20100125073206.8709: *4* g.getPythonEncodingFromString
 def getPythonEncodingFromString(s):
@@ -5689,7 +5834,7 @@ def getPythonEncodingFromString(s):
             if e and g.isValidEncoding(e):
                 encoding = e
         elif g.match_word(line1, 0, '@first'):  # 2011/10/21.
-            line1 = line1[len('@first'):].strip()
+            line1 = line1[len('@first') :].strip()
             if line1.startswith(tag) and line1.endswith(tag2):
                 e = line1[n1 : -n2].strip()
                 if e and g.isValidEncoding(e):
@@ -5725,7 +5870,6 @@ def isValidEncoding(encoding):
         return False
     if sys.platform == 'cli':
         return True
-    import codecs
     try:
         codecs.lookup(encoding)
         return True
@@ -5767,7 +5911,7 @@ def stripBOM(s):
         for n, e, bom in table:
             assert len(bom) == n
             if bom == s[: len(bom)]:
-                return e, s[len(bom):]
+                return e, s[len(bom) :]
     return None, s
 #@+node:ekr.20050208093800: *4* g.toEncodedString
 def toEncodedString(s, encoding='utf-8', reportErrors=False):
@@ -5788,9 +5932,9 @@ def toEncodedString(s, encoding='utf-8', reportErrors=False):
         # g.dump_encoded_string(encoding,s)
     return s
 #@+node:ekr.20050208093800.1: *4* g.toUnicode
-unicode_warnings = {}  # Keys are g.callers.
+unicode_warnings: Dict[str, bool] = {}  # Keys are g.callers.
 
-def toUnicode(s, encoding=None, reportErrors=False):
+def toUnicode(s: Any, encoding: Optional[str]=None, reportErrors: bool=False) -> str:
     """Convert bytes to unicode if necessary."""
     if isinstance(s, str):
         return s
@@ -5823,8 +5967,8 @@ def u(s):
     """
     Return s, converted to unicode from Qt widgets.
     
-    leoQt.py uses is as a stand-in for QString, but all other calls to
-    g.u can and should be removed.
+    leoQt.py uses this as a stand-in for QString, but all other calls
+    to g.u can and should be removed.
     
     Neither Leo's core nor any of Leo's official plugins call this
     method directly.
@@ -5838,7 +5982,7 @@ def computeLeadingWhitespace(width, tab_width):
     if width <= 0:
         return ""
     if tab_width > 1:
-        tabs = int(width/tab_width)
+        tabs = int(width / tab_width)
         blanks = int(width % tab_width)
         return ('\t' * tabs) + (' ' * blanks)
     # Negative tab width always gets converted to blanks.
@@ -5914,14 +6058,17 @@ def removeExtraLws(s, tab_width):
     result = ''.join(result)
     return result
 #@+node:ekr.20110727091744.15083: *4* g.wrap_lines (newer)
+#@@language rest
 #@+at
 # Important note: this routine need not deal with leading whitespace.
+#
 # Instead, the caller should simply reduce pageWidth by the width of
 # leading whitespace wanted, then add that whitespace to the lines
 # returned here.
-# 
+#
 # The key to this code is the invarient that line never ends in whitespace.
 #@@c
+#@@language python
 
 def wrap_lines(lines, pageWidth, firstLineWidth=None):
     """Returns a list of lines, consisting of the input lines wrapped to the given pageWidth."""
@@ -5944,7 +6091,7 @@ def wrap_lines(lines, pageWidth, firstLineWidth=None):
         while i < len(s):
             assert(len(line) <= outputLineWidth)  # DTHEIN 18-JAN-2004
             j = g.skip_ws(s, i)  # ;   ws = s[i:j]
-            k = g.skip_non_ws(s, j); word = s[j : k]
+            k = g.skip_non_ws(s, j); word = s[j:k]
             assert(k > i)
             i = k
             # DTHEIN 18-JAN-2004: wrap at exactly the text width,
@@ -5962,7 +6109,7 @@ def wrap_lines(lines, pageWidth, firstLineWidth=None):
                     #@+node:ekr.20110727091744.15084: *5* << place blank and word on the present line >>
                     if line:
                         # Add the word, preceeded by a blank.
-                        line = space.join((line, word))  # DTHEIN 18-JAN-2004: better syntax
+                        line = space.join((line, word))
                     else:
                         # Just add the word to the start of the line.
                         line = word
@@ -5992,7 +6139,7 @@ def get_leading_ws(s):
     i = 0; n = len(s)
     while i < n and s[i] in (' ', '\t'):
         i += 1
-    return s[0 : i]
+    return s[0:i]
 #@+node:ekr.20031218072017.3201: *4* g.optimizeLeadingWhitespace
 # Optimize leading whitespace in s with the given tab_width.
 
@@ -6003,7 +6150,7 @@ def optimizeLeadingWhitespace(line, tab_width):
 #@+node:ekr.20040723093558: *4* g.regularizeTrailingNewlines
 #@+at The caller should call g.stripBlankLines before calling this routine
 # if desired.
-# 
+#
 # This routine does _not_ simply call rstrip(): that would delete all
 # trailing whitespace-only lines, and in some cases that would change
 # the meaning of program or data.
@@ -6235,7 +6382,7 @@ def es_dump(s, n=30, title=None):
         g.es_print('', title)
     i = 0
     while i < len(s):
-        aList = ''.join([f'{ord(ch):2x} ' for ch in s[i : i+n]])
+        aList = ''.join([f"{ord(ch):2x} " for ch in s[i : i + n]])
         g.es_print('', aList)
         i += n
 #@+node:ekr.20031218072017.3110: *3* g.es_error & es_print_error
@@ -6292,8 +6439,8 @@ def es_print(*args, **keys):
     g.pr(*args, **keys)
     if g.app and not g.app.unitTesting:
         g.es(*args, **keys)
-#@+node:ekr.20111107181638.9741: *3* g.es_print_exception
-def es_print_exception(full=True, c=None, color="red"):
+#@+node:ekr.20111107181638.9741: *3* g.print_exception
+def print_exception(full=True, c=None, flush=False, color="red"):
     """Print exception info about the last exception."""
     typ, val, tb = sys.exc_info()
         # val is the second argument to the raise statement.
@@ -6301,7 +6448,7 @@ def es_print_exception(full=True, c=None, color="red"):
         lines = traceback.format_exception(typ, val, tb)
     else:
         lines = traceback.format_exception_only(typ, val)
-    print(''.join(lines))
+    print(''.join(lines), flush=True)
     try:
         fileName, n = g.getLastTracebackFileAndLineNumber()
         return fileName, n
@@ -6321,7 +6468,6 @@ def getLastTracebackFileAndLineNumber():
     typ, val, tb = sys.exc_info()
     if typ == SyntaxError:
         # IndentationError is a subclass of SyntaxError.
-        # Much easier in Python 2.6 and 3.x.
         return val.filename, val.lineno
     #
     # Data is a list of tuples, one per stack entry.
@@ -6339,7 +6485,7 @@ def goto_last_exception(c):
     typ, val, tb = sys.exc_info()
     if tb:
         file_name, line_number = g.getLastTracebackFileAndLineNumber()
-        line_number = max(0, line_number-1)
+        line_number = max(0, line_number - 1)
             # Convert to zero-based.
         if file_name.endswith('scriptFile.py'):
             # A script.
@@ -6435,10 +6581,10 @@ def print_bindings(name, window):
         g.pr(b)
 #@+node:ekr.20070510074941: *3* g.printEntireTree
 def printEntireTree(c, tag=''):
-    g.pr('printEntireTree', '='*50)
+    g.pr('printEntireTree', '=' * 50)
     g.pr('printEntireTree', tag, 'root', c.rootPosition())
     for p in c.all_positions():
-        g.pr('..'*p.level(), p.v)
+        g.pr('..' * p.level(), p.v)
 #@+node:ekr.20031218072017.3114: *3* g.printGlobals
 def printGlobals(message=None):
     # Get the list of globals.
@@ -6455,7 +6601,7 @@ def printLeoModules(message=None):
     # Create the list.
     mods = []
     for name in sys.modules:
-        if name and name[0 : 3] == "leo":
+        if name and name[0:3] == "leo":
             mods.append(name)
     # Print the list.
     if message:
@@ -6519,7 +6665,7 @@ def trace(*args, **keys):
         else:
             arg = repr(arg)
         if result:
-            result.append(" "+arg)
+            result.append(" " + arg)
         else:
             result.append(arg)
     s = d.get('before') + ''.join(result)
@@ -6548,7 +6694,7 @@ def translateArgs(args, d):
         # Now translate.
         if not isString(arg):
             arg = repr(arg)
-        elif(n % 2) == 1:
+        elif (n % 2) == 1:
             arg = translateString(arg)
         else:
             pass  # The arg is an untranslated string.
@@ -6607,8 +6753,8 @@ def CheckVersion(s1, s2, condition=">=", stringCompare=None, delimiter='.', trac
     vals1 = [g.CheckVersionToInt(s) for s in s1.split(delimiter)]; n1 = len(vals1)
     vals2 = [g.CheckVersionToInt(s) for s in s2.split(delimiter)]; n2 = len(vals2)
     n = max(n1, n2)
-    if n1 < n: vals1.extend([0 for i in range(n-n1)])
-    if n2 < n: vals2.extend([0 for i in range(n-n2)])
+    if n1 < n: vals1.extend([0 for i in range(n - n1)])
+    if n2 < n: vals2.extend([0 for i in range(n - n2)])
     for cond, val in (
         ('==', vals1 == vals2), ('!=', vals1 != vals2),
         ('<', vals1 < vals2), ('<=', vals1 <= vals2),
@@ -6617,7 +6763,8 @@ def CheckVersion(s1, s2, condition=">=", stringCompare=None, delimiter='.', trac
         if condition == cond:
             result = val; break
     else:
-        raise EnvironmentError("condition must be one of '>=', '>', '==', '!=', '<', or '<='.")
+        raise EnvironmentError(
+            "condition must be one of '>=', '>', '==', '!=', '<', or '<='.")
     return result
 #@+node:ekr.20070120123930: *4* g.CheckVersionToInt
 def CheckVersionToInt(s):
@@ -6644,8 +6791,6 @@ def choose(cond, a, b):  # warning: evaluates all arguments
 @command('cls')
 def cls(event=None):
     """Clear the screen."""
-    import os
-    import sys
     if sys.platform.lower().startswith('win'):
         os.system('cls')
 #@+node:ekr.20131114124839.16665: *3* g.createScratchCommander
@@ -6676,8 +6821,8 @@ def funcToMethod(f, theClass, name=None):
     setattr(theClass, name or f.__name__, f)
 #@+node:ekr.20060913090832.1: *3* g.init_zodb
 init_zodb_import_failed = False
-init_zodb_failed = {}  # Keys are paths, values are True.
-init_zodb_db = {}  # Keys are paths, values are ZODB.DB instances.
+init_zodb_failed: Dict[str, bool] = {}  # Keys are paths, values are True.
+init_zodb_db: Dict[str, Any] = {}  # Keys are paths, values are ZODB.DB instances.
 
 def init_zodb(pathToZodbStorage, verbose=True):
     """
@@ -6687,9 +6832,11 @@ def init_zodb(pathToZodbStorage, verbose=True):
     global init_zodb_db, init_zodb_failed, init_zodb_import_failed
     db = init_zodb_db.get(pathToZodbStorage)
     if db: return db
-    if init_zodb_import_failed: return None
+    if init_zodb_import_failed:
+        return None
     failed = init_zodb_failed.get(pathToZodbStorage)
-    if failed: return None
+    if failed:
+        return None
     try:
         import ZODB
     except ImportError:
@@ -6735,7 +6882,7 @@ def issueSecurityWarning(setting):
 #@+node:ekr.20031218072017.3144: *3* g.makeDict (Python Cookbook)
 # From the Python cookbook.
 
-def makeDict(** keys):
+def makeDict(**keys):
     """Returns a Python dictionary from using the optional keyword arguments."""
     return keys
 #@+node:ekr.20140528065727.17963: *3* g.pep8_class_name
@@ -6743,7 +6890,7 @@ def pep8_class_name(s):
     """Return the proper class name for s."""
     # Warning: s.capitalize() does not work.
     # It lower cases all but the first letter!
-    return ''.join([z[0].upper()+z[1:] for z in s.split('_')if z])
+    return ''.join([z[0].upper() + z[1:] for z in s.split('_') if z])
 
 if 0:  # Testing:
     cls()
@@ -6758,9 +6905,6 @@ if 0:  # Testing:
     )
     for s in aList:
         print(pep8_class_name(s))
-#@+node:ekr.20190522093202.1: *3* g.placate_pyflakes
-def placate_pyflakes(*args):
-    """A do-nothing method that suppresses pyflakes warnings."""
 #@+node:ekr.20160417174224.1: *3* g.plural
 def plural(obj):
     """Return "s" or "" depending on n."""
@@ -6775,7 +6919,7 @@ def truncate(s, n):
     if len(s) <= n:
         return s
     # Fail: weird ws.
-    s2 = s[: n - 3] + f'...({len(s)})'
+    s2 = s[: n - 3] + f"...({len(s)})"
     if s.endswith('\n'):
         return s2 + '\n'
     return s2
@@ -6789,42 +6933,51 @@ def windows():
 def glob_glob(pattern):
     """Return the regularized glob.glob(pattern)"""
     aList = glob.glob(pattern)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         aList = [z.replace('\\', '/') for z in aList]
     return aList
 #@+node:ekr.20031218072017.2146: *3* g.os_path_abspath
 def os_path_abspath(path):
     """Convert a path to an absolute path."""
-    path = g.toUnicodeFileEncoding(path)
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if not path:
+        return ''
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
     path = os.path.abspath(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2147: *3* g.os_path_basename
 def os_path_basename(path):
     """Return the second half of the pair returned by split(path)."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.basename(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2148: *3* g.os_path_dirname
 def os_path_dirname(path):
     """Return the first half of the pair returned by split(path)."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.dirname(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2149: *3* g.os_path_exists
 def os_path_exists(path):
     """Return True if path exists."""
-    path = g.toUnicodeFileEncoding(path)
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if not path:
+        return False
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
     return os.path.exists(path)
 #@+node:ekr.20080922124033.6: *3* g.os_path_expandExpression & helper (deprecated)
 deprecated_messages = []
@@ -6848,8 +7001,10 @@ def os_path_expandExpression(s, **keys):
 #@+node:ekr.20080921060401.13: *3* g.os_path_expanduser
 def os_path_expanduser(path):
     """wrap os.path.expanduser"""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     result = os.path.normpath(os.path.expanduser(path))
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return result
@@ -6859,10 +7014,13 @@ def os_path_finalize(path):
     Expand '~', then return os.path.normpath, os.path.abspath of the path.
     There is no corresponding os.path method
     """
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
     path = os.path.expanduser(path)  # #1383.
     path = os.path.abspath(path)
     path = os.path.normpath(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     # calling os.path.realpath here would cause problems in some situations.
@@ -6872,23 +7030,16 @@ def os_path_finalize_join(*args, **keys):
     """
     Join and finalize.
     
-    **keys may contain a 'c' kwarg, used by c.os_path_join.
+    **keys may contain a 'c' kwarg, used by g.os_path_join.
     """
-    # Old code
-        # path = os.path.normpath(os.path.abspath(g.os_path_join(*args, **keys)))
-        # if g.isWindows:
-            # path = path.replace('\\','/')
-    #
-    # #1383: Call both wrappers, to ensure ~ is always expanded.
-    #        This is significant change, to undo previous mistakes.
-    #        Revs cbbf5e8b and 6e461196 in devel were the likely culprits.
     path = g.os_path_join(*args, **keys)
     path = g.os_path_finalize(path)
     return path
 #@+node:ekr.20031218072017.2150: *3* g.os_path_getmtime
 def os_path_getmtime(path):
     """Return the modification time of path."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return 0
     try:
         return os.path.getmtime(path)
     except Exception:
@@ -6896,23 +7047,19 @@ def os_path_getmtime(path):
 #@+node:ekr.20080729142651.2: *3* g.os_path_getsize
 def os_path_getsize(path):
     """Return the size of path."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.getsize(path)
+    return os.path.getsize(path) if path else 0
 #@+node:ekr.20031218072017.2151: *3* g.os_path_isabs
 def os_path_isabs(path):
     """Return True if path is an absolute path."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.isabs(path)
+    return os.path.isabs(path) if path else False
 #@+node:ekr.20031218072017.2152: *3* g.os_path_isdir
 def os_path_isdir(path):
     """Return True if the path is a directory."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.isdir(path)
+    return os.path.isdir(path) if path else False
 #@+node:ekr.20031218072017.2153: *3* g.os_path_isfile
 def os_path_isfile(path):
     """Return True if path is a file."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.isfile(path)
+    return os.path.isfile(path) if path else False
 #@+node:ekr.20031218072017.2154: *3* g.os_path_join
 def os_path_join(*args, **keys):
     """
@@ -6923,48 +7070,52 @@ def os_path_join(*args, **keys):
            provided there is a 'c' kwarg.
     """
     c = keys.get('c')
-    uargs = [g.toUnicodeFileEncoding(arg) for arg in args]
+    uargs = [z for z in args if z]
+    if not uargs:
+        return ''
     # Note:  This is exactly the same convention as used by getBaseDirectory.
-    if uargs and uargs[0] == '!!':
+    if uargs[0] == '!!':
         uargs[0] = g.app.loadDir
-    elif uargs and uargs[0] == '.':
+    elif uargs[0] == '.':
         c = keys.get('c')
         if c and c.openDirectory:
             uargs[0] = c.openDirectory
-    if uargs:
-        try:
-            path = os.path.join(*uargs)
-        except TypeError:
-            g.trace(uargs, args, keys, g.callers())
-            raise
-    else:
-        path = ''
+    try:
+        path = os.path.join(*uargs)
+    except TypeError:
+        g.trace(uargs, args, keys, g.callers())
+        raise
     # May not be needed on some Pythons.
-    path = g.toUnicodeFileEncoding(path)
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2156: *3* g.os_path_normcase
 def os_path_normcase(path):
     """Normalize the path's case."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.normcase(path)
-    path = g.toUnicodeFileEncoding(path)
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2157: *3* g.os_path_normpath
 def os_path_normpath(path):
     """Normalize the path."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.normpath(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20180314081254.1: *3* g.os_path_normslashes
 def os_path_normslashes(path):
+
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows and path:
         path = path.replace('\\', '/')
     return path
@@ -6974,25 +7125,25 @@ def os_path_realpath(path):
     symbolic links encountered in the path (if they are supported by the
     operating system).
     """
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.realpath(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2158: *3* g.os_path_split
 def os_path_split(path):
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return '', ''
     head, tail = os.path.split(path)
-    head = g.toUnicodeFileEncoding(head)
-    tail = g.toUnicodeFileEncoding(tail)
     return head, tail
 #@+node:ekr.20031218072017.2159: *3* g.os_path_splitext
 def os_path_splitext(path):
-    path = g.toUnicodeFileEncoding(path)
+
+    if not path:
+        return ''
     head, tail = os.path.splitext(path)
-    head = g.toUnicodeFileEncoding(head)
-    tail = g.toUnicodeFileEncoding(tail)
     return head, tail
 #@+node:ekr.20090829140232.6036: *3* g.os_startfile
 def os_startfile(fname):
@@ -7013,7 +7164,7 @@ def os_startfile(fname):
         while True:
             emsg = ree.read().decode('utf-8')
             if emsg:
-                g.es_print_error('xdg-open {fn} caused output to stderr:\n{em}'.format(fn=fname, em=emsg))
+                g.es_print_error(f"xdg-open {fname} caused output to stderr:\n{emsg}")
             else:
                 break
     #@+node:bob.20170516112304.1: *4* itPoll()
@@ -7037,12 +7188,10 @@ def os_startfile(fname):
             ito.stop()
             ito.destroy_self()
             if rc != 0:
-                g.es_print('xdg-open {fn} failed with exit code {ec}'.format(fn=fname, ec=rc))
+                g.es_print(f"xdg-open {fname} failed with exit code {rc}")
             stderr2log(g, ree, fname)
             ree.close()
-
     #@-others
-
     if fname.find('"') > -1:
         quoted_fname = f"'{fname}'"
     else:
@@ -7062,36 +7211,29 @@ def os_startfile(fname):
         except ImportError:
             os.system(f"open {quoted_fname}")
     else:
-        # Linux
-        # The buffering argument to NamedTempFile does not exist on Python 2.
         try:
             ree = None
             wre = tempfile.NamedTemporaryFile()
             ree = io.open(wre.name, 'rb', buffering=0)
         except IOError:
-            g.trace(f'error opening temp file for {fname!r}')
+            g.trace(f"error opening temp file for {fname!r}")
             if ree: ree.close()
             return
         try:
             subPopen = subprocess.Popen(['xdg-open', fname], stderr=wre, shell=False)
         except Exception:
-            g.es_print(f'error opening {fname!r}')
+            g.es_print(f"error opening {fname!r}")
             g.es_exception()
         try:
-            itoPoll = g.IdleTime((lambda ito: itPoll(fname, ree, subPopen, g, ito)), delay=1000)
+            itoPoll = g.IdleTime(
+                (lambda ito: itPoll(fname, ree, subPopen, g, ito)),
+                delay=1000,
+            )
             itoPoll.start()
             # Let the Leo-Editor process run
             # so that Leo-Editor is usable while the file is open.
         except Exception:
-            g.es_exception(f'exception executing g.startfile for {fname!r}')
-#@+node:ekr.20031218072017.2160: *3* g.toUnicodeFileEncoding
-def toUnicodeFileEncoding(path):
-    # Fix bug 735938: file association crash
-    if path and isinstance(path, str):
-        path = path.replace('\\', os.sep)
-        # Yes, this is correct.  All os_path_x functions return Unicode strings.
-        return g.toUnicode(path)
-    return ''
+            g.es_exception(f"exception executing g.startfile for {fname!r}")
 #@+node:ekr.20111115155710.9859: ** g.Parsing & Tokenizing
 #@+node:ekr.20031218072017.822: *3* g.createTopologyList
 def createTopologyList(c, root=None, useHeadlines=False):
@@ -7121,7 +7263,7 @@ def getDocString(s):
         i = max(i1, i2)
     tag = s[i : i + 3]
     assert tag in tags
-    j = s.find(tag, i+3)
+    j = s.find(tag, i + 3)
     if j > -1:
         return s[i + 3 : j]
     return ''
@@ -7181,7 +7323,7 @@ def python_tokenize(s, line_numbers=True):
         else:
             kind, i = 'other', i + 1
         assert progress < i and j == progress
-        val = s[j : i]
+        val = s[j:i]
         assert val
         if line_numbers:
             line_number += val.count('\n')  # A comment.
@@ -7207,9 +7349,24 @@ def execute_shell_commands(commands, trace=False):
         commands = [commands]
     for command in commands:
         wait = not command.startswith('&')
-        if command.startswith('&'): command = command[1:].strip()
+        if trace: g.trace(command)
+        if command.startswith('&'):
+            command = command[1:].strip()
         proc = subprocess.Popen(command, shell=True)
-        if wait: proc.communicate()
+        if wait:
+            proc.communicate()
+        else:
+            if trace: print('Start:', proc)
+            # #1489: call proc.poll at idle time.
+
+            def proc_poller(timer, proc=proc):
+                val = proc.poll()
+                if val is not None:
+                    # This trace can be disruptive.
+                    if trace: print('  End:', proc, val)
+                    timer.stop()
+
+            g.IdleTime(proc_poller, delay=0).start()
 #@+node:ekr.20180217113719.1: *3* g.execute_shell_commands_with_options & helpers
 def execute_shell_commands_with_options(
     base_dir=None,
@@ -7256,13 +7413,13 @@ def computeBaseDir(c, base_dir, path_setting, trace=False):
             base_dir2 = base_dir2.replace('\\', '/')
             if g.os_path_exists(base_dir2):
                 return base_dir2
-            return g.es_print(f'@string {path_setting} not found: {base_dir2!r}')
+            return g.es_print(f"@string {path_setting} not found: {base_dir2!r}")
     # Fall back to given base_dir.
     if base_dir:
         base_dir = base_dir.replace('\\', '/')
         if g.os_path_exists(base_dir):
             return base_dir
-        return g.es_print(f'base_dir not found: {base_dir!r}')
+        return g.es_print(f"base_dir not found: {base_dir!r}")
     return g.es_print(f"Please use @string {path_setting}")
 #@+node:ekr.20180217153459.1: *4* g.computeCommands
 def computeCommands(c, commands, command_setting, trace=False):
@@ -7300,7 +7457,27 @@ def executeFile(filename, options=''):
     rc, so, se = subprocess_wrapper(f"{sys.executable} {fname} {options}")
     if rc: g.pr('return code', rc)
     g.pr(so, se)
-#@+node:ekr.20040321065415: *3* g.findNode... &,findTopLevelNode
+#@+node:ekr.20040321065415: *3* g.find*Node*
+#@+others
+#@+node:ekr.20210303123423.3: *4* findNodeAnywhere
+def findNodeAnywhere(c, headline, exact=True):
+    h = headline.strip()
+    for p in c.all_unique_positions(copy=False):
+        if p.h.strip() == h:
+            return p.copy()
+    if not exact:
+        for p in c.all_unique_positions(copy=False):
+            if p.h.strip().startswith(h):
+                return p.copy()
+    return None
+#@+node:ekr.20210303123525.1: *4* findNodeByPath
+def findNodeByPath(c, path):
+    """Return the first @<file> node in Cmdr c whose path is given."""
+    for p in c.all_positions():
+        if p.isAnyAtFileNode() and path == g.fullPath(c, p):
+            return p
+    return False
+#@+node:ekr.20210303123423.1: *4* findNodeInChildren
 def findNodeInChildren(c, p, headline, exact=True):
     """Search for a node in v's tree matching the given headline."""
     p1 = p.copy()
@@ -7313,7 +7490,7 @@ def findNodeInChildren(c, p, headline, exact=True):
             if p.h.strip().startswith(h):
                 return p.copy()
     return None
-
+#@+node:ekr.20210303123423.2: *4* findNodeInTree
 def findNodeInTree(c, p, headline, exact=True):
     """Search for a node in v's tree matching the given headline."""
     h = headline.strip()
@@ -7326,18 +7503,7 @@ def findNodeInTree(c, p, headline, exact=True):
             if p.h.strip().startswith(h):
                 return p.copy()
     return None
-
-def findNodeAnywhere(c, headline, exact=True):
-    h = headline.strip()
-    for p in c.all_unique_positions(copy=False):
-        if p.h.strip() == h:
-            return p.copy()
-    if not exact:
-        for p in c.all_unique_positions(copy=False):
-            if p.h.strip().startswith(h):
-                return p.copy()
-    return None
-
+#@+node:ekr.20210303123423.4: *4* findTopLevelNode
 def findTopLevelNode(c, headline, exact=True):
     h = headline.strip()
     for p in c.rootPosition().self_and_siblings(copy=False):
@@ -7348,6 +7514,7 @@ def findTopLevelNode(c, headline, exact=True):
             if p.h.strip().startswith(h):
                 return p.copy()
     return None
+#@-others
 #@+node:EKR.20040614071102.1: *3* g.getScript & helpers
 def getScript(c, p,
     useSelectedText=True,
@@ -7457,8 +7624,8 @@ def handleScriptException(c, p, script, script1):
             s = '-' * 20
             g.es_print('', s)
             # Print surrounding lines.
-            i = max(0, n-2)
-            j = min(n+2, len(lines))
+            i = max(0, n - 2)
+            j = min(n + 2, len(lines))
             while i < j:
                 ch = '*' if i == n - 1 else ' '
                 s = f"{ch} line {i+1:d}: {lines[i]}"
@@ -7482,7 +7649,7 @@ def insertCodingLine(encoding, script):
             if s.startswith(tag):
                 break
         else:
-            lines.insert(0, f'{tag} {encoding} -*-\n')
+            lines.insert(0, f"{tag} {encoding} -*-\n")
             script = ''.join(lines)
     return script
 #@+node:ekr.20070524083513: ** g.Unit Tests
@@ -7507,6 +7674,38 @@ def getTestVars():
     # This is an indirect test that some unit test has run.
     d['getTestVars'] = True
     return c, p and p.copy()
+#@+node:ekr.20200221050038.1: *3* g.run_unit_test_in_separate_process
+def run_unit_test_in_separate_process(command):
+    """
+    A script to be run from unitTest.leo.
+    
+    Run the unit testing command (say `python -m leo.core.leoAst`) in a separate process.
+    
+    Fail (in leoTest.leo) if that fails.
+    """
+    leo_editor_dir = os.path.join(g.app.loadDir, '..', '..')
+    os.chdir(leo_editor_dir)
+    p = subprocess.Popen(
+        shlex.split(command),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=sys.platform.startswith('win'),
+    )
+    out, err = p.communicate()
+    err = g.toUnicode(err)
+    out = g.toUnicode(out)
+    print('')
+    print(command)
+    if out.strip():
+        # print('traces...')
+        print(out.rstrip())
+    print(err.rstrip())
+    # There may be skipped tests...
+    err_lines = g.splitLines(err.rstrip())
+    if not err_lines[-1].startswith('OK'):
+        g.trace('Test failed')
+        g.printObj(err_lines, tag='err_lines')
+        assert False
 #@+node:ekr.20080919065433.2: *3* g.toEncodedStringWithErrorCode (for unit testing)
 def toEncodedStringWithErrorCode(s, encoding, reportErrors=False):
     """For unit testing: convert s to an encoded string and return (s,ok)."""
@@ -7560,14 +7759,14 @@ def computeFileUrl(fn, c=None, p=None):
         # #1338: This is way too dangerous, and a serious security violation.
             # path = g.os_path_expandExpression(path, c=c)
         path = g.os_path_finalize(path)
-        url = url[: i] + path
+        url = url[:i] + path
     else:
         tag = 'file://'
         tag2 = 'file:///'
         if sys.platform.startswith('win') and url.startswith(tag2):
-            path = url[len(tag2):].lstrip()
+            path = url[len(tag2) :].lstrip()
         elif url.startswith(tag):
-            path = url[len(tag):].lstrip()
+            path = url[len(tag) :].lstrip()
         else:
             path = url
         # #1338: This is way too dangerous, and a serious security violation.
@@ -7602,7 +7801,7 @@ def getUrlFromNode(p):
         tag = 'file://'
         url = computeFileUrl(s, c=c, p=p)
         if url.startswith(tag):
-            fn = url[len(tag):].lstrip()
+            fn = url[len(tag) :].lstrip()
             fn = fn.split('#', 1)[0]
             if g.os_path_isfile(fn):
                 # Return the *original* url, with a file:// scheme.
@@ -7622,7 +7821,7 @@ def handleUrl(url, c=None, p=None):
     if urll.startswith('@url'):
         url = url[4:].lstrip()
     if (
-        urll.startswith('unl:'+'//') or
+        urll.startswith('unl:' + '//') or
         urll.startswith('file://') and url.find('-->') > -1 or
         urll.startswith('#')
     ):
@@ -7642,7 +7841,7 @@ def handleUrlHelper(url, c, p):
     """
     tag = 'file://'
     original_url = url
-    if url.startswith(tag) and not url.startswith(tag+'#'):
+    if url.startswith(tag) and not url.startswith(tag + '#'):
         # Finalize the path *before* parsing the url.
         url = g.computeFileUrl(url, c=c, p=p)
     parsed = urlparse.urlparse(url)
@@ -7664,7 +7863,6 @@ def handleUrlHelper(url, c, p):
         else:
             g.es(f"File '{leo_path}' does not exist")
     else:
-        import webbrowser
         if g.unitTesting:
             g.app.unitTestDict['browser'] = url
         else:
@@ -7690,7 +7888,7 @@ def handleUnl(unl, c):
     if not unl:
         return None
     unll = unl.lower()
-    if unll.startswith('unl:'+'//'):
+    if unll.startswith('unl:' + '//'):
         unl = unl[6:]
     elif unll.startswith('file://'):
         unl = unl[7:]
@@ -7759,7 +7957,7 @@ def isValidUrl(url):
         'mailto', 'mms', 'news', 'nntp', 'prospero', 'rsync', 'rtsp', 'rtspu',
         'sftp', 'shttp', 'sip', 'sips', 'snews', 'svn', 'svn+ssh', 'telnet', 'wais',
     )
-    if url.lower().startswith('unl:'+'//') or url.startswith('#'):
+    if url.lower().startswith('unl:' + '//') or url.startswith('#'):
         # All Leo UNL's.
         return True
     if url.startswith('@'):
@@ -7813,7 +8011,7 @@ def openUrlHelper(event, url=None):
             return None  # So find doesn't open the url.
         row, col = g.convertPythonIndexToRowCol(s, ins)
         i, j = g.getLine(s, ins)
-        line = s[i : j]
+        line = s[i:j]
         # Find the url on the line.
         for match in g.url_regex.finditer(line):
             # Don't open if we click after the url.
@@ -7845,12 +8043,15 @@ def openUrlHelper(event, url=None):
         c.editCommands.extendToWord(event, select=True)
     word = w.getSelectedText().strip()
     if word:
-        c.findCommands.findDef(event)
+        c.findCommands.find_def_strict(event)
     return None
 #@-others
 # set g when the import is about to complete.
-g = sys.modules.get('leo.core.leoGlobals')
+g: Any = sys.modules.get('leo.core.leoGlobals')
 assert g, sorted(sys.modules.keys())
+if __name__ == '__main__':
+    unittest.main()
+
 #@@language python
 #@@tabwidth -4
 #@@pagewidth 70

@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:danr7.20061010105952.1: * @file word_count.py
+#@+node:danr7.20061010105952.1: * @file ../plugins/word_count.py
 #@@language python
 #@@tabwidth -4
 
@@ -28,7 +28,7 @@ activate the command.
 
 # Word Count plugin by Dan Rahmel
 
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 __version__ = "1.2"
 

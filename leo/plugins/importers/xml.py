@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20140723122936.18137: * @file importers/xml.py
+#@+node:ekr.20140723122936.18137: * @file ../plugins/importers/xml.py
 '''The @auto importer for the xml language.'''
 import re
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 Target = linescanner.Target
 #@+others

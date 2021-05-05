@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:EKR.20040517080202.3: * @file examples/french_fm.py
+#@+node:EKR.20040517080202.3: * @file ../plugins/examples/french_fm.py
 #@@first
 """traduit les menus en Français"""
 #@@language python
 #@@tabwidth -4
 # French translation completed by Frédéric Momméja, Spring 2003
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 __version__ = "1.4" # Set version for the plugin handler.
 #@+others
 #@+node:ekr.20111104210837.9688: ** init

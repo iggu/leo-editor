@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20101121031443.5330: * @file screenshots.py
+#@+node:ekr.20101121031443.5330: * @file ../plugins/screenshots.py
 #@+<< docstring >>
 #@+node:ekr.20100908115707.5554: ** << docstring >>
 r""" Creates stand-alone slideshows containing screenshots.
@@ -316,23 +316,27 @@ the @slideshow tree whose sanitized name is
 __version__ = '1.0.3'
 #@+<< imports >>
 #@+node:ekr.20100908110845.5604: ** << imports >>
-import leo.core.leoGlobals as g
 import copy
 import glob
 import os
-# Warnings are given later.
-try:
-    from PIL import Image, ImageChops
-    got_pil = True
-except ImportError:
-    got_pil = False
-from leo.core.leoQt import isQt5, QtGui
-got_qt = QtGui is not None
 import shutil
 import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as etree
+
+from leo.core import leoGlobals as g
+from leo.core.leoQt import isQt5, QtGui
+# Third-party imports.
+# Warnings are given later.
+try:
+    # pylint: disable=import-error
+    from PIL import Image, ImageChops
+    got_pil = True
+except ImportError:
+    got_pil = False
+# Alias.
+got_qt = QtGui is not None
 #@-<< imports >>
 #@+others
 #@+node:ekr.20100914090933.5771: ** Top level
@@ -416,7 +420,6 @@ class ScreenShotController:
             self.got_pil = True
         except ImportError:
             self.got_pil = False
-        from leo.core.leoQt import QtGui
         self.got_qt = QtGui is not None
         # Defaults.
         self.default_screenshot_height = 700
@@ -1040,7 +1043,7 @@ class ScreenShotController:
     #@+node:ekr.20101005193146.5687: *4* copy_files & helper
     #@+at We would like to do sphinx "make" operations only in the top-level sphinx
     # folder (leo/doc/html) so that only a single _build directory tree would exist.
-    # 
+    #
     # Alas, that doesn't work.  To get links correct, the build must be done in
     # the individual slide folders.  So we *must* copy all the files.
     #@@c
@@ -1646,8 +1649,10 @@ class ScreenShotController:
         return ok
     #@+node:ekr.20100914090933.5643: *5* create_setup_leo_file
     def create_setup_leo_file(self):
-        '''Create an ouline containing all children of sc.screenshot_tree.
-        Do not copy @slide nodes or @slideshow nodes.'''
+        '''
+        Create an ouline containing all children of sc.screenshot_tree.
+        Do not copy @slide nodes or @slideshow nodes.
+        '''
         sc = self; fn = sc.finalize('screenshot-setup.leo')
         c = g.app.newCommander(fn)
 
@@ -1679,6 +1684,8 @@ class ScreenShotController:
                     z.expand()
         # Save the file silently.
         c.fileCommands.save(fn)
+        # pylint: disable=no-member
+            # c.close does exist.
         c.close()
         return fn
     #@+node:ekr.20100913085058.5659: *5* setup_screen_shot & helpers

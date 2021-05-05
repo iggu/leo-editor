@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20110403115003.10348: * @file valuespace.py
+#@+node:ville.20110403115003.10348: * @file ../plugins/valuespace.py
 #@+<< docstring >>
 #@+node:ville.20110403115003.10349: ** << docstring >>
 '''Supports Leo scripting using per-Leo-outline namespaces.
@@ -126,11 +126,6 @@ different namespaces, while keeping namespaces generally separate.
 
 #@+<< imports >>
 #@+node:ville.20110403115003.10351: ** << imports >>
-import leo.core.leoGlobals as g
-import leo.core.leoPlugins as leoPlugins
-from leo.external.stringlist import SList
-    # Uses leoPlugins.TryNext.
-
 import pprint
 import os
 import re
@@ -140,6 +135,11 @@ try:
     import yaml
 except ImportError:
     yaml = None
+    
+from leo.core import leoGlobals as g
+from leo.core import leoPlugins
+from leo.external.stringlist import SList
+    # Uses leoPlugins.TryNext.
 #@-<< imports >>
 controllers = {}
     # Keys are c.hash(), values are ValueSpaceControllers.

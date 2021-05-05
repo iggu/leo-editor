@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ajones.20070122160142: * @file textnode.py
+#@+node:ajones.20070122160142: * @file ../plugins/textnode.py
 #@+<< docstring >>
 #@+node:ajones.20070122160142.1: ** << docstring >> (textnode.py)
 ''' Supports @text nodes for reading and writing external files.
@@ -20,9 +20,9 @@ node.
 #@@language python
 #@@tabwidth -4
 
-import leo.core.leoGlobals as g
-
 import os.path
+from leo.core import leoGlobals as g
+
 __version__ = "1.1"
     # Terry Brown: support for @path ancestors and uses universal newline mode for opening.
 
@@ -66,7 +66,7 @@ def on_save(tag,keywords):
         h = p.h
         if g.match_word(h,0,"@text") and p.isDirty():
             savetextnode(c, p)
-            c.setBodyString(p, "")
+            p.b = ""
 #@+node:tbrown.20080128221824: ** getPath
 def getPath(c,p):
     path = [i.h[6:] for i in p.self_and_parents()
@@ -81,13 +81,13 @@ def readtextnode(c, p):
     try:
         file = open(name,"rU")
         g.es("..." + name)
-        c.setBodyString(p, file.read())
+        p.b = file.read()
         p.clearDirty()
         file.close()
     except IOError as msg:
         g.es("error reading %s: %s" % (name, msg))
         g.es("...not found: " + name)
-        c.setBodyString(p,"") # Clear the body text.
+        p.b = ''
         p.setDirty()
 #@+node:ajones.20070122185020: ** savetextnode
 def savetextnode(c, p):
@@ -100,6 +100,6 @@ def savetextnode(c, p):
     except IOError as msg:
         g.es("error writing %s: %s" % (name, msg))
         p.setDirty()
-        p.setMarked(1)
+        p.setMarked()
 #@-others
 #@-leo

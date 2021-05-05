@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20091214233510.5347: * @file geotag.py
+#@+node:tbrown.20091214233510.5347: * @file ../plugins/geotag.py
 ''' Tags nodes with latitude and longitude. '''
 
 #@@language python
@@ -7,11 +7,10 @@
 
 #@+<< imports >>
 #@+node:tbrown.20091214233510.5349: ** << imports >>
-import leo.core.leoGlobals as g
-
+import socket
+from leo.core import leoGlobals as g
 from leo.plugins.pygeotag import pygeotag
 
-import socket
 #@-<< imports >>
 __version__ = "0.1"
 

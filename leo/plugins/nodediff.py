@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:peckj.20140113150237.7083: * @file nodediff.py
+#@+node:peckj.20140113150237.7083: * @file ../plugins/nodediff.py
 #@@language python
 #@@tabwidth -4
 
@@ -87,24 +87,17 @@ __version__ = '0.1'
 #@+<< version history >>
 #@+node:peckj.20140113131037.5793: ** << version history >>
 #@+at
-# 
+#
 # JMP 0.1 - initial version
 #@-<< version history >>
 
 #@+<< imports >>
 #@+node:peckj.20140113131037.5794: ** << imports >>
-import leo.core.leoGlobals as g
 import difflib
-
-# for VCS diff
+from io import StringIO
 import subprocess
 
-try:
-    from cStringIO import StringIO
-except Exception:
-    # python 3
-    from io import StringIO
-
+from leo.core import leoGlobals as g
 from leo.external import leosax
 #@-<< imports >>
 

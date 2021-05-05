@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20120503224623.3574: * @file leomylyn.py
+#@+node:ville.20120503224623.3574: * @file ../plugins/leomylyn.py
 ''' Provides an experience like Mylyn:http://en.wikipedia.org/wiki/Mylyn for Leo.
 
 It "scores" the nodes based on how interesting they probably are for you,
@@ -10,7 +10,7 @@ Scoring is based on how much you edit the nodes.
 '''
 
 # By VMV.
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 #@+others
 #@+node:ville.20120503224623.3578: ** init
 def init ():

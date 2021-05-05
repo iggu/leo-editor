@@ -1,16 +1,16 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20170530024520.2: * @file importers/lua.py
+#@+node:ekr.20170530024520.2: * @file ../plugins/importers/lua.py
 '''
 The @auto importer for the lua language.
 
 Created 2017/05/30 by the `importer;;` abbreviation.
 '''
-delete_blank_lines = True
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
 import re
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 Target = linescanner.Target
+delete_blank_lines = True
 #@+others
 #@+node:ekr.20170530024520.3: ** class Lua_Importer
 class Lua_Importer(Importer):

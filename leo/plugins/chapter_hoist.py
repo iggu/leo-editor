@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20060328125925: * @file chapter_hoist.py
+#@+node:ekr.20060328125925: * @file ../plugins/chapter_hoist.py
 #@+<< docstring >>
 #@+node:ekr.20060328125925.1: ** << docstring >>
 """ Creates hoist buttons.
@@ -13,13 +13,13 @@ Requires at least version 0.19 of mod_scripting.
 
 """
 #@-<< docstring >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 from leo.plugins.mod_scripting import scriptingController
 __version__ = "0.5"
 #@+<< version history >>
 #@+node:ekr.20060328125925.3: ** << version history >>
 #@+at
-# 
+#
 # 0.1 btheado: initial creation.
 # 0.2 EKR: changed to @thin.
 # 0.3 EKR: init now succeeds for unit tests.

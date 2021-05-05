@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20040916084945: * @file macros.py
+#@+node:ekr.20040916084945: * @file ../plugins/macros.py
 #@+<< docstring >>
 #@+node:ekr.20061102090532: ** << docstring >>
 r''' Creates new nodes containing parameterized section reference.
@@ -67,7 +67,7 @@ __version__ = "2.0" # BobS & EKR.
 #@+<< version history >>
 #@+node:ekr.20040916091520: ** << version history >>
 #@+at
-# 
+#
 # 1.2 EKR:
 # - Converted to outline.
 # - Use g.angleBrackets to enclose lines with < < and > >.
@@ -83,8 +83,8 @@ __version__ = "2.0" # BobS & EKR.
 # 1.9 BobS: Revised self.pattern & added traces.
 # 2.0 EKR: Many code cleanups & fixed several crashers.
 #@-<< version history >>
-import leo.core.leoGlobals as g
 import re
+from leo.core import leoGlobals as g
 #@+others
 #@+node:ekr.20070302121133: ** init
 def init ():
@@ -170,7 +170,7 @@ class ParamClass:
         table = (
             ("Parameterize Section Reference",None,self.parameterize),
         )
-        c.frame.menu.createMenuItemsFromTable("Outline",table,dynamicMenu=True)
+        c.frame.menu.createMenuItemsFromTable("Outline", table)
     #@-others
 #@-others
 #@@language python

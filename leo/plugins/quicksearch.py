@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20090314215508.4: * @file quicksearch.py
+#@+node:ville.20090314215508.4: * @file ../plugins/quicksearch.py
 #@+<< docstring >>
 #@+node:ville.20090314215508.5: ** << docstring >> (quicksearch.py)
 '''
@@ -78,20 +78,17 @@ This plugin defines the following commands that can be bound to keys:
 # Ville M. Vainio <vivainio@gmail.com>.
 #@+<< imports >>
 #@+node:ville.20090314215508.7: ** << imports >>
-import leo.core.leoGlobals as g
-import itertools
 from collections import OrderedDict
+import fnmatch
+import itertools
+import re
+from leo.core import leoGlobals as g
+from leo.core.leoQt import QtCore, QtConst, QtWidgets
+from leo.core import leoNodes
+from leo.plugins import threadutil
+from leo.plugins import qt_quicksearch_sub as qt_quicksearch
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')
-from leo.core.leoQt import QtCore,QtConst,QtWidgets # isQt5,QtGui,
-
-from leo.core import leoNodes
-    # Uses leoNodes.PosList.
-import fnmatch
-import re
-from leo.plugins import threadutil
-    # Bug fix. See: https://groups.google.com/forum/?fromgroups=#!topic/leo-editor/PAZloEsuk7g
-from leo.plugins import qt_quicksearch_sub as qt_quicksearch
 #@-<< imports >>
 #@+others
 #@+node:ekr.20190210123045.1: ** top level
@@ -183,7 +180,7 @@ def install_qt_quicksearch_tab(c):
             wdg.ui.lineEdit.setFocus()
 
     # Careful: we may be unit testing.
-    if wdg and wdg.parent() and not g.app.dock:
+    if wdg and wdg.parent():
         tab_widget = wdg.parent().parent()
         tab_widget.currentChanged.connect(activate_input)
 #@+node:ekr.20111014074810.15659: *3* matchLines
@@ -246,7 +243,7 @@ class OrderedDefaultDict(OrderedDict):
                 raise TypeError('first argument must be callable or None')
             self.default_factory = args[0]
             args = args[1:]
-        super(OrderedDefaultDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __missing__ (self, key):
         if self.default_factory is None:
@@ -360,7 +357,7 @@ class LeoQuickSearchWidget(QtWidgets.QWidget):
     def selectAndDismiss(self):
         self.hide()
     #@-others
-#@+node:ville.20090314215508.12: ** class QuickSearchController (Object)
+#@+node:ville.20090314215508.12: ** class QuickSearchController
 class QuickSearchController:
 
     #@+others
@@ -714,11 +711,9 @@ class QuickSearchController:
     def onSelectItem(self, it, it_prev=None):
 
         c = self.c
-
         tgt = self.its.get(it and id(it))
-
-        if not tgt: return
-
+        if not tgt:
+            return
         # if Ctrl key is down, delete item and
         # children (based on indent) and return
         modifiers = QtWidgets.QApplication.keyboardModifiers()
@@ -730,13 +725,16 @@ class QuickSearchController:
                 self.lw.item(row).setHidden(True)
                 row += 1
                 cur = self.lw.item(row)
-                indent = len(cur.text()) - len(str(cur.text()).lstrip())
+                # #1751.
+                if not cur:
+                    break
+                s = cur.text() or ''
+                indent = len(s) - len(str(s).lstrip())
                 if indent <= init_indent:
                     break
             self.lw.setCurrentRow(row)
             self.lw.blockSignals(False)
             return
-
         # generic callable
         if callable(tgt):
             tgt()
@@ -744,10 +742,8 @@ class QuickSearchController:
             p, pos = tgt
             if hasattr(p,'v'): #p might be "Root"
                 if not c.positionExists(p):
-                    g.es(
-                        "Node moved or deleted.\nMaybe re-do search.",
-                        color='red'
-                    )
+                    g.es("Node moved or deleted.\nMaybe re-do search.",
+                        color='red')
                     return
                 c.selectPosition(p)
                 if pos is not None:
@@ -755,7 +751,6 @@ class QuickSearchController:
                     w = c.frame.body.wrapper
                     w.setSelectionRange(st,en)
                     w.seeInsertPoint()
-
                 self.lw.setFocus()
     #@+node:tbrown.20111018130925.3642: *4* onActivated
     def onActivated (self,event):

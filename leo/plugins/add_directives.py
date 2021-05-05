@@ -1,8 +1,8 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.741: * @file add_directives.py
+#@+node:edream.110203113231.741: * @file ../plugins/add_directives.py
 """Allows users to define new @direcives."""
 
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 directives = ("markup",) # A tuple with one string.
 

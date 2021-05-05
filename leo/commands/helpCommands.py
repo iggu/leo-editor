@@ -5,10 +5,11 @@
 """Leo's help commands."""
 #@+<< imports >>
 #@+node:ekr.20150514050337.1: ** << imports >> (helpCommands.py)
-import leo.core.leoGlobals as g
-from leo.commands.baseCommands import BaseEditCommandsClass as BaseEditCommandsClass
+import io
 import re
 import sys
+from leo.core import leoGlobals as g
+from leo.commands.baseCommands import BaseEditCommandsClass
 #@-<< imports >>
 
 def cmd(name):
@@ -374,8 +375,8 @@ class HelpCommandsClass(BaseEditCommandsClass):
                 # Create the title.
                 s2 = f"{commandName} ({bindings})" if bindings else commandName
                 underline = '+' * len(s2)
-                title = '%s\n%s\n\n' % (s2, underline)
-                if 1: # 2015/03/24
+                title = f"{s2}\n{underline}\n\n"
+                if 1:  # 2015/03/24
                     s = title + g.adjustTripleString(s, c.tab_width)
                 else:
                     # Fixes bug 618570:
@@ -417,7 +418,7 @@ class HelpCommandsClass(BaseEditCommandsClass):
 
                 '''
                 #@-<< set s to about help-for-command >>
-            c.putHelpFor(s) # calls g.adjustTripleString.
+            c.putHelpFor(s)  # calls g.adjustTripleString.
     #@+node:ekr.20150514063305.385: *4* replaceBindingPatterns
     def replaceBindingPatterns(self, s):
         """
@@ -435,8 +436,8 @@ class HelpCommandsClass(BaseEditCommandsClass):
                 if bi.pane == 'all':
                     key = c.k.prettyPrintKey(bi.stroke.s)
                     break
-            else: key = '<Alt-X>%s<Return>' % name
-            s = s[: m.start()] + key + s[m.end():]
+            else: key = f"<Alt-X>{name}<Return>"
+            s = s[: m.start()] + key + s[m.end() :]
         return s
     #@+node:ekr.20150514063305.386: *3* helpForCreatingExternalFiles
     @cmd('help-for-creating-external-files')
@@ -592,21 +593,16 @@ class HelpCommandsClass(BaseEditCommandsClass):
 
         The following commands are useful for debugging::
 
-            collect-garbage:   Invoke the garbage collector.
-            debug:             Start an external debugger in another process.
-            disable-gc-trace:  Disable tracing of the garbage collector.
-            dump-all-objects:  Print a summary of all existing Python objects.
-            dump-new-objects:  Print a summary of all newly-created Python objects.
-            enable-gc-trace:   Enable tracing of the garbage collector.
-            free-tree-widgets: Free all widgets used in Leo's outline pane.
-            show-focus:        Print information about the requested focus.
-            show-stats:        Print statistics about existing Python objects.
-            show-gc-summary:   Print a brief summary of all Python objects.
-            run-unit-tests:    Run unit tests in the presently selected tree.
-            verbose-dump-objects: Print a more verbose listing of all existing Python objects.
+            debug:               Start an external debugger in another process.
+            dump-node:           Dump c.p.v, including gnx, uA's, etc.
+            gc-collect-garbage:  Invoke the garbage collector.
+            gc-dump-all-objects: Print a summary of all Python objects.
+            gc-show-summary:     Print a brief summary of Python objects.
+            pdb:                 Start Python's debugger.
+            show-focus:          Print information about the requested focus.
+            show-stats:          Print statistics about existing Python objects.
 
-        Leo also has many debugging settings that enable and disable traces.
-        For details, see the node: @settings-->Debugging in leoSettings.leo.
+        Leo's --trace command-line arg can enable traces.
         '''
         #@-<< define s >>
         self.c.putHelpFor(s)
@@ -769,7 +765,7 @@ class HelpCommandsClass(BaseEditCommandsClass):
             d = k.bindingsDict
             k.clearState()
             result = []
-            for bi in d.get(event.stroke, []): # a list of BindingInfo objects.
+            for bi in d.get(event.stroke, []):  # a list of BindingInfo objects.
                 pane, cmd = bi.pane, bi.commandName
                 result.append(cmd if pane == 'all' else f"{pane}: {cmd}")
             s = f"{event.stroke.s}: {','.join(result)}"
@@ -1032,8 +1028,7 @@ class HelpCommandsClass(BaseEditCommandsClass):
             p.moveToFirstChildOf(parent,n)
             p.moveToLastChildOf(parent,n)
             p.moveToNthChildOf(parent,n)
-            p.moveToRoot(oldRoot=None)
-                # oldRoot **must** be the old root position if it exists.
+            p.moveToRoot()
 
         The following position methods move positions *themselves*: they change the
         node to which a position refers. They do *not* change outline structure in
@@ -1147,6 +1142,7 @@ class HelpCommandsClass(BaseEditCommandsClass):
         - [D] default settings.
         - [F] indicates the file being loaded,
         - [M] myLeoSettings.leo,
+        - [T] theme .leo file.
         """
         self.c.config.printSettings()
     #@+node:ekr.20190831025811.1: *3* help.showSettingsOutline (new: #852)
@@ -1159,7 +1155,7 @@ class HelpCommandsClass(BaseEditCommandsClass):
         
         See #852: https://github.com/leo-editor/leo-editor/issues/852
         """
-        
+
         self.c.config.createActivesSettingsOutline()
     #@+node:ekr.20150514063305.403: *3* pythonHelp
     @cmd('help-for-python')
@@ -1179,7 +1175,7 @@ class HelpCommandsClass(BaseEditCommandsClass):
             # Capture the output of Python's help command.
             old = sys.stdout
             try:
-                sys.stdout = stdout = g.FileLikeObject()
+                sys.stdout = stdout = io.StringIO()
                 help(str(s))
                 s2 = stdout.read()
             finally:

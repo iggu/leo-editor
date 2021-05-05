@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:mork.20041010095009: * @file xsltWithNodes.py
+#@+node:mork.20041010095009: * @file ../plugins/xsltWithNodes.py
 #@+<< docstring >>
 #@+node:ekr.20050226120104: ** << docstring >>
 """ Adds the Outline:XSLT menu containing XSLT-related commands.
@@ -24,21 +24,21 @@ Requires 4Suite 1.0a3 or better, downloadable from http://4Suite.org.
 
 #@+<< imports >>
 #@+node:mork.20041025113509: ** << imports >>
-import leo.core.leoGlobals as g
-
-from xml.dom import minidom
 import io
-StringIO = io.StringIO
-
+import weakref
+from xml.dom import minidom
+from leo.core import leoGlobals as g
+# Third-part imports
 try:
+    # pylint: disable=import-error
     import Ft
     from Ft.Xml import InputSource
     from Ft.Xml.Xslt.Processor import Processor
 except ImportError:
     g.cantImport("Ft",__name__)
     Ft = None
-
-import weakref
+# Abbreviation.
+StringIO = io.StringIO
 #@-<< imports >>
 #@+<<parser problems>>
 #@+node:mork.20041024091024: ** <<parser problems>>
@@ -48,13 +48,13 @@ import weakref
 # 1. Having space before the start of the document caused it not to work. I fixed
 #    this by striping the whitespace from the start and end of the data at xslt
 #    time.
-# 
+#
 # 2. having a @ right before a tag causes it to not process.
 #     It appears to be safe to follow this pattern:
 #     @ </end>
 #     but not:
 #     @</end>
-# 
+#
 #     I dont know at this point if its just illegal xml, or its a problem in the parser. ??
 #@-<<parser problems>>
 #@+<<future directions>>
@@ -69,13 +69,13 @@ __version__ = '0.6'
 #@@killcolor
 
 #@+at
-# 
+#
 # 0.1: Original code.
-# 
+#
 # 0.2 EKR: Converted to outline.
-# 
+#
 # 0.3: Added more XSLT boilerplate. Added Test with Minidom Discovered parser problem(?).
-# 
+#
 # 0.4 EKR:
 #     - Added init function.
 # 0.5 EKR:
@@ -298,9 +298,9 @@ def addMenu( tag, keywords ):
 #@+node:mork.20041025100716: ** examples/tests
 #@+at
 # table.leo contains the xml.  xslt is in the other node.
-# 
+#
 # To test this plugin, set the xslt node to be the xslt node.
-# 
+#
 # Process it against the table.leo node.
 #@@c
 
@@ -311,14 +311,14 @@ r'''
 #@+node:ekr.20140906065955.18786: *3* table.leo
 #@@path /boboo/leo-4.2-final/plugins
 #@+node:ekr.20140906065955.18787: *4* @@nosent table.py
+import csv
 import io
 StringIO = io.StringIO
+import Pmw
 import Tkinter as Tk
 import tktable as tktab
-import leo.core.leoGlobals as g
-import csv
 import weakref
-import Pmw
+from leo.core import leoGlobals as g
 
 class CSVVisualizer:
     arrays = []

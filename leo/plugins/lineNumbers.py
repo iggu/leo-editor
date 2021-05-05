@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20040419105219: * @file lineNumbers.py
+#@+node:ekr.20040419105219: * @file ../plugins/lineNumbers.py
 #@+<< docstring >>
 #@+node:ekr.20101112180523.5423: ** << docstring >>
 ''' Adds #line directives in perl and perlpod programs.
@@ -15,17 +15,16 @@ node name rather than the filename. Currently supports only perl and perlpod.
 
 #@+<< imports >>
 #@+node:ekr.20050105150253: ** << imports >>
-import leo.core.leoGlobals as g
-import leo.core.leoAtFile as leoAtFile
-
 import re
+from leo.core import leoGlobals as g
+from leo.core import leoAtFile
 #@-<< imports >>
 __version__ = "0.3"
 #@+<< version history >>
 #@+node:ekr.20050105150253.1: ** << version history >>
 #@@killcolor
 #@+at
-# 
+#
 # 0.1 Mark Ng
 #     - Original code
 # 0.2 EKR:

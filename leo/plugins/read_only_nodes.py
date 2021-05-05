@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.876: * @file read_only_nodes.py
+#@+node:edream.110203113231.876: * @file ../plugins/read_only_nodes.py
 #@+<< docstring >>
 #@+node:ekr.20050912052854: ** << docstring >>
 ''' Creates and updates @read-only nodes.
@@ -53,22 +53,21 @@ Davide Salomoni
 
 # EKR: This plugin does not appear to be ready for Python 3.
 
-# pylint: disable=not-callable
+# pylint: disable=not-callable,raise-missing-from
 
 #@+<< imports >>
 #@+node:ekr.20050311091110.1: ** << imports >>
-import leo.core.leoGlobals as g
-
-import io
-StringIO = io.StringIO
+from formatter import AbstractFormatter, DumbWriter
 import ftplib
+import html.parser as HTMLParser
+import io
 import os
 import sys
-
 import urllib.parse as urlparse
 from urllib.request import urlopen
-from formatter import AbstractFormatter, DumbWriter
-import html.parser as HTMLParser
+from leo.core import leoGlobals as g
+# Abbreviation.
+StringIO = io.StringIO
 #@-<< imports >>
 insertOnTime = None
 insertOffTime = None
@@ -281,7 +280,7 @@ def insert_read_only_node (c,p,name):
             title="Open",
             filetypes=[("All files", "*")],
         )
-        c.setHeadString(p,"@read-only %s" % name)
+        p.h = "@read-only %s" % name
         c.redraw()
     parse = urlparse(name)
     try:
@@ -295,9 +294,7 @@ def insert_read_only_node (c,p,name):
         new = f.read()
         f.close()
     except IOError: # as msg:
-        # g.es("error reading %s: %s" % (name, msg))
-        # g.es("...not found: " + name)
-        c.setBodyString(p,"") # Clear the body text.
+        p.b = "" # Clear the body text.
         return True # Mark the node as changed.
     else:
         ext = os.path.splitext(parse[2])[1]
@@ -307,7 +304,6 @@ def insert_read_only_node (c,p,name):
             fh = StringIO()
             fmt = AbstractFormatter(DumbWriter(fh))
             # the parser stores parsed data into fh (file-like handle)
-            ### pylint: disable=too-many-function-args
             parser = HTMLParser(fmt)
 
             # send the HTML text to the parser
@@ -319,7 +315,6 @@ def insert_read_only_node (c,p,name):
             fh.close()
 
             # finally, get the list of hyperlinks and append to the end of the text
-            ### pylint: disable=no-member
             hyperlinks = parser.anchorlist
             numlinks = len(hyperlinks)
             if numlinks > 0:
@@ -329,7 +324,7 @@ def insert_read_only_node (c,p,name):
                 new = new + ''.join(hyperlist)
             #@-<< convert HTML to text >>
         previous = p.b
-        c.setBodyString(p,new)
+        p.b = new
         changed = (g.toUnicode(new) != g.toUnicode(previous))
         if changed and previous != "":
             g.es("changed: %s" % name) # A real change.

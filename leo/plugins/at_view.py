@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ktenney.20041211072654.1: * @file at_view.py
+#@+node:ktenney.20041211072654.1: * @file ../plugins/at_view.py
 #@+<< docstring >>
 #@+node:ekr.20150411161126.1: ** << docstring >> (at_view.py)
 r''' Adds support for \@clip, \@view and \@strip nodes.
@@ -18,7 +18,7 @@ This plugin also accumulates the effect of all \@path nodes.
 '''
 #@-<< docstring >>
 __version__ = "0.9"
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 path           = g.import_module('path')
 win32clipboard = g.import_module('win32clipboard')
 
@@ -203,20 +203,17 @@ class View:
         @path is a path object for a directory
         @node is the node to work with
         """
-
-        c = self.c
-
         # delete all nodes before creating, to avoid duplicates
         while node.firstChild():
             node.firstChild().doDelete(node)
 
         for file in path.files():
             child = node.insertAsLastChild()
-            c.setHeadString(child,'@view %s' % file.name)
+            child.h = '@view %s' % file.name
 
         for file in path.dirs():
             child = node.insertAsLastChild()
-            c.setHeadString(child,'@view %s' % file.name)
+            child.h = '@view %s' % file.name
     #@-others
 #@-others
 #@@language python

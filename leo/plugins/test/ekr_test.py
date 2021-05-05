@@ -1,6 +1,6 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20080214092357: * @file test/ekr_test.py
-import leo.core.leoGlobals as g
+#@+node:ekr.20080214092357: * @file ../plugins/test/ekr_test.py
+from leo.core import leoGlobals as g
 
 def init():
     '''Return True if the plugin has loaded successfully.'''

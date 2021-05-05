@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20140725190808.18066: * @file importers/markdown.py
+#@+node:ekr.20140725190808.18066: * @file ../plugins/importers/markdown.py
 '''The @auto importer for the markdown language.'''
 import re
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 #@+others
 #@+node:ekr.20161124192050.2: ** class Markdown_Importer

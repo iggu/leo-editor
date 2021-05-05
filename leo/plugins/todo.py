@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20090119215428.2: * @file todo.py
+#@+node:tbrown.20090119215428.2: * @file ../plugins/todo.py
 #@+<< docstring >>
 #@+node:tbrown.20090119215428.3: ** << docstring >> (todo.py)
 ''' Provides to-do list and simple task management.
@@ -65,12 +65,11 @@ todo_calendar_cols
 
 #@+<< imports >>
 #@+node:tbrown.20090119215428.4: ** << imports >>
-import leo.core.leoGlobals as g
-
 import os
 import re
 import datetime
 import time
+from leo.core import leoGlobals as g
 
 NO_TIME = datetime.date(3000, 1, 1)
 
@@ -105,7 +104,7 @@ def popup_entry(c,p,menu):
 if g.app.gui.guiName() == "qt":
     class todoQtUI(QtWidgets.QWidget):
         #@+others
-        #@+node:ekr.20111118104929.10204: *3* ctor
+        #@+node:ekr.20111118104929.10204: *3* ctor (todo.py)
         def __init__(self, owner, logTab=True):
 
             self.owner = owner
@@ -335,7 +334,7 @@ class todoController:
     _date_fields = ['created', 'date', 'duedate', 'nextworkdate', 'prisetdate']
     _time_fields = ['duetime', 'nextworktime', 'time']
     _datetime_fields = _date_fields + _time_fields
-    #@+node:tbrown.20090119215428.11: *3* __init__ & helper (todoController)
+    #@+node:tbrown.20090119215428.11: *3* __init__ & helpers (todoController)
     def __init__ (self,c):
         '''ctor for todoController class.'''
         self.c = c
@@ -363,6 +362,8 @@ class todoController:
         self.loadAllIcons()
         # correct spinTime suffix:
         self.ui.UI.spinTime.setSuffix(" " + self.time_name)
+        # #1591: patch labels if necessary.
+        self.patch_1591()
     #@+node:tbrown.20090119215428.12: *4* reloadSettings (todoController)
     def reloadSettings(self):
         c = self.c
@@ -371,6 +372,46 @@ class todoController:
         self.icon_location = c.config.getString('todo-icon-location') or 'beforeHeadline'
         self.prog_location = c.config.getString('todo-prog-location') or 'beforeHeadline'
         self.icon_order = c.config.getString('todo-icon-order') or 'pri-first'
+    #@+node:ekr.20201111052557.1: *4* todo_c.patch_1591
+    def patch_1591(self):
+        ''' behavior change in PyQt versions greater than 5.12 --
+            workaround is to manually set the button icons /and/ sizes
+        '''
+
+        size = QtCore.QSize(16,16)
+        ui = self.ui.UI
+
+        for i in range(10):
+            button = getattr(ui, f"butPri{i}")
+            path = g.os_path_finalize_join(g.app.loadDir, '..', 'Icons', "cleo", f"pri{i}.png")
+            button.setIcon(QtGui.QIcon(path))
+            button.setIconSize(size)
+            button.setToolTip(f"Priority {i}")
+
+        table = (
+                # Alternate priorities...
+                ('butPriChk', 'chkblk.png', 'Check Mark'),
+                ('butPriToDo', 'chkboxblk.png', 'Box Mark'),
+                ('butPriX', 'xblk.png', 'Black X'),
+                ('butPriXgry', 'xgry.png', 'Gray X'),
+                ('butPriBang', 'bngblk.png', 'Exclamation Point'),
+                ('butPriQuery', 'qryblk.png', 'Question Mark'),
+                ('butPriBullet', 'bullet.png', 'Bullet'),
+                ('butPriClr', 'edit-clear.png', 'Clear Priority'),
+                # Other labels...
+                ('butDetails', 'document-save.png', 'Toggle Details'),
+                ('butNext', 'down.png', 'Next Node'),
+                ('butNextTodo', 'bottom.png', 'Next To Do'),
+                ('butClrTime', 'edit-clear.png', 'Clear Required Time'),
+                ('butClrProg', 'edit-clear.png', 'Clear Progress')
+            )
+
+        for attr, icon, tooltip in table:
+            button = getattr(ui, attr)
+            path = g.os_path_finalize_join(g.app.loadDir, '..', 'Icons', "cleo", icon)
+            button.setIcon(QtGui.QIcon(path))
+            button.setIconSize(size)
+            button.setToolTip(tooltip)
     #@+node:tbrown.20090522142657.7894: *3* __del__
     def __del__(self):
         for i in self.handlers:
@@ -734,14 +775,14 @@ class todoController:
     @redrawer
     def show_times(self, p=None, show=False):
 
-        def rnd(x): return re.sub('.0$', '', '%.1f' % x)
+        def rnd(x):
+            return re.sub('.0$', '', '%.1f' % x)
 
         if p is None:
             p = self.c.currentPosition()
 
         for nd in p.self_and_subtree():
-            self.c.setHeadString(nd, re.sub(' <[^>]*>$', '', nd.headString()))
-
+            nd.h = re.sub(' <[^>]*>$', '', nd.headString())
             tr = self.getat(nd.v, 'time_req')
             pr = self.getat(nd.v, 'progress')
             try: pr = float(pr)
@@ -759,7 +800,7 @@ class todoController:
                 ans += '>'
 
                 if show:
-                    self.c.setHeadString(nd, nd.headString()+ans)
+                    nd.h = nd.h+ans
                 self.loadIcons(nd)  # update progress icon
 
     #@+node:tbrown.20090119215428.35: *4* recalc_time
@@ -1181,14 +1222,11 @@ class todoController:
         self.ui.setNextWorkTime(self.getat(v, 'nextworktime'))
         # pylint: disable=maybe-no-member
         created = self.getat(v,'created')
-        if created and \
-           isinstance(created, datetime.datetime) and \
-           created.year >= 1900:  # .strftime doesn't work if not, has happened
-            got_created = True
+        if created and isinstance(created, datetime.datetime) and created.year >= 1900:
             self.ui.UI.createdTxt.setText(created.strftime("%d %b %y"))
             self.ui.UI.createdTxt.setToolTip(created.strftime("Created %H:%M %d %b %Y"))
         else:
-            got_created = False
+            # .strftime doesn't work here! This has has happened...
             try:
                 gdate = self.c.p.v.gnx.split('.')[1][:12]
                 created = datetime.datetime.strptime(gdate, '%Y%m%d%H%M')
@@ -1197,20 +1235,20 @@ class todoController:
             except Exception:
                 created = None
             if created:
-                self.ui.UI.createdTxt.setText(created.strftime("%d %b %y?"))
+                self.ui.UI.createdTxt.setText(created.strftime("Created %d %b %Y"))
                 self.ui.UI.createdTxt.setToolTip(created.strftime("gnx created %H:%M %d %b %Y"))
             else:
                 self.ui.UI.createdTxt.setText("")
 
+        # Update the label.
+        h = self.c and self.c.p and self.c.p.h
         due = self.getat(v, 'duedate')
         ago = (datetime.date.today()-created.date()).days if created else 0
-        txt = "%s\nCreated%s %d days ago, due in %s" % (
-            self.c and self.c.p and self.c.p.h or '',
-            '' if got_created else '?',
-            ago,
-            (due - datetime.date.today()).days if due else 'N/A',
-        )
-
+        if due:
+            days = (due - datetime.date.today()).days
+            txt = f"{h}\nCreated {ago} days ago, due in {days}"
+        else:
+            txt = f"{h}\nCreated {ago} days ago"
         self.ui.UI.txtDetails.setText(txt)
         prisetdate = self.getat(v, 'prisetdate')
         self.ui.UI.txtDetails.setToolTip("Priority set %s" %
@@ -1281,10 +1319,8 @@ def todo_dec_pri(event, direction=1):
         pri = ordered[(ordered.index(pri) + direction) % len(ordered)]
 
     pri = c.cleo.setPri(pri)
-
     c.redraw()
-
-    # c.executeMinibufferCommand("todo-inc-pri")
+    # c.k.simulateCommand("todo-inc-pri")
 
 @g.command('todo-inc-pri')
 def todo_inc_pri(event):

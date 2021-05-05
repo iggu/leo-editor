@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import leo.core.leoBridge as leoBridge
 import os
 import sys
-# import pdb ; pdb.set_trace()
 import unittest
+from leo.core import leoBridge
 
 load_dir = os.path.abspath(os.path.dirname(__file__))
 test_dir = os.path.join(load_dir, 'leo', 'test')
@@ -43,13 +42,11 @@ try:
     if not found:
         print('No unit tests')
         sys.exit(1)
-    runner = unittest.TextTestRunner(
-        failfast=True, verbosity=1)
+    runner = unittest.TextTestRunner(failfast=True, verbosity=1)
     try:
         result = runner.run(suite)
         if result.errors or result.failures:
-            print('errors: %s, failures: %s' % (
-                len(result.errors), len(result.failures)))
+            print(f"errors: {len(result.errors)}, failures: {len(result.failures)}")
             sys.exit(1)
         else:
             print('Travis unit tests all passed.')

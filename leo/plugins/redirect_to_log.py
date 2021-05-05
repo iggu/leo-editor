@@ -1,11 +1,11 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.924: * @file redirect_to_log.py
+#@+node:edream.110203113231.924: * @file ../plugins/redirect_to_log.py
 """Sends all output to the log pane."""
 
 #@@language python
 #@@tabwidth -4
 
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 def init():
     '''Return True if the plugin has loaded successfully.'''

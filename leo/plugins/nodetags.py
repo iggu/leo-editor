@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:peckj.20140804114520.9427: * @file nodetags.py
+#@+node:peckj.20140804114520.9427: * @file ../plugins/nodetags.py
 #@+<< docstring >>
 #@+node:peckj.20140804103733.9242: ** << docstring >>
 '''Provides node tagging capabilities to Leo
@@ -96,9 +96,9 @@ whitespace (calling .strip()).
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:peckj.20140804103733.9241: ** << imports >>
-import leo.core.leoGlobals as g
-import leo.core.leoNodes as leoNodes
 import re
+from leo.core import leoGlobals as g
+from leo.core import leoNodes
 from leo.core.leoQt import QtWidgets, QtCore
 #@-<< imports >>
 #@+others
@@ -121,6 +121,18 @@ def onCreate (tag, keys):
     c = keys.get('c')
     if c:
         c.theTagController = TagController(c)
+#@+node:ekr.20201030095215.1: ** show-all-tags
+@g.command('show-all-tags')
+def show_all_tags(event):
+    """Simulate a control-click at the cursor."""
+    c = event.get('c')
+    if not c:
+        return
+    tc = c.theTagController
+    if tc:
+        tc.show_all_tags()
+    else:
+        print('nodetags plugin not enabled')
 #@+node:peckj.20140804103733.9246: ** class TagController
 class TagController:
     
@@ -151,6 +163,27 @@ class TagController:
     def get_all_tags(self):
         ''' return a list of all tags in the outline '''
         return self.taglist
+    #@+node:ekr.20201030095446.1: *4* tag_c.show_all_tags
+    def show_all_tags(self):
+        """Show all tags, organized by node."""
+        c, tc = self.c, self
+        d = {}
+        for p in c.all_unique_positions():
+            u = p.v.u
+            tags = set(u.get(tc.TAG_LIST_KEY, set([])))
+            for tag in tags:
+                aList = d.get(tag, [])
+                aList.append(p.h)
+                d [tag] = aList
+        # Print all tags.
+        if d:
+            for key in sorted(d):
+                aList = d.get(key)
+                for h in sorted(aList):
+                    print(f"{key:>8} {h}")
+        else:
+            print(f"no tags in {c.shortFileName()}")
+     
     #@+node:peckj.20140804103733.9267: *4* tag_c.update_taglist
     def update_taglist(self, tag):
         ''' ensures the outline's taglist is consistent with the state of the nodes in the outline '''
@@ -444,7 +477,6 @@ if QtWidgets:
                 self.tc.initialize_taglist()
                 self.update_all()
         #@+node:tbnorth.20170313095036.1: *5* tag_w.sf.find_setting
-        #Plugins:2-->User interface:21-->@file settings_finder.py:11-->class SettingsFinder:2-->sf.find_setting:5
         #@-others
 #@-others
 #@@language python

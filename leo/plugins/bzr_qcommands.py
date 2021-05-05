@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20101110084839.5682: * @file bzr_qcommands.py
+#@+node:ekr.20101110084839.5682: * @file ../plugins/bzr_qcommands.py
 """ Adds a context menu to each node containing all the commands in the bzr Qt
 interface. Bzr is invoked based on the path of the current node.
 
@@ -8,8 +8,7 @@ interface. Bzr is invoked based on the path of the current node.
 """
 # by TNB
 import subprocess
-# from leo.core.leoQt import QtCore
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 #@+others
 #@+node:tbrown.20101101135104.15789: ** init
 def init():

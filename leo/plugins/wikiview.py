@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20141101114322.1: * @file wikiview.py
+#@+node:tbrown.20141101114322.1: * @file ../plugins/wikiview.py
 #@+<< docstring >>
 #@+node:tbrown.20141101114322.2: ** << docstring >>
 r"""
@@ -47,10 +47,8 @@ __version__ = "0.1"
 #@+<< imports >>
 #@+node:tbrown.20141101114322.3: ** << imports >>
 import re
-
-import leo.core.leoGlobals as g
-
-from leo.core.leoQt import QtGui # ,QtWidgets
+from leo.core import leoGlobals as g
+from leo.core.leoQt import QtGui
 #@-<< imports >>
 
 #@+others

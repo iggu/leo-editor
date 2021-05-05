@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20160505094722.1: * @file importers/coffeescript.py
+#@+node:ekr.20160505094722.1: * @file ../plugins/importers/coffeescript.py
 '''The @auto importer for coffeescript.'''
 import re
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 Target = linescanner.Target
 #@+others
@@ -198,7 +198,7 @@ class CS_Importer(Importer):
                 body_lines.append(s)
                 trailing_lines = []
         # Clear trailing lines if they are all blank.
-        if all([z.isspace() for z in trailing_lines]):
+        if all(z.isspace() for z in trailing_lines):
             trailing_lines = []
         self.set_lines(p, body_lines)
         return trailing_lines

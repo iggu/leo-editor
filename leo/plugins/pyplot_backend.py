@@ -1,13 +1,13 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20160928073518.1: * @file pyplot_backend.py
+#@+node:ekr.20160928073518.1: * @file ../plugins/pyplot_backend.py
 '''
     A helper for the viewrendered plugin.
     This is *NOT* a real plugin.
 '''
 #@+<< pyplot_backend imports >>
 #@+node:ekr.20160928074801.1: ** << pyplot_backend imports >>
-import leo.core.leoGlobals as g
-import leo.plugins.viewrendered as vr
+from leo.core import leoGlobals as g
+from leo.plugins import viewrendered as vr
 from leo.core.leoQt import isQt5, QtCore, QtWidgets
 try:
     if isQt5:

@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20110125222411.10536: * @file leomail.py
+#@+node:ville.20110125222411.10536: * @file ../plugins/leomail.py
 #@+<< docstring >>
 #@+node:ekr.20170228181049.1: ** << docstring >>
 '''
@@ -16,9 +16,9 @@ Replies to the original messages become children of that message.
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:ville.20110125222411.10539: ** << imports >>
-import leo.core.leoGlobals as g
-import mailbox
 from html.parser import HTMLParser
+import mailbox
+from leo.core import leoGlobals as g
 #@-<< imports >>
 
 #@+others
@@ -57,7 +57,6 @@ class MLStripper(HTMLParser):
 
     def __init__(self):
         super().__init__()
-            # Can't use plain super in Python 2.
         self.reset()
         self.fed = []
 

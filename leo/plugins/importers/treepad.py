@@ -1,8 +1,8 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20180201203240.2: * @file importers/treepad.py
+#@+node:ekr.20180201203240.2: * @file ../plugins/importers/treepad.py
 '''The @auto importer for the TreePad file format.'''
-import leo.core.leoGlobals as g
 import re
+from leo.core import leoGlobals as g
 #@+others
 #@+node:ekr.20180201203240.3: ** class TreePad_Scanner
 class TreePad_Scanner():
@@ -97,10 +97,13 @@ class TreePad_Scanner():
         if ok:
             for p in parent.self_and_subtree():
                 p.clearDirty()
-            c.setChanged(changed)
+            if changed:
+                c.setChanged()
+            else:
+                c.clearChanged()
         else:
             parent.setDirty() # setDescendentsDirty=False)
-            c.setChanged(True)
+            c.setChanged()
         return ok
     #@-others
 #@-others

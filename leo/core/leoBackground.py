@@ -3,11 +3,9 @@
 #@+node:ekr.20161026193447.1: * @file leoBackground.py
 #@@first
 """Handling background processes"""
-
-import leo.core.leoGlobals as g
 import re
 import subprocess
-
+from leo.core import leoGlobals as g
 #@+others
 #@+node:ekr.20161026193609.1: ** class BackgroundProcessManager
 class BackgroundProcessManager:
@@ -100,10 +98,10 @@ class BackgroundProcessManager:
             if self.pid.poll() is None:
                 pass
             else:
-                self.end() # End this process.
-                self.start_next() # Start the next process.
+                self.end()  # End this process.
+                self.start_next()  # Start the next process.
         elif self.process_queue:
-            self.start_next() # Start the next process.
+            self.start_next()  # Start the next process.
     #@+node:ekr.20161028063557.1: *4* bpm.end
     def end(self):
         """End the present process."""
@@ -153,25 +151,31 @@ class BackgroundProcessManager:
         """
         Put a string to the originating log.
         This is not what g.es_print does!
+        
+        Create clickable links s matches self.data.link_pattern.
+        See p.get_UNL.
+        
+        New in Leo 6.4: get the filename from link_pattern if link_root is None.
         """
-        # Warning: don't use g.es or g.es_print here!
-        data = self.data
-        s = s and s.rstrip()
-        if not s or not data:
-            return
         #
-        # Make sure c still exists.
+        # Warning: don't use g.es or g.es_print here!
+        s = s and s.rstrip()
+        if not s:
+            return
+        data = self.data
+        if not data:
+            return
         c = data.c
         if not c or not c.exists:
             return
         log = c.frame.log
+        link_pattern, link_root = data.link_pattern, data.link_root
         #
         # Always print the message.
         print(s)
         #
         # Put the plain message if the link is not valid.
-        link_pattern, link_root = data.link_pattern, data.link_root
-        if not (link_pattern and link_root):
+        if not link_pattern:
             log.put(s + '\n')
             return
         try:
@@ -181,12 +185,32 @@ class BackgroundProcessManager:
         if not m:
             log.put(s + '\n')
             return
-        try:
-            line = int(m.group(1))
-        except Exception:
-            # g.es_exception()
-            log.put(s + '\n')
-            return
+        #
+        # Find the line number, and possibly the filename.
+        if link_root:
+            # m.group(1) should be the line number.
+            try:
+                line = int(m.group(1))
+            except Exception:
+                # g.es_exception()
+                log.put(s + '\n')
+                return
+        else:
+            # m.group(1) should be the path to the file.
+            path = m.group(1)
+            # m.group(2) should be the line number.
+            try:
+                line = int(m.group(2))
+            except Exception:
+                # g.es_exception()
+                log.put(s + '\n')
+                return
+            # Look for the @<file> node.
+            link_root = g.findNodeByPath(c, path)
+            if not link_root:
+                g.trace(f"no @<file> node found for : {path}")
+                log.put(s + '\n')
+                return
         #
         # Put a clickable link.
         unl = link_root.get_UNL(with_proto=True, with_count=True)
@@ -208,7 +232,7 @@ class BackgroundProcessManager:
 
             def callback(data=data, kind=kind):
                 """This is called when a process ends."""
-                self.put_log('%s: %s\n' % (kind, g.shortFileName(data.fn)))
+                self.put_log(f'{kind}: {g.shortFileName(data.fn)}\n')
                 self.pid = subprocess.Popen(
                     command,
                     shell=shell,
@@ -216,6 +240,7 @@ class BackgroundProcessManager:
                     stdout=subprocess.PIPE,
                     universal_newlines=True,
                 )
+
             data.callback = callback
             self.process_queue.append(data)
         else:
@@ -223,7 +248,7 @@ class BackgroundProcessManager:
             self.data = data
             # g.trace('\nSTART', link_root.h)
             self.kind = kind
-            self.put_log('%s: %s\n' % (kind, g.shortFileName(fn)))
+            self.put_log(f'{kind}: {g.shortFileName(fn)}\n')
             self.pid = subprocess.Popen(
                 command,
                 shell=shell,
@@ -236,5 +261,4 @@ class BackgroundProcessManager:
 #@@language python
 #@@tabwidth -4
 #@@pagewidth 60
-
 #@-leo

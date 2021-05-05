@@ -4,20 +4,18 @@
 #@@first
 #@+<< imports >>
 #@+node:ekr.20040712045933: ** << imports >> (leoCommands)
-import leo.core.leoGlobals as g
-import leo.core.leoNodes as leoNodes
-    # The leoCommands ctor now does most leo.core.leo* imports.
-    # This breaks circular dependencies.
 import itertools
 import os
 import re
 import sys
+import tabnanny  # for Check Python command # Does not exist in jython
 import time
-import tokenize # for c.checkAllPythonCode
-try:
-    import tabnanny # for Check Python command # Does not exist in jython
-except ImportError:
-    tabnanny = None
+import tokenize  # for c.checkAllPythonCode
+from typing import List
+from leo.core import leoGlobals as g
+from leo.core import leoNodes
+    # The leoCommands ctor now does most leo.core.leo* imports,
+    # thereby breaking circular dependencies.
 #@-<< imports >>
 
 def cmd(name):
@@ -25,7 +23,7 @@ def cmd(name):
     return g.new_cmd_decorator(name, ['c',])
 
 #@+others
-#@+node:ekr.20160514120615.1: ** class Commands (object)
+#@+node:ekr.20160514120615.1: ** class Commands
 class Commands:
     """
     A per-outline class that implements most of Leo's commands. The
@@ -57,7 +55,7 @@ class Commands:
         self._currentPosition = None
         self._topPosition = None
         self.frame = None
-        self.parentFrame = parentFrame # New in Leo 6.0.
+        self.parentFrame = parentFrame  # New in Leo 6.0.
         self.gui = gui or g.app.gui
         self.ipythonController = None
             # Set only by the ipython plugin.
@@ -103,8 +101,6 @@ class Commands:
             # True: disable path changed message in at.WriteAllHelper.
         self.inCommand = False
             # Interlocks to prevent premature closing of a window.
-        self.isZipped = False
-            # Set by g.openWithFileName.
         self.outlineToNowebDefaultFileName = "noweb.nw"
             # For Outline To Noweb dialog.
         # For tangle/untangle
@@ -117,7 +113,7 @@ class Commands:
             # Stack of nodes to be root of drawn tree.
             # Affects drawing routines and find commands.
         # For outline navigation.
-        self.navPrefix = '' # Must always be a string.
+        self.navPrefix = ''  # Must always be a string.
         self.navTime = None
 
         self.sqlite_connection = None
@@ -190,7 +186,7 @@ class Commands:
         self.fixedWindowPosition = []
         self.forceExecuteEntireBody = False
         self.focus_border_color = 'white'
-        self.focus_border_width = 1 # pixels
+        self.focus_border_width = 1  # pixels
         self.outlineHasInitialFocus = False
         self.page_width = 132
         self.sparse_find = True
@@ -210,7 +206,8 @@ class Commands:
         # These ivars are set later by leoEditCommands.createEditCommanders
         self.abbrevCommands = None
         self.editCommands = None
-        self.db = {} # May be set to a PickleShare instance later.
+        self.db = {}  # May be set to a PickleShare instance later.
+        self.bufferCommands = None
         self.chapterCommands = None
         self.controlCommands = None
         self.convertCommands = None
@@ -256,62 +253,64 @@ class Commands:
         self.frame = gui.createLeoFrame(c, title)
         assert self.frame
         assert self.frame.c == c
-        import leo.core.leoHistory as leoHistory
+        from leo.core import leoHistory
         self.nodeHistory = leoHistory.NodeHistory(c)
         self.initConfigSettings()
         c.setWindowPosition() # Do this after initing settings.
         # Break circular import dependencies by doing imports here.
         # These imports take almost 3/4 sec in the leoBridge.
-        import leo.core.leoAtFile as leoAtFile
-        import leo.core.leoBeautify as leoBeautify # So decorators are executed.
-        assert leoBeautify # for pyflakes.
-        import leo.core.leoChapters as leoChapters
+        from leo.core import leoAtFile
+        from leo.core import leoBeautify  # So decorators are executed.
+        assert leoBeautify  # for pyflakes.
+        from leo.core import leoChapters
+        # from leo.core import leoTest2  # So decorators are executed.
+        # assert leoTest2  # For pyflakes.
         # User commands...
-        import leo.commands.abbrevCommands as abbrevCommands
-        import leo.commands.checkerCommands as checkerCommands
+        from leo.commands import abbrevCommands
+        from leo.commands import bufferCommands
+        from leo.commands import checkerCommands
         assert checkerCommands
             # To suppress a pyflakes warning.
             # The import *is* required to define commands.
-        import leo.commands.controlCommands as controlCommands
-        import leo.commands.convertCommands as convertCommands
-        import leo.commands.debugCommands as debugCommands
-        import leo.commands.editCommands as editCommands
-        import leo.commands.editFileCommands as editFileCommands
-        import leo.commands.gotoCommands as gotoCommands
-        import leo.commands.helpCommands as helpCommands
-        import leo.commands.keyCommands as keyCommands
-        import leo.commands.killBufferCommands as killBufferCommands
-        import leo.commands.rectangleCommands as rectangleCommands
-        import leo.commands.spellCommands as spellCommands
+        from leo.commands import controlCommands
+        from leo.commands import convertCommands
+        from leo.commands import debugCommands
+        from leo.commands import editCommands
+        from leo.commands import editFileCommands
+        from leo.commands import gotoCommands
+        from leo.commands import helpCommands
+        from leo.commands import keyCommands
+        from leo.commands import killBufferCommands
+        from leo.commands import rectangleCommands
+        from leo.commands import spellCommands
         # Import files to execute @g.commander_command decorators
-        import leo.core.leoCompare as leoCompare
+        from leo.core import leoCompare
         assert leoCompare
-        import leo.core.leoDebugger as leoDebugger
+        from leo.core import leoDebugger
         assert leoDebugger
-        import leo.commands.commanderEditCommands as commanderEditCommands
+        from leo.commands import commanderEditCommands
         assert commanderEditCommands
-        import leo.commands.commanderFileCommands as commanderFileCommands
+        from leo.commands import commanderFileCommands
         assert commanderFileCommands
-        import leo.commands.commanderFindCommands as commanderFindCommands
+        from leo.commands import commanderFindCommands
         assert commanderFindCommands
-        import leo.commands.commanderHelpCommands as commanderHelpCommands
+        from leo.commands import commanderHelpCommands
         assert commanderHelpCommands
-        import leo.commands.commanderOutlineCommands as commanderOutlineCommands
+        from leo.commands import commanderOutlineCommands
         assert commanderOutlineCommands
         # Other subcommanders.
-        import leo.core.leoFind as leoFind # Leo 4.11.1
-        import leo.core.leoKeys as leoKeys
-        import leo.core.leoFileCommands as leoFileCommands
-        import leo.core.leoImport as leoImport
-        import leo.core.leoMarkup as leoMarkup
-        import leo.core.leoPersistence as leoPersistence
-        import leo.core.leoPrinting as leoPrinting
-        import leo.core.leoRst as leoRst
-        import leo.core.leoShadow as leoShadow
-        import leo.core.leoTangle as leoTangle
-        import leo.core.leoTest as leoTest
-        import leo.core.leoUndo as leoUndo
-        import leo.core.leoVim as leoVim
+        from leo.core import leoFind # Leo 4.11.1
+        from leo.core import leoKeys
+        from leo.core import leoFileCommands
+        from leo.core import leoImport
+        from leo.core import leoMarkup
+        from leo.core import leoPersistence
+        from leo.core import leoPrinting
+        from leo.core import leoRst
+        from leo.core import leoShadow
+        from leo.core import leoTest
+        from leo.core import leoUndo
+        from leo.core import leoVim
         # Define the subcommanders.
         self.keyHandler = self.k    = leoKeys.KeyHandlerClass(c)
         self.chapterController      = leoChapters.ChapterController(c)
@@ -324,11 +323,11 @@ class Commands:
         self.persistenceController  = leoPersistence.PersistenceDataController(c)
         self.printingController     = leoPrinting.PrintingController(c)
         self.rstCommands            = leoRst.RstCommands(c)
-        self.tangleCommands         = leoTangle.TangleCommands(c)
         self.testManager            = leoTest.TestManager(c)
         self.vimCommands            = leoVim.VimCommands(c)
         # User commands
         self.abbrevCommands     = abbrevCommands.AbbrevCommandsClass(c)
+        self.bufferCommands     = bufferCommands.BufferCommandsClass(c)
         self.controlCommands    = controlCommands.ControlCommandsClass(c)
         self.convertCommands    = convertCommands.ConvertCommandsClass(c)
         self.debugCommands      = debugCommands.DebugCommandsClass(c)
@@ -345,6 +344,7 @@ class Commands:
         self.subCommanders = [
             self.abbrevCommands,
             self.atFileCommands,
+            self.bufferCommands,
             self.chapterController,
             self.controlCommands,
             self.convertCommands,
@@ -365,7 +365,6 @@ class Commands:
             self.rstCommands,
             self.shadowController,
             self.spellCommands,
-            self.tangleCommands,
             self.testManager,
             self.vimCommands,
             self.undoer,
@@ -374,7 +373,7 @@ class Commands:
         c.configurables = c.subCommanders[:]
             # A list of other classes that have a reloadSettings method
         c.db = g.app.commander_cacher.get_wrapper(c)
-        import leo.plugins.free_layout as free_layout
+        from leo.plugins import free_layout
         self.free_layout = free_layout.FreeLayoutController(c)
         if hasattr(g.app.gui, 'styleSheetManagerClass'):
             self.styleSheetManager = g.app.gui.styleSheetManagerClass(c)
@@ -385,7 +384,7 @@ class Commands:
     def initSettings(self, previousSettings):
         """Init the settings *before* initing the objects."""
         c = self
-        import leo.core.leoConfig as leoConfig
+        from leo.core import leoConfig
         c.config = leoConfig.LocalConfigManager(c, previousSettings)
         g.app.config.setIvarsFromSettings(c)
     #@+node:ekr.20031218072017.2814: *4* c.__repr__ & __str__
@@ -439,8 +438,7 @@ class Commands:
         print('Commands...')
         for key in sorted(c.commandsDict):
             command = c.commandsDict.get(key)
-            print('%30s = %s' % (
-                key, command.__name__ if command else '<None>'))
+            print(f"{key:30} = {command.__name__ if command else '<None>'}")
         print('')
     #@+node:ekr.20041130173135: *4* c.hash
     # This is a bad idea.
@@ -448,7 +446,7 @@ class Commands:
     def hash(self):
         c = self
         if c.mFileName:
-            return g.os_path_finalize(c.mFileName).lower() # #1341.
+            return g.os_path_finalize(c.mFileName).lower()  # #1341.
         return 0
     #@+node:ekr.20110509064011.14563: *4* c.idle_focus_helper & helpers
     idle_focus_count = 0
@@ -456,8 +454,8 @@ class Commands:
     def idle_focus_helper(self, tag, keys):
         """An idle-tme handler that ensures that focus is *somewhere*."""
         trace = 'focus' in g.app.debug
-        trace_inactive_focus = False # Too disruptive for --trace-focus
-        trace_in_dialog = False # Not useful enough for --trace-focus
+        trace_inactive_focus = False  # Too disruptive for --trace-focus
+        trace_in_dialog = False  # Not useful enough for --trace-focus
         c = self
         assert tag == 'idle'
         if g.app.unitTesting:
@@ -469,7 +467,7 @@ class Commands:
         if c.in_qt_dialog:
             if trace and trace_in_dialog: g.trace('in_qt_dialog')
             return
-        w = g.app.gui.get_focus(at_idle = True)
+        w = g.app.gui.get_focus(at_idle=True)
         if g.app.gui.active:
             # Always call trace_idle_focus.
             self.trace_idle_focus(w)
@@ -496,7 +494,7 @@ class Commands:
         #       on headline and Alt+Tab, Alt+Tab
         #
         # #276: Focus lost...in Nav text input
-        import leo.plugins.qt_frame as qt_frame
+        from leo.plugins import qt_frame
         return isinstance(w, qt_frame.QtTabBarWrapper)
     #@+node:ekr.20150403063658.1: *5* c.trace_idle_focus
     last_unusual_focus = None
@@ -505,14 +503,11 @@ class Commands:
     def trace_idle_focus(self, w):
         """Trace the focus for w, minimizing chatter."""
         from leo.core.leoQt import QtWidgets
-        import leo.plugins.qt_frame as qt_frame
+        from leo.plugins import qt_frame
         trace = 'focus' in g.app.debug
         trace_known = False
         c = self
-        table = (
-            QtWidgets.QWidget,
-            qt_frame.LeoQTreeWidget,
-        )
+        table = (QtWidgets.QWidget, qt_frame.LeoQTreeWidget,)
         count = c.idle_focus_count
         if w:
             w_class = w and w.__class__.__name__
@@ -529,7 +524,7 @@ class Commands:
                     g.trace(f"{count} unknown focus: {w_class}")
         else:
             if trace:
-                g.trace('%3s no focus' % (count))
+                g.trace(f"{count:3} no focus")
     #@+node:ekr.20081005065934.1: *4* c.initAfterLoad
     def initAfterLoad(self):
         """Provide an offical hook for late inits of the commander."""
@@ -548,15 +543,13 @@ class Commands:
         c.contractVisitedNodes = getBool('contractVisitedNodes')
         c.fixedWindowPositionData = getData('fixedWindowPosition')
         c.focus_border_color = getColor('focus-border-color') or 'red'
-        c.focus_border_command_state_color = \
-            getColor('focus-border-command-state-color') or 'blue'
-        c.focus_border_overwrite_state_color = \
-            getColor('focus-border-overwrite-state-color') or 'green'
-        c.focus_border_width = getInt('focus-border-width') or 1 # pixels
-        c.forceExecuteEntireBody = \
-            getBool('force-execute-entire-body', default=False)
-        c.make_node_conflicts_node = \
-            getBool('make-node-conflicts-node', default=True)
+        c.focus_border_command_state_color = getColor(
+            'focus-border-command-state-color') or 'blue'
+        c.focus_border_overwrite_state_color = getColor(
+            'focus-border-overwrite-state-color') or 'green'
+        c.focus_border_width = getInt('focus-border-width') or 1  # pixels
+        c.forceExecuteEntireBody = getBool('force-execute-entire-body', default=False)
+        c.make_node_conflicts_node = getBool('make-node-conflicts-node', default=True)
         c.outlineHasInitialFocus = getBool('outline-pane-has-initial-focus')
         c.page_width = getInt('page-width') or 132
         # c.putBitsFlag = getBool('put-expansion-bits-in-leo-files', default=True)
@@ -581,7 +574,7 @@ class Commands:
                 g.error('bad @data fixedWindowPosition',
                     repr(self.fixedWindowPosition))
         else:
-            c.windowPosition = 500, 700, 50, 50 # width,height,left,top.
+            c.windowPosition = 500, 700, 50, 50  # width,height,left,top.
     #@+node:ekr.20171123135625.4: *3* @cmd c.executeScript & public helpers
     @cmd('execute-script')
     def executeScript(self, event=None,
@@ -617,20 +610,20 @@ class Commands:
             # Only for error reporting below.
         # #532: check all scripts with pyflakes.
         if run_pyflakes and not g.unitTesting:
-            import leo.commands.checkerCommands as cc
+            from leo.commands import checkerCommands as cc
             # at = c.atFileCommands
             prefix = ('c,g,p,script_gnx=None,None,None,None;'
                       'assert c and g and p and script_gnx;\n')
-            cc.PyflakesCommand(c).check_script(script_p, prefix+script)
+            cc.PyflakesCommand(c).check_script(script_p, prefix + script)
         self.redirectScriptOutput()
         try:
             oldLog = g.app.log
             log = c.frame.log
             g.app.log = log
             if script.strip():
-                sys.path.insert(0, '.') # New in Leo 5.0
-                sys.path.insert(0, c.frame.openDirectory) # per SegundoBob
-                script += '\n' # Make sure we end the script properly.
+                sys.path.insert(0, '.')  # New in Leo 5.0
+                sys.path.insert(0, c.frame.openDirectory)  # per SegundoBob
+                script += '\n'  # Make sure we end the script properly.
                 try:
                     if not namespace or namespace.get('script_gnx') is None:
                         namespace = namespace or {}
@@ -656,19 +649,10 @@ class Commands:
     def executeScriptHelper(self, args, define_g, define_name, namespace, script):
         c = self
         if c.p:
-            p = c.p.copy() # *Always* use c.p and pass c.p to script.
+            p = c.p.copy()  # *Always* use c.p and pass c.p to script.
             c.setCurrentDirectoryFromContext(p)
         else:
             p = None
-        # Do NOT define a subfunction here!
-        #
-        # On some, python 2.x versions it causes exec to cause a syntax error
-        # Workarounds that avoid the syntax error hurt performance.
-        # See http://stackoverflow.com/questions/4484872.
-
-            # def g_input_wrapper(message, c=c):
-                # return g.input_(message, c=c)
-
         d = {'c': c, 'g': g, 'input': g.input_, 'p': p} if define_g else {}
         if define_name: d['__name__'] = define_name
         d['script_args'] = args or []
@@ -693,8 +677,8 @@ class Commands:
     def redirectScriptOutput(self):
         c = self
         if c.config.redirect_execute_script_output_to_log_pane:
-            g.redirectStdout() # Redirect stdout
-            g.redirectStderr() # Redirect stderr
+            g.redirectStdout()  # Redirect stdout
+            g.redirectStderr()  # Redirect stderr
     #@+node:ekr.20171123135625.7: *4* c.setCurrentDirectoryFromContext
     def setCurrentDirectoryFromContext(self, p):
         c = self
@@ -716,6 +700,7 @@ class Commands:
     @cmd('execute-pytest')
     def execute_pytest(self, event=None):
         c = self
+
         def it(p):
             for p1 in p.self_and_parents():
                 if p1.h.startswith('@test '):
@@ -724,6 +709,7 @@ class Commands:
             for p1 in p.subtree():
                 if p1.h.startswith('@test '):
                     yield p1
+
         try:
             for p in it(c.p):
                 self.execute_single_pytest(p)
@@ -798,6 +784,7 @@ class Commands:
             yield p.v
 
     # Compatibility with old code...
+
     all_tnodes_iter = all_nodes
     all_vnodes_iter = all_nodes
     all_unique_tnodes_iter = all_unique_nodes
@@ -812,6 +799,7 @@ class Commands:
             p.moveToThreadNext()
 
     # Compatibility with old code...
+
     all_positions_iter = all_positions
     allNodes_iter = all_positions
     #@+node:ekr.20191014093239.1: *5* c.all_positions_for_v
@@ -831,10 +819,10 @@ class Commands:
 
         if stack is None:
             stack = []
-            
+
         if not isinstance(v, leoNodes.VNode):
             g.es_print(f"not a VNode: {v!r}")
-            return # Stop the generator.
+            return  # Stop the generator.
 
         def allinds(v, target_v):
             """Yield all indices i such that v.children[i] == target_v."""
@@ -869,17 +857,17 @@ class Commands:
         if predicate is None:
 
             # pylint: disable=function-redefined
+
             def predicate(p):
                 return p.isAnyAtFileNode()
 
         p = c.rootPosition()
         while p:
             if predicate(p):
-                yield p.copy() # 2017/02/19
+                yield p.copy()  # 2017/02/19
                 p.moveToNodeAfterTree()
             else:
                 p.moveToThreadNext()
-
     #@+node:ekr.20091001141621.6062: *5* c.all_unique_positions
     def all_unique_positions(self, copy=True):
         """
@@ -898,6 +886,7 @@ class Commands:
                 p.moveToThreadNext()
 
     # Compatibility with old code...
+
     all_positions_with_unique_tnodes_iter = all_unique_positions
     all_positions_with_unique_vnodes_iter = all_unique_positions
     #@+node:ekr.20161120125322.1: *5* c.all_unique_roots
@@ -914,6 +903,7 @@ class Commands:
         if predicate is None:
 
             # pylint: disable=function-redefined
+
             def predicate(p):
                 return p.isAnyAtFileNode()
 
@@ -933,7 +923,7 @@ class Commands:
         *not* assume that vnodes are never their own ancestors.
         """
         c = self
-        p = c.rootPosition() # Make one copy.
+        p = c.rootPosition()  # Make one copy.
         while p:
             yield p.copy() if copy else p
             p.safeMoveToThreadNext()
@@ -951,6 +941,7 @@ class Commands:
         return c.rootPosition()
 
     # For compatibiility with old scripts...
+
     currentVnode = currentPosition
     #@+node:ekr.20190506060937.1: *5* c.dumpExpanded
     @cmd('dump-expanded')
@@ -961,7 +952,7 @@ class Commands:
         g.es_print('dump-expanded...')
         for p in c.all_positions():
             if p.v.expandedPositions:
-                indent = ' '*p.level()
+                indent = ' ' * p.level()
                 print(f"{indent}{p.h}")
                 g.printObj(p.v.expandedPositions, indent=indent)
     #@+node:ekr.20040306220230.1: *5* c.edit_widget
@@ -974,7 +965,7 @@ class Commands:
     def fileName(self):
         s = self.mFileName or ""
         if g.isWindows:
-            s = s.replace('\\','/')
+            s = s.replace('\\', '/')
         return s
 
     def relativeFileName(self):
@@ -995,35 +986,31 @@ class Commands:
             else: break
         return p
     #@+node:ekr.20171123135625.29: *5* c.getBodyLines
-    def getBodyLines(self, expandSelection=False):
+    def getBodyLines(self):
         """
-        Return head,lines,tail where:
+        Return (head, lines, tail, oldSel, oldYview).
 
-        before is string containg all the lines before the selected text
-        (or the text before the insert point if no selection) lines is a
-        list of lines containing the selected text (or the line containing
-        the insert point if no selection) after is a string all lines
-        after the selected text (or the text after the insert point if no
-        selection)
+        - head: string containg all the lines before the selected text (or the
+          text before the insert point if no selection)
+        - lines: list of lines containing the selected text
+          (or the line containing the insert point if no selection)
+        - after: string containing all lines after the selected text
+          (or the text after the insert point if no  selection)
+        - oldSel: tuple containing the old selection range, or None.
+        - oldYview: int containing the old y-scroll value, or None.
         """
         c = self
         body = c.frame.body
         w = body.wrapper
         oldVview = w.getYScrollPosition()
-        if expandSelection:
-            s = w.getAllText()
-            head = tail = ''
-            oldSel = 0, len(s)
-            lines = g.splitLines(s) # Retain the newlines of each line.
-        else:
-            # Note: lines is the entire line containing the insert point if no selection.
-            head, s, tail = body.getSelectionLines()
-            lines = g.splitLines(s) # Retain the newlines of each line.
-            # Expand the selection.
-            i = len(head)
-            j = max(i, len(head) + len(s) - 1)
-            oldSel = i, j
-        return head, lines, tail, oldSel, oldVview # string,list,string,tuple.
+        # Note: lines is the entire line containing the insert point if no selection.
+        head, s, tail = body.getSelectionLines()
+        lines = g.splitLines(s)  # Retain the newlines of each line.
+        # Expand the selection.
+        i = len(head)
+        j = len(head) + len(s)
+        oldSel = i, j
+        return head, lines, tail, oldSel, oldVview  # string,list,string,tuple,int.
     #@+node:ekr.20150417073117.1: *5* c.getTabWidth
     def getTabWidth(self, p):
         """Return the tab width in effect at p."""
@@ -1063,7 +1050,7 @@ class Commands:
     def isRootPosition(self, p):
         c = self
         root = c.rootPosition()
-        return p and root and p == root # 2011/03/03
+        return p and root and p == root  # 2011/03/03
     #@+node:ekr.20031218072017.2987: *5* c.isChanged
     def isChanged(self):
         return self.changed
@@ -1098,29 +1085,25 @@ class Commands:
     #@+node:ekr.20040307104131.3: *5* c.positionExists
     def positionExists(self, p, root=None, trace=False):
         """Return True if a position exists in c's tree"""
-        # Important: do not call p.isAncestorOf here.
-        c = self
-        if not p or not p.v:
-            return False
-        if root and p == root:
-            return True
-        p = p.copy()
-        while p.hasParent():
-            old_n, old_v = p._childIndex, p.v
-            p.moveToParent()
-            if root and p == root:
-                return True
-            if not old_v.isNthChildOf(old_n, p.v):
+        if not p or not p.v: return False
+
+        rstack = root.stack + [(root.v, root._childIndex)] if root else []
+        pstack = p.stack + [(p.v, p._childIndex)]
+
+        if len(rstack) > len(pstack): return False
+
+        par = self.hiddenRootNode
+        for j, x in enumerate(pstack):
+            if j < len(rstack) and x != rstack[j]: return False
+            v, i = x
+            if i >= len(par.children) or v is not par.children[i]:
                 return False
-        if root:
-            exists = p == root
-        else:
-            exists = p.v.isNthChildOf(p._childIndex, c.hiddenRootNode)
-        return exists
+            par = v
+        return True
     #@+node:ekr.20160427153457.1: *6* c.dumpPosition
     def dumpPosition(self, p):
         """Dump position p and it's ancestors."""
-        g.trace('=====',p.h, p._childIndex)
+        g.trace('=====', p.h, p._childIndex)
         for i, data in enumerate(p.stack):
             v, childIndex = data
             print(f"{i} {childIndex} {v._headString}")
@@ -1141,6 +1124,7 @@ class Commands:
         return None
 
     # For compatibiility with old scripts...
+
     rootVnode = rootPosition
     findRootPosition = rootPosition
     #@+node:ekr.20131017174814.17480: *5* c.shouldBeExpanded
@@ -1180,7 +1164,7 @@ class Commands:
         Not really all, just all for each of v's distinct immediate parents.
         """
         c = self
-        context = v.context # v's commander.
+        context = v.context  # v's commander.
         assert(c == context)
         positions = []
         for immediate in v.parents:
@@ -1207,7 +1191,7 @@ class Commands:
         """Given a VNode v, construct a valid position p such that p.v = v.
         """
         c = self
-        context = v.context # v's commander.
+        context = v.context  # v's commander.
         assert(c == context)
         stack = []
         while v.parents:
@@ -1231,16 +1215,14 @@ class Commands:
         return c.currentPosition()
 
     p = property(
-        __get_p, # No setter.
+        __get_p,  # No setter.
         doc="commander current position property")
     #@+node:ekr.20060906211747.1: *4* c.Setters
     #@+node:ekr.20040315032503: *5* c.appendStringToBody
     def appendStringToBody(self, p, s):
-        c = self
-        if not s: return
-        body = p.b
-        s = g.toUnicode(s)
-        c.setBodyString(p, body + s)
+
+        if s:
+            p.b = p.b + g.toUnicode(s)
     #@+node:ekr.20031218072017.2984: *5* c.clearAllMarked
     def clearAllMarked(self):
         c = self
@@ -1260,7 +1242,7 @@ class Commands:
             return
         c.changed = False
         if c.loading:
-            return # don't update while loading.
+            return  # don't update while loading.
         # Clear all dirty bits _before_ setting the caption.
         for v in c.all_unique_nodes():
             v.clearDirty()
@@ -1276,7 +1258,7 @@ class Commands:
             master.setChanged(c, False)
                 # LeoTabbedTopLevel.setChanged.
         s = c.frame.getTitle()
-        if len(s) > 2 and s[0: 2] == "* ":
+        if len(s) > 2 and s[0:2] == "* ":
             c.frame.setTitle(s[2:])
     #@+node:ekr.20060906211138: *5* c.clearMarked
     def clearMarked(self, p):
@@ -1285,6 +1267,11 @@ class Commands:
         g.doHook("clear-mark", c=c, p=p)
     #@+node:ekr.20040305223522: *5* c.setBodyString
     def setBodyString(self, p, s):
+        """
+        This is equivalent to p.b = s.
+        
+        Warning: This method may call c.recolor() or c.redraw().
+        """
         c, v = self, p.v
         if not c or not v:
             return
@@ -1294,12 +1281,9 @@ class Commands:
         # This worked because commands work on the presently selected node.
         # But setRecentFiles may change a _clone_ of the selected node!
         if current and p.v == current.v:
-            # Revert to previous code, but force an empty selection.
-            c.frame.body.setSelectionAreas(s, None, None)
             w = c.frame.body.wrapper
-            i = w.getInsertPoint()
-            w.setSelectionRange(i, i)
-            # This code destoys all tags, so we must recolor.
+            w.setAllText(s)
+            v.setSelection(0, 0)
             c.recolor()
         # Keep the body text in the VNode up-to-date.
         if v.b != s:
@@ -1317,14 +1301,14 @@ class Commands:
             return
         c.changed = True
         if c.loading:
-            return # don't update while loading.
+            return  # don't update while loading.
         # Do nothing for null frames.
         assert c.gui
         if c.gui.guiName() == 'nullGui':
             return
         if not c.frame.top:
             return
-        if not redrawFlag: # Prevent flash when fixing #387.
+        if not redrawFlag:  # Prevent flash when fixing #387.
             return
         master = getattr(c.frame.top, 'leo_master', None)
         if master:
@@ -1347,16 +1331,17 @@ class Commands:
             return
         if c.positionExists(p):
             if c._currentPosition and p == c._currentPosition:
-                pass # We have already made a copy.
-            else: # Make a copy _now_
+                pass  # We have already made a copy.
+            else:  # Make a copy _now_
                 c._currentPosition = p.copy()
-        else: # 2011/02/25:
+        else:  # 2011/02/25:
             c._currentPosition = c.rootPosition()
             g.trace(f"Invalid position: {repr(p and p.h)}")
             g.trace(g.callers())
             # Don't kill unit tests for this kind of problem.
 
     # For compatibiility with old scripts.
+
     setCurrentVnode = setCurrentPosition
     #@+node:ekr.20040305223225: *5* c.setHeadString
     def setHeadString(self, p, s):
@@ -1413,28 +1398,9 @@ class Commands:
             c._topPosition = None
 
     # Define these for compatibiility with old scripts...
+
     topVnode = topPosition
     setTopVnode = setTopPosition
-    #@+node:ekr.20031218072017.3404: *5* c.trimTrailingLines
-    def trimTrailingLines(self, p):
-        """Trims trailing blank lines from a node.
-
-        It is surprising difficult to do this during Untangle."""
-        c = self
-        body = p.b
-        lines = body.split('\n')
-        i = len(lines) - 1; changed = False
-        while i >= 0:
-            line = lines[i]
-            j = g.skip_ws(line, 0)
-            if j + 1 == len(line):
-                del lines[i]
-                i -= 1; changed = True
-            else: break
-        if changed:
-            body = ''.join(body) + '\n' # Add back one last newline.
-            c.setBodyString(p, body)
-            # Don't set the dirty bit: it would just be annoying.
     #@+node:ekr.20171124081419.1: *3* c.Check Outline...
     #@+node:ekr.20141024211256.22: *4* c.checkGnxs
     def checkGnxs(self):
@@ -1444,7 +1410,7 @@ class Commands:
         Return the number of structure_errors found.
         """
         c = self
-        d = {} # Keys are gnx's; values are lists of vnodes with that gnx.
+        d = {}  # Keys are gnx's; values are lists of vnodes with that gnx.
         ni = g.app.nodeIndices
         t1 = time.time()
 
@@ -1467,12 +1433,12 @@ class Commands:
             else:
                 gnx_errors += 1
                 new_gnx(v)
-                g.es_print('empty v.fileIndex: %s new: %r' % (v, p.v.gnx), color='red')
+                g.es_print(f"empty v.fileIndex: {v} new: {p.v.gnx!r}", color='red')
         for gnx in sorted(d.keys()):
             aList = list(d.get(gnx))
             if len(aList) != 1:
                 print('\nc.checkGnxs...')
-                g.es_print('multiple vnodes with gnx: %r' % (gnx), color='red')
+                g.es_print(f"multiple vnodes with gnx: {gnx!r}", color='red')
                 for v in aList:
                     gnx_errors += 1
                     g.es_print(f"id(v): {id(v)} gnx: {v.fileIndex} {v.h}", color='red')
@@ -1489,7 +1455,9 @@ class Commands:
                 color='red'
             )
         elif c.verbose_check_outline and not g.unitTesting:
-            print('check-outline OK: %4.2f sec. %s %s nodes' % (t2 - t1, c.shortFileName(), count))
+            print(
+                f"check-outline OK: {t2 - t1:4.2f} sec. "
+                f"{c.shortFileName()} {count} nodes")
         return g.app.structure_errors
     #@+node:ekr.20150318131947.7: *4* c.checkLinks & helpers
     def checkLinks(self):
@@ -1514,14 +1482,15 @@ class Commands:
                 # junk, value, junk = sys.exc_info()
                 # g.error("test failed at position %s\n%s" % (repr(p), value))
         t2 = time.time()
-        g.es_print('check-links: %4.2f sec. %s %s nodes' % (
-            t2 - t1, c.shortFileName(), count), color='blue')
+        g.es_print(
+            f"check-links: {t2 - t1:4.2f} sec. "
+            f"{c.shortFileName()} {count} nodes", color='blue')
         return errors
     #@+node:ekr.20040314035615.2: *5* c.checkParentAndChildren
     def checkParentAndChildren(self, p):
         """Check consistency of parent and child data structures."""
         c = self
-        
+
         def _assert(condition):
             return g._assert(condition, show_callers=False)
 
@@ -1534,7 +1503,7 @@ class Commands:
                 print('<no p>')
             if g.unitTesting:
                 assert False, g.callers()
-            
+
         if p.hasParent():
             n = p.childIndex()
             if not _assert(p == p.parent().moveToNthChild(n)):
@@ -1584,13 +1553,17 @@ class Commands:
         next = p.next()
         if back:
             if not g._assert(p == back.next()):
-                g.trace('p!=p.back().next(),  back: %s\nback.next: %s' % (
-                    back, back.next()))
+                g.trace(
+                    f"p!=p.back().next()\n"
+                    f"     back: {back}\n"
+                    f"back.next: {back.next()}")
                 return False
         if next:
             if not g._assert(p == next.back()):
-                g.trace('p!=p.next().back, next: %s\nnext.back: %s' % (
-                    next, next.back()))
+                g.trace(
+                    f"p!=p.next().back\n"
+                    f"     next: {next}\n"
+                    f"next.back: {next.back()}")
                 return False
         return True
     #@+node:ekr.20040314035615: *5* c.checkThreadLinks
@@ -1610,8 +1583,10 @@ class Commands:
     #@+node:ekr.20031218072017.1760: *4* c.checkMoveWithParentWithWarning & c.checkDrag
     #@+node:ekr.20070910105044: *5* c.checkMoveWithParentWithWarning
     def checkMoveWithParentWithWarning(self, root, parent, warningFlag):
-        """Return False if root or any of root's descendents is a clone of
-        parent or any of parents ancestors."""
+        """
+        Return False if root or any of root's descendents is a clone of parent
+        or any of parents ancestors.
+        """
         c = self
         message = "Illegal move or drag: no clone may contain a clone of itself"
         clonedVnodes = {}
@@ -1671,12 +1646,12 @@ class Commands:
     # This code is no longer used by any Leo command,
     # but it will be retained for use of scripts.
     #@+node:ekr.20040723094220.1: *4* c.checkAllPythonCode
-    def checkAllPythonCode(self, event=None, unittest=False, ignoreAtIgnore=True):
+    def checkAllPythonCode(self, event=None, unittestFlag=False, ignoreAtIgnore=True):
         """Check all nodes in the selected tree for syntax and tab errors."""
         c = self; count = 0; result = "ok"
         for p in c.all_unique_positions():
             count += 1
-            if not unittest:
+            if not unittestFlag:
                 #@+<< print dots >>
                 #@+node:ekr.20040723094220.2: *5* << print dots >>
                 if count % 100 == 0:
@@ -1689,29 +1664,29 @@ class Commands:
                     not ignoreAtIgnore or not g.scanForAtIgnore(c, p)
                 ):
                     try:
-                        c.checkPythonNode(p, unittest)
+                        c.checkPythonNode(p, unittestFlag)
                     except(SyntaxError, tokenize.TokenError, tabnanny.NannyNag):
-                        result = "error" # Continue to check.
+                        result = "error"  # Continue to check.
                     except Exception:
-                        return "surprise" # abort
-                    if unittest and result != "ok":
+                        return "surprise"  # abort
+                    if unittestFlag and result != "ok":
                         g.pr(f"Syntax error in {p.h}")
-                        return result # End the unit test: it has failed.
-        if not unittest:
+                        return result  # End the unit test: it has failed.
+        if not unittestFlag:
             g.blue("check complete")
         return result
     #@+node:ekr.20040723094220.3: *4* c.checkPythonCode
     def checkPythonCode(self, event=None,
-        unittest=False, ignoreAtIgnore=True,
+        unittestFlag=False, ignoreAtIgnore=True,
         suppressErrors=False, checkOnSave=False
     ):
         """Check the selected tree for syntax and tab errors."""
         c = self; count = 0; result = "ok"
-        if not unittest:
+        if not unittestFlag:
             g.es("checking Python code   ")
         for p in c.p.self_and_subtree():
             count += 1
-            if not unittest and not checkOnSave:
+            if not unittestFlag and not checkOnSave:
                 #@+<< print dots >>
                 #@+node:ekr.20040723094220.4: *5* << print dots >>
                 if count % 100 == 0:
@@ -1722,17 +1697,17 @@ class Commands:
             if g.scanForAtLanguage(c, p) == "python":
                 if not ignoreAtIgnore or not g.scanForAtIgnore(c, p):
                     try:
-                        c.checkPythonNode(p, unittest, suppressErrors)
+                        c.checkPythonNode(p, unittestFlag, suppressErrors)
                     except(SyntaxError, tokenize.TokenError, tabnanny.NannyNag):
-                        result = "error" # Continue to check.
+                        result = "error"  # Continue to check.
                     except Exception:
-                        return "surprise" # abort
-        if not unittest:
+                        return "surprise"  # abort
+        if not unittestFlag:
             g.blue("check complete")
         # We _can_ return a result for unit tests because we aren't using doCommand.
         return result
     #@+node:ekr.20040723094220.5: *4* c.checkPythonNode
-    def checkPythonNode(self, p, unittest=False, suppressErrors=False):
+    def checkPythonNode(self, p, unittestFlag=False, suppressErrors=False):
         c = self; h = p.h
         # Call getScript to ignore directives and section references.
         body = g.getScript(c, p.copy())
@@ -1740,20 +1715,20 @@ class Commands:
         try:
             fn = f"<node: {p.h}>"
             compile(body + '\n', fn, 'exec')
-            c.tabNannyNode(p, h, body, unittest, suppressErrors)
+            c.tabNannyNode(p, h, body, unittestFlag, suppressErrors)
         except SyntaxError:
             if not suppressErrors:
                 g.warning(f"Syntax error in: {h}")
                 g.es_exception(full=False, color="black")
-            if unittest: raise
+            if unittestFlag: raise
         except Exception:
             g.es_print('unexpected exception')
             g.es_exception()
-            if unittest: raise
+            if unittestFlag: raise
     #@+node:ekr.20040723094220.6: *4* c.tabNannyNode
     # This code is based on tabnanny.check.
 
-    def tabNannyNode(self, p, headline, body, unittest=False, suppressErrors=False):
+    def tabNannyNode(self, p, headline, body, unittestFlag=False, suppressErrors=False):
         """Check indentation using tabnanny."""
         # c = self
         try:
@@ -1764,13 +1739,13 @@ class Commands:
             if not suppressErrors:
                 g.warning("IndentationError in", headline)
                 g.es('', msg)
-            if unittest: raise
+            if unittestFlag: raise
         except tokenize.TokenError:
             junk, msg, junk = sys.exc_info()
             if not suppressErrors:
                 g.warning("TokenError in", headline)
                 g.es('', msg)
-            if unittest: raise
+            if unittestFlag: raise
         except tabnanny.NannyNag:
             junk, nag, junk = sys.exc_info()
             if not suppressErrors:
@@ -1779,18 +1754,18 @@ class Commands:
                 message = nag.get_msg()
                 g.warning("indentation error in", headline, "line", badline)
                 g.es(message)
-                line2 = repr(str(line))[1: -1]
+                line2 = repr(str(line))[1:-1]
                 g.es("offending line:\n", line2)
-            if unittest: raise
+            if unittestFlag: raise
         except Exception:
             g.trace("unexpected exception")
             g.es_exception()
-            if unittest: raise
+            if unittestFlag: raise
     #@+node:ekr.20171123200644.1: *3* c.Convenience methods
     #@+node:ekr.20171123135625.39: *4* c.getTime
     def getTime(self, body=True):
         c = self
-        default_format = "%m/%d/%Y %H:%M:%S" # E.g., 1/30/2003 8:31:55
+        default_format = "%m/%d/%Y %H:%M:%S"  # E.g., 1/30/2003 8:31:55
         # Try to get the format string from settings.
         if body:
             format = c.config.getString("body-time-format-string")
@@ -1810,7 +1785,7 @@ class Commands:
             g.warning("time.strftime not available on this platform")
             return ""
         except Exception:
-            g.es_exception() # Probably a bad format string in leoSettings.leo.
+            g.es_exception()  # Probably a bad format string in leoSettings.leo.
             s = time.strftime(default_format, time.gmtime())
         return s
     #@+node:ekr.20171123135625.10: *4* c.goToLineNumber & goToScriptLineNumber
@@ -1839,8 +1814,6 @@ class Commands:
     def updateSyntaxColorer(self, v):
         self.frame.body.updateSyntaxColorer(v)
     #@+node:ekr.20180503110307.1: *4* c.interactive*
-
-        
     #@+node:ekr.20180504075937.1: *5* c.interactive
     def interactive(self, callback, event, prompts):
         #@+<< c.interactive docstring >>
@@ -1869,29 +1842,24 @@ class Commands:
         # This pathetic code should be generalized,
         # but it's not as easy as one might imagine.
         c = self
-        d = {
-            1: c.interactive1,
-            2: c.interactive2,
-            3: c.interactive3,
-        }
+        d = {1: c.interactive1, 2: c.interactive2, 3: c.interactive3,}
         f = d.get(len(prompts))
         if f:
             f(callback, event, prompts)
         else:
             g.trace('At most 3 arguments are supported.')
-            
     #@+node:ekr.20180503111213.1: *5* c.interactive1
     def interactive1(self, callback, event, prompts):
-        
+
         c, k = self, self.k
         prompt = prompts[0]
-        
+
         def state1(event):
             callback(args=[k.arg], c=c, event=event)
             k.clearState()
             k.resetLabel()
             k.showStateAndMode()
-            
+
         k.setLabelBlue(prompt)
         k.get1Arg(event, handler=state1)
     #@+node:ekr.20180503111249.1: *5* c.interactive2
@@ -1904,7 +1872,7 @@ class Commands:
             d['arg1'] = k.arg
             k.extendLabel(prompt2, select=False, protect=True)
             k.getNextArg(handler=state2)
-        
+
         def state2(event):
             callback(args=[d.get('arg1'), k.arg], c=c, event=event)
             k.clearState()
@@ -1920,18 +1888,18 @@ class Commands:
         prompt1, prompt2, prompt3 = prompts
 
         def state1(event):
-            d ['arg1'] = k.arg
+            d['arg1'] = k.arg
             k.extendLabel(prompt2, select=False, protect=True)
             k.getNextArg(handler=state2)
-            
+
         def state2(event):
-            d ['arg2'] = k.arg
+            d['arg2'] = k.arg
             k.extendLabel(prompt3, select=False, protect=True)
             k.get1Arg(event, handler=state3)
                 # Restart.
 
         def state3(event):
-            args=[d.get('arg1'), d.get('arg2'), k.arg]
+            args = [d.get('arg1'), d.get('arg2'), k.arg]
             callback(args=args, c=c, event=event)
             k.clearState()
             k.resetLabel()
@@ -1956,7 +1924,7 @@ class Commands:
             if g.match_word(s, 0, tag):
                 i = g.skip_ws(s, len(tag))
                 j = g.skip_id(s, i)
-                language = s[i: j]
+                language = s[i:j]
             if n <= ins < n + len(s):
                 break
             else:
@@ -1972,6 +1940,7 @@ class Commands:
         aList = g.get_directives_dict_list(p)
         path = c.scanAtPathDirectives(aList)
         return path
+
     # Not used in Leo's core.
 
     def getNodeFileName(self, p):
@@ -1988,8 +1957,8 @@ class Commands:
             if name: break
         if name:
             # The commander method supports {{expr}}; the global function does not.
-            path = c.expand_path_expression(path) # #1341.
-            name = c.expand_path_expression(name) # #1341.
+            path = c.expand_path_expression(path)  # #1341.
+            name = c.expand_path_expression(name)  # #1341.
             name = g.os_path_finalize_join(path, name)
         return name
     #@+node:ekr.20171123135625.32: *4* c.hasAmbiguousLangauge
@@ -2001,11 +1970,11 @@ class Commands:
             if g.match_word(s, 0, tag):
                 i = g.skip_ws(s, len(tag))
                 j = g.skip_id(s, i)
-                word = s[i: j]
+                word = s[i:j]
                 languages.add(word)
         return len(list(languages)) > 1
     #@+node:ekr.20080922124033.5: *4* c.os_path_finalize and c.os_path_finalize_join (deprecated)
-    deprecated_messages = []
+    deprecated_messages: List[str] = []
 
     def os_path_finalize(self, path, **keys):
         """
@@ -2015,7 +1984,8 @@ class Commands:
         callers = g.callers(2)
         if callers not in self.deprecated_messages:
             self.deprecated_messages.append(callers)
-            g.es_print(f"\nc.os_path_finalize{' '*5} is deprecated. called from: {callers}")
+            g.es_print(
+                f"\nc.os_path_finalize{' '*5} is deprecated. called from: {callers}")
         return g.os_path_finalize(path, **keys)
 
     def os_path_finalize_join(self, *args, **keys):
@@ -2026,7 +1996,8 @@ class Commands:
         callers = g.callers(2)
         if callers not in self.deprecated_messages:
             self.deprecated_messages.append(callers)
-            g.es_print(f"\nc.os_path_finalize_join is deprecated. called from: {callers}")
+            g.es_print(
+                f"\nc.os_path_finalize_join is deprecated. called from: {callers}")
         return g.os_path_finalize_join(*args, **keys)
     #@+node:ekr.20080827175609.39: *4* c.scanAllDirectives
     #@@nobeautify
@@ -2082,10 +2053,10 @@ class Commands:
         Return a reasonable default if no @path directive is found.
         """
         c = self
-        c.scanAtPathDirectivesCount += 1 # An important statistic.
+        c.scanAtPathDirectivesCount += 1  # An important statistic.
         # Step 1: Compute the starting path.
         # The correct fallback directory is the absolute path to the base.
-        if c.openDirectory: # Bug fix: 2008/9/18
+        if c.openDirectory:  # Bug fix: 2008/9/18
             base = c.openDirectory
         else:
             base = g.app.config.relative_path_base_directory
@@ -2093,26 +2064,28 @@ class Commands:
                 base = g.app.loadDir
             elif base and base == ".":
                 base = c.openDirectory
-        base = c.expand_path_expression(base) # #1341:
-        absbase = g. os_path_finalize_join(g.app.loadDir, base)  # #1341:
+        base = c.expand_path_expression(base)  # #1341.
+        base = g.os_path_expanduser(base)  # #1889.
+        absbase = g.os_path_finalize_join(g.app.loadDir, base)  # #1341.
         # Step 2: look for @path directives.
         paths = []
         for d in aList:
             # Look for @path directives.
             path = d.get('path')
             warning = d.get('@path_in_body')
-            if path is not None: # retain empty paths for warnings.
+            if path is not None:  # retain empty paths for warnings.
                 # Convert "path" or <path> to path.
                 path = g.stripPathCruft(path)
                 if path and not warning:
-                    path = c.expand_path_expression(path) # #1341.
+                    path = c.expand_path_expression(path)  # #1341.
+                    path = g.os_path_expanduser(path)  # #1889.
                     paths.append(path)
                 # We will silently ignore empty @path directives.
         # Add absbase and reverse the list.
         paths.append(absbase)
         paths.reverse()
         # Step 3: Compute the full, effective, absolute path.
-        path = g.os_path_finalize_join(*paths) # #1341.
+        path = g.os_path_finalize_join(*paths)  # #1341.
         return path or g.getBaseDirectory(c)
             # 2010/10/22: A useful default.
     #@+node:ekr.20080828103146.12: *4* c.scanAtRootDirectives (no longer used)
@@ -2133,7 +2106,7 @@ class Commands:
             if 'root' in d:
                 return 'doc' if start_in_doc else 'code'
         return None
-    #@+node:ekr.20190921130036.1: *3* c.expand_path_expression (new)
+    #@+node:ekr.20190921130036.1: *3* c.expand_path_expression
     def expand_path_expression(self, s):
         """Expand all {{anExpression}} in c's context."""
         c = self
@@ -2150,25 +2123,27 @@ class Commands:
                 if previ < i:
                     aList.append(s[previ:i])
                 # Get expression and find substitute
-                exp = s[i + 2: j].strip()
+                exp = s[i + 2 : j].strip()
                 if exp:
                     try:
                         s2 = c.replace_path_expression(exp)
                         aList.append(s2)
                     except Exception:
-                        g.es('Exception evaluating {{%s}} in %s' % (exp, s.strip()))
+                        g.es(f"Exception evaluating {{{{{exp}}}}} in {s.strip()}")
                         g.es_exception(full=True, c=c)
                 # Prepare to search again after the last '}}'
-                previ = j+2
+                previ = j + 2
             else:
                 # Add trailing fragment (fragile in case of mismatched '{{'/'}}')
                 aList.append(s[previ:])
                 break
         val = ''.join(aList)
         if g.isWindows:
-            val = val.replace('\\','/')
+            val = val.replace('\\', '/')
         return val
-    #@+node:ekr.20190921130036.2: *4* c.replace_path_expression (new)
+    #@+node:ekr.20190921130036.2: *4* c.replace_path_expression
+    replace_errors: List[str] = []
+
     def replace_path_expression(self, expr):
         """ local function to replace a single path expression."""
         c = self
@@ -2184,17 +2159,23 @@ class Commands:
         # #1338: Don't report errors when called by g.getUrlFromNode.
         try:
             # pylint: disable=eval-used
-            val = eval(expr, d)
-            return g.toUnicode(val, encoding='utf-8')
+            path = eval(expr, d)
+            return g.toUnicode(path, encoding='utf-8')
         except Exception as e:
-            g.trace(f"{c.shortFileName()}: {e.__class__.__name__} in {c.p.h}: {expr!r}")
+            message = (
+                f"{c.shortFileName()}: {c.p.h}\n"
+                f"expression: {expr!s}\n"
+                f"     error: {e!s}")
+            if message not in self.replace_errors:
+                self.replace_errors.append(message)
+                g.trace(message)
             return expr
     #@+node:ekr.20171123201514.1: *3* c.Executing commands & scripts
     #@+node:ekr.20110605040658.17005: *4* c.check_event
     def check_event(self, event):
         """Check an event object."""
         # c = self
-        import leo.core.leoGui as leoGui
+        from leo.core import leoGui
 
         if not event:
             return
@@ -2212,45 +2193,48 @@ class Commands:
                 # We will use the (weird) key value for, say, Ctrl-s,
                 # if there is no binding for Ctrl-s.
         if not isinstance(event, leoGui.LeoKeyEvent):
-            if g.app.gui.guiName() not in ('console', 'curses'):
-                g.trace('not leo event: %r, callers: %s' % (event, g.callers()))
+            if g.app.gui.guiName() not in ('browser', 'console', 'curses'):  # #1839.
+                g.trace(f"not leo event: {event!r}, callers: {g.callers(8)}")
         if expected != got:
-            g.trace('stroke: %r, expected char: %r, got: %r' % (
-                stroke, expected, got))
+            g.trace(f"stroke: {stroke!r}, expected char: {expected!r}, got: {got!r}")
     #@+node:ekr.20031218072017.2817: *4* c.doCommand
     command_count = 0
 
-    def doCommand(self, command, label, event=None):
+    def doCommand(self, command_func, command_name, event):
         """
-        Execute the given command, invoking hooks and catching exceptions.
+        Execute the given command function, invoking hooks and catching exceptions.
 
-        The code assumes that the "command1" hook has completely handled the command if
-        g.doHook("command1") returns False.
-        This provides a simple mechanism for overriding commands.
+        The code assumes that the "command1" hook has completely handled the
+        command func if g.doHook("command1") returns False. This provides a
+        simple mechanism for overriding commands.
         """
         c, p = self, self.p
         c.setLog()
         self.command_count += 1
+        # New in Leo 6.2. Set command_function and command_name ivars.
+        self.command_function = command_func
+        self.command_name = command_name
         # The presence of this message disables all commands.
         if c.disableCommandsMessage:
             g.blue(c.disableCommandsMessage)
-            return
+            return None
         if c.exists and c.inCommand and not g.unitTesting:
-            g.app.commandInterruptFlag = True
-            g.error('ignoring command: already executing a command.')
-            return
+            g.app.commandInterruptFlag = True  # For sc.make_slide_show_command.
+            # 1912: This message is annoying and unhelpful.
+            # g.error('ignoring command: already executing a command.')
+            return None
         g.app.commandInterruptFlag = False
-        if label and event is None: # Do this only for legacy commands.
-            if label == "cantredo": label = "redo"
-            if label == "cantundo": label = "undo"
-            g.app.commandName = label
-        if not g.doHook("command1", c=c, p=p, label=label):
+        if not g.doHook("command1", c=c, p=p, label=command_name):
             try:
                 c.inCommand = True
-                val = c.executeAnyCommand(command, event)
-                if c and c.exists: # Be careful: the command could destroy c.
+                try:
+                    return_value = command_func(event)
+                except Exception:
+                    g.es_exception()
+                    return_value = None
+                if c and c.exists:  # Be careful: the command could destroy c.
                     c.inCommand = False
-                    c.k.funcReturn = val
+                    ## c.k.funcReturn = return_value
             except Exception:
                 c.inCommand = False
                 if g.app.unitTesting:
@@ -2266,29 +2250,131 @@ class Commands:
         # Be careful: the command could destroy c.
         if c and c.exists:
             p = c.p
-            g.doHook("command2", c=c, p=p, label=label)
-    #@+node:ekr.20171124074112.1: *4* c.executeAnyCommand
-    def executeAnyCommand(self, command, event):
+            g.doHook("command2", c=c, p=p, label=command_name)
+        return return_value
+    #@+node:ekr.20200522075411.1: *4* c.doCommandByName
+    def doCommandByName(self, command_name, event):
         """
-        Execute a command, no matter how defined.
+        Execute one command, given the name of the command.
         
-        Supports @g.commander_command and @g.new_cmd_decorator and plain methods.
+        The caller must do any required keystroke-only tasks.
+        
+        Return the result, if any, of the command.
         """
-        try:
-            return command(event)
-        except Exception:
-            g.es_exception()
+        c = self
+        # Get the command's function.
+        command_func = c.commandsDict.get(command_name.replace('&', ''))
+        if not command_func:
+            message = f"no command function for {command_name!r}"
+            if g.app.unitTesting or g.app.inBridge:
+                raise AttributeError(message)
+            g.es_print(message, color='red')
+            g.trace(g.callers())
             return None
-    #@+node:ekr.20051106040126: *4* c.executeMinibufferCommand
+        # Invoke the function.
+        val = c.doCommand(command_func, command_name, event)
+        if c.exists:
+            c.frame.updateStatusLine()
+        return val
+    #@+node:ekr.20200526074132.1: *4* c.executeMinibufferCommand
     def executeMinibufferCommand(self, commandName):
-        c = self; k = c.k
-        func = c.commandsDict.get(commandName)
-        if func:
-            event = g.app.gui.create_key_event(c)
-            k.masterCommand(commandName=None, event=event, func=func)
-            return k.funcReturn
-        g.error(f"no such command: {commandName} {g.callers()}")
-        return None
+        """Call c.doCommandByName, creating the required event."""
+        c = self
+        event = g.app.gui.create_key_event(c)
+        return c.doCommandByName(commandName, event)
+    #@+node:ekr.20200523135601.1: *4* c.insertCharFromEvent
+    def insertCharFromEvent(self, event):
+        """
+        Handle the character given by event, ignoring various special keys:
+        - getArg state: k.getArg.
+        - Tree: onCanvasKey or onHeadlineKey.
+        - Body: ec.selfInsertCommand
+        - Log: log_w.insert
+        """
+        trace = all(z in g.app.debug for z in ('keys', 'verbose'))
+        c, k, w = self, self.k, event.widget
+        name = c.widget_name(w)
+        stroke = event.stroke
+        if trace: g.trace('stroke', stroke, 'plain:', k.isPlainKey(stroke), 'widget', name)
+        if not stroke:
+            return
+        #
+        # Part 1: Very late special cases.
+        #
+        # #1448
+        if stroke.isNumPadKey() and k.state.kind == 'getArg':
+            stroke.removeNumPadModifier()
+            k.getArg(event, stroke=stroke)
+            return
+        # Handle all unbound characters in command mode.
+        if k.unboundKeyAction == 'command':
+            w = g.app.gui.get_focus(c)
+            if w and g.app.gui.widget_name(w).lower().startswith('canvas'):
+                c.onCanvasKey(event)
+            return
+        #
+        # Part 2: Filter out keys that should never be inserted by default.
+        #
+        # Ignore unbound F-keys.
+        if stroke.isFKey():
+            return
+        # Ignore unbound Alt/Ctrl keys.
+        if stroke.isAltCtrl():
+            if not k.enable_alt_ctrl_bindings:
+                return
+            if k.ignore_unbound_non_ascii_keys:
+                return
+        # #868
+        if stroke.isPlainNumPad():
+            stroke.removeNumPadModifier()
+            event.stroke = stroke
+        # #868
+        if stroke.isNumPadKey():
+            return
+        # Ignore unbound non-ascii character.
+        if k.ignore_unbound_non_ascii_keys and not stroke.isPlainKey():
+            return
+        # Never insert escape or insert characters.
+        if 'Escape' in stroke.s or 'Insert' in stroke.s:
+            return
+        #
+        # Part 3: Handle the event depending on the pane and state.
+        #
+        # Handle events in the body pane.
+        if name.startswith('body'):
+            action = k.unboundKeyAction
+            if action in ('insert', 'overwrite'):
+                c.editCommands.selfInsertCommand(event, action=action)
+                c.frame.updateStatusLine()
+            return
+        #
+        # Handle events in headlines.
+        if name.startswith('head'):
+            c.frame.tree.onHeadlineKey(event)
+            return
+        #
+        # Handle events in the background tree (not headlines).
+        if name.startswith('canvas'):
+            if event.char:
+                k.searchTree(event.char)
+            # Not exactly right, but it seems to be good enough.
+            elif not stroke:
+                c.onCanvasKey(event)
+            return
+        #
+        # Ignore all events outside the log pane.
+        if not name.startswith('log'):
+            return
+        #
+        # Make sure we can insert into w.
+        log_w = event.widget
+        if not hasattr(log_w, 'supportsHighLevelInterface'):
+            return
+        #
+        # Send the event to the text widget, not the LeoLog instance.
+        i = log_w.getInsertPoint()
+        s = stroke.toGuiChar()
+        log_w.insert(i, s)
     #@+node:ekr.20131016084446.16724: *4* c.setComplexCommand
     def setComplexCommand(self, commandName):
         """Make commandName the command to be executed by repeat-complex-command."""
@@ -2342,6 +2428,7 @@ class Commands:
         minibufferCallback.source_c = source_c
             # For GetArgs.command_source
         return minibufferCallback
+
     #fix bobjack's spelling error
 
     universallCallback = universalCallback
@@ -2361,9 +2448,9 @@ class Commands:
                 # make the first element absolute
                 parts[0] = driveSpec + os.sep + parts[0]
             allParts = [path] + parts
-            path = g.os_path_finalize_join(*allParts) # #1431
+            path = g.os_path_finalize_join(*allParts)  # #1431
         else:
-            path = g.os_path_finalize_join(g.app.homeLeoDir, 'scriptFile.py') # #1431
+            path = g.os_path_finalize_join(g.app.homeLeoDir, 'scriptFile.py')  # #1431
         #
         # Write the file.
         try:
@@ -2377,6 +2464,32 @@ class Commands:
             path = None
         return path
     #@+node:ekr.20171124101444.1: *3* c.File
+    #@+node:ekr.20200305104646.1: *4* c.archivedPositionToPosition (new)
+    def archivedPositionToPosition(self, s):
+        """Convert an archived position (a string) to a position."""
+        c = self
+        s = g.toUnicode(s)
+        aList = s.split(',')
+        try:
+            aList = [int(z) for z in aList]
+        except Exception:
+            aList = None
+        if not aList:
+            return None
+        p = c.rootPosition()
+        level = 0
+        while level < len(aList):
+            i = aList[level]
+            while i > 0:
+                if p.hasNext():
+                    p.moveToNext()
+                    i -= 1
+                else:
+                    return None
+            level += 1
+            if level < len(aList):
+                p.moveToFirstChild()
+        return p
     #@+node:ekr.20150422080541.1: *4* c.backup
     def backup(self, fileName=None, prefix=None, silent=False, useTimeStamp=True):
         """
@@ -2390,7 +2503,7 @@ class Commands:
         theDir, base = g.os_path_split(fn)
         if useTimeStamp:
             if base.endswith('.leo'):
-                base = base[: -4]
+                base = base[:-4]
             stamp = time.strftime("%Y%m%d-%H%M%S")
             branch = prefix + '-' if prefix else ''
             fn = f"{branch}{base}-{stamp}.leo"
@@ -2435,15 +2548,17 @@ class Commands:
             backup_dir = join(base_dir, sub_dir) if sub_dir else base_dir
             path = join(backup_dir, fn)
             if g.os_path_exists(backup_dir):
-                written_fn = c.backup(path,
+                written_fn = c.backup(
+                    path,
                     prefix=git_branch,
                     silent=True,
-                    useTimeStamp=True)
+                    useTimeStamp=True,
+                )
                 g.es_print(f"wrote: {written_fn}")
             else:
-                g.es_print('backup_dir not found: %r' % backup_dir)
+                g.es_print(f"backup_dir not found: {backup_dir!r}")
         else:
-            g.es_print('base_dir not found: %r' % base_dir)
+            g.es_print(f"base_dir not found: {base_dir!r}")
         os.chdir(old_cwd)
     #@+node:ekr.20090103070824.11: *4* c.checkFileTimeStamp
     def checkFileTimeStamp(self, fn):
@@ -2468,7 +2583,7 @@ class Commands:
         if ext.startswith('.'): ext = ext[1:]
         language = g.app.extension_dict.get(ext)
         if language:
-            prefix = '@color\n@language %s\n\n' % language
+            prefix = f"@color\n@language {language}\n\n"
         else:
             prefix = '@killcolor\n\n'
         # pylint: disable=no-member
@@ -2488,10 +2603,12 @@ class Commands:
         """
         # c = self
         try:
-            with open(fn, 'r') as f:
+            with open(fn, 'rb') as f:  # 2020/11/14: Allow unicode characters!
                 s = f.read()
+                s = g.toUnicode(s)
             return s.find('@+leo-ver=') > -1
         except Exception:
+            g.es_exception()
             return False
     #@+node:ekr.20031218072017.2925: *4* c.markAllAtFileNodesDirty
     def markAllAtFileNodesDirty(self, event=None):
@@ -2537,11 +2654,11 @@ class Commands:
         if d and g.app.externalFilesController:
             # Select an ancestor @<file> node if possible.
             if not d.get('p'):
-                d ['p'] = None
+                d['p'] = None
                 p = c.p
                 while p:
                     if p.isAnyAtFileNode():
-                        d ['p'] = p
+                        d['p'] = p
                         break
                     p.moveToParent()
             g.app.externalFilesController.open_with(c, d)
@@ -2567,20 +2684,16 @@ class Commands:
         Create an outline describing the git diffs for all files changed
         between rev1 and rev2.
         """
-        import leo.commands.editFileCommands as efc
-        efc.GitDiffController(c=self).diff_file(
-            directory=directory,
-            fn=fn,
-            rev1=rev1,
-            rev2=rev2,
-        )
+        from leo.commands import editFileCommands as efc
+        x = efc.GitDiffController(c=self)
+        x.diff_file(directory=directory, fn=fn, rev1=rev1, rev2=rev2)
     #@+node:ekr.20180508110755.1: *4* c.diff_two_revs
     def diff_two_revs(self, directory=None, rev1='', rev2=''):
         """
         Create an outline describing the git diffs for all files changed
         between rev1 and rev2.
         """
-        import leo.commands.editFileCommands as efc
+        from leo.commands import editFileCommands as efc
         efc.GitDiffController(c=self).diff_two_revs(
             directory=directory,
             rev1=rev1,
@@ -2592,7 +2705,7 @@ class Commands:
         Create an outline describing the git diffs for all files changed
         between rev1 and rev2.
         """
-        import leo.commands.editFileCommands as efc
+        from leo.commands import editFileCommands as efc
         efc.GitDiffController(c=self).diff_two_branches(
             branch1=branch1,
             branch2=branch2,
@@ -2601,8 +2714,8 @@ class Commands:
         )
     #@+node:ekr.20180510105125.1: *4* c.git_diff
     def git_diff(self, rev1='HEAD', rev2='', directory=None):
-        
-        import leo.commands.editFileCommands as efc
+
+        from leo.commands import editFileCommands as efc
         efc.GitDiffController(c=self).git_diff(
             directory=directory,
             rev1=rev1,
@@ -2661,7 +2774,7 @@ class Commands:
         if c.import_error_nodes:
             files = '\n'.join(sorted(set(c.import_error_nodes)))
             if use_dialogs:
-                message=(
+                message = (
                     'The following were not imported properly. '
                     f"Inserted @ignore in...\n{files}")
                 g.app.gui.runAskOkDialog(c, message=message, title='Import errors')
@@ -2707,14 +2820,17 @@ class Commands:
     def syntaxErrorDialog(self):
         """Warn about syntax errors in files."""
         c = self
-        if g.app.syntax_error_files and c.config.getBool('syntax-error-popup', default=False):
+        if g.app.syntax_error_files and c.config.getBool(
+            'syntax-error-popup', default=False):
             aList = sorted(set(g.app.syntax_error_files))
             g.app.syntax_error_files = []
-            message = 'Python errors in:\n\n%s' % '\n'.join(aList)
-            g.app.gui.runAskOkDialog(c,
+            list_s = '\n'.join(aList)
+            g.app.gui.runAskOkDialog(
+                c,
                 title='Python Errors',
-                message=message,
-                text="Ok")
+                message=f"Python errors in:\n\n{list_s}",
+                text="Ok",
+            )
     #@+node:ekr.20031218072017.2945: *4* c.Dragging
     #@+node:ekr.20031218072017.2947: *5* c.dragToNthChildOf
     def dragToNthChildOf(self, p, parent, n):
@@ -2732,7 +2848,7 @@ class Commands:
         c.setChanged()
         u.afterMoveNode(p, undoType, undoData)
         c.redraw(p)
-        c.updateSyntaxColorer(p) # Dragging can change syntax coloring.
+        c.updateSyntaxColorer(p)  # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2353: *5* c.dragAfter
     def dragAfter(self, p, after):
         c = self; u = self.undoer; undoType = 'Drag'
@@ -2749,18 +2865,18 @@ class Commands:
         c.setChanged()
         u.afterMoveNode(p, undoType, undoData)
         c.redraw(p)
-        c.updateSyntaxColorer(p) # Dragging can change syntax coloring.
+        c.updateSyntaxColorer(p)  # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2946: *5* c.dragCloneToNthChildOf
     def dragCloneToNthChildOf(self, p, parent, n):
         c = self; u = c.undoer; undoType = 'Clone Drag'
         current = c.p
-        clone = p.clone() # Creates clone & dependents, does not set undo.
+        clone = p.clone()  # Creates clone & dependents, does not set undo.
         if (
             not c.checkDrag(p, parent) or
             not c.checkMoveWithParentWithWarning(clone, parent, True)
         ):
-            clone.doDelete(newNode=p) # Destroys clone and makes p the current node.
-            c.selectPosition(p) # Also sets root position.
+            clone.doDelete(newNode=p)  # Destroys clone and makes p the current node.
+            c.selectPosition(p)  # Also sets root position.
             return
         c.endEditing()
         undoData = u.beforeInsertNode(current)
@@ -2770,13 +2886,14 @@ class Commands:
         c.setChanged()
         u.afterInsertNode(clone, undoType, undoData)
         c.redraw(clone)
-        c.updateSyntaxColorer(clone) # Dragging can change syntax coloring.
+        c.updateSyntaxColorer(clone)  # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2948: *5* c.dragCloneAfter
     def dragCloneAfter(self, p, after):
         c = self; u = c.undoer; undoType = 'Clone Drag'
         current = c.p
-        clone = p.clone() # Creates clone.  Does not set undo.
-        if c.checkDrag(p, after) and c.checkMoveWithParentWithWarning(clone, after.parent(), True):
+        clone = p.clone()  # Creates clone.  Does not set undo.
+        if c.checkDrag(
+            p, after) and c.checkMoveWithParentWithWarning(clone, after.parent(), True):
             c.endEditing()
             undoData = u.beforeInsertNode(current)
             clone.setDirty()
@@ -2788,7 +2905,7 @@ class Commands:
         else:
             clone.doDelete(newNode=p)
         c.redraw(p)
-        c.updateSyntaxColorer(clone) # Dragging can change syntax coloring.
+        c.updateSyntaxColorer(clone)  # Dragging can change syntax coloring.
     #@+node:ekr.20031218072017.2949: *4* c.Drawing
     #@+node:ekr.20080514131122.7: *5* c.begin/endUpdate
     def beginUpdate(self):
@@ -2804,15 +2921,15 @@ class Commands:
         if flag:
             c.requestRedrawFlag = True
 
-    BeginUpdate = beginUpdate # Compatibility with old scripts
-    EndUpdate = endUpdate # Compatibility with old scripts
+    BeginUpdate = beginUpdate  # Compatibility with old scripts
+    EndUpdate = endUpdate  # Compatibility with old scripts
     #@+node:ekr.20080514131122.8: *5* c.bringToFront
     def bringToFront(self, c2=None, set_focus=True):
         c = self
         c2 = c2 or c
         g.app.gui.ensure_commander_visible(c2)
 
-    BringToFront = bringToFront # Compatibility with old scripts
+    BringToFront = bringToFront  # Compatibility with old scripts
     #@+node:ekr.20040803072955.143: *5* c.expandAllAncestors
     def expandAllAncestors(self, p):
         """
@@ -2850,7 +2967,10 @@ class Commands:
         if c.requestedFocusWidget:
             w = c.requestedFocusWidget
             if 'focus' in g.app.debug and not g.unitTesting:
-                name = w.objectName() if hasattr(w, 'objectName') else w.__class__.__name__
+                if hasattr(w, 'objectName'):
+                    name = w.objectName()
+                else:
+                    name = w.__class__.__name__
                 g.trace('DELAYED FOCUS', name)
             c.set_focus(w)
             c.requestedFocusWidget = None
@@ -2873,7 +2993,7 @@ class Commands:
         colorizer = c.frame.body.colorizer
         if colorizer and hasattr(colorizer, 'colorize'):
             colorizer.colorize(p or c.p)
-            
+
     recolor_now = recolor
     #@+node:ekr.20080514131122.14: *5* c.redrawing...
     #@+node:ekr.20170808014610.1: *6* c.enable/disable_redraw
@@ -2881,7 +3001,7 @@ class Commands:
         """Disable all redrawing until enabled."""
         c = self
         c.enableRedrawFlag = False
-        
+
     def enable_redraw(self):
         c = self
         c.enableRedrawFlag = True
@@ -3005,7 +3125,7 @@ class Commands:
         c = self; p = c.p; p1 = p.copy()
         invisible = c.config.getBool('invisible-outline-navigation')
         ch = event.char if event else ''
-        allFlag = ch.isupper() and invisible # all is a global (!?)
+        allFlag = ch.isupper() and invisible  # all is a global (!?)
         if not invisible: ch = ch.lower()
         found = False
         extend = self.navQuickKey()
@@ -3019,7 +3139,7 @@ class Commands:
                     p.moveToVisNext(c)
                 if not p:
                     p = c.rootPosition()
-                if p == p1: # Never try to match the same position.
+                if p == p1:  # Never try to match the same position.
                     found = False; break
                 newPrefix = c.navHelper(p, ch, extend2)
                 if newPrefix:
@@ -3085,7 +3205,7 @@ class Commands:
             # Do a *full* redraw.
             # c.redraw_after_contract(p) only contracts a single position.
             c.redraw(p)
-        c.expansionLevel = 1 # Reset expansion level.
+        c.expansionLevel = 1  # Reset expansion level.
     #@+node:ekr.20031218072017.2910: *5* c.contractSubtree
     def contractSubtree(self, p):
         for p in p.subtree():
@@ -3119,7 +3239,7 @@ class Commands:
         # It's always useful to announce the level.
         # c.k.setLabelBlue('level: %s' % (max_level+1))
         # g.es('level', max_level + 1)
-        c.frame.putStatusLine('level: %s' % (max_level+1))
+        c.frame.putStatusLine(f"level: {max_level + 1}")
             # bg='red', fg='red')
     #@+node:ekr.20141028061518.23: *4* c.Focus
     #@+node:ekr.20080514131122.9: *5* c.get/request/set_focus
@@ -3142,7 +3262,8 @@ class Commands:
         if w and g.app.gui:
             if 'focus' in g.app.debug:
                 # g.trace('\n(c)', repr(w))
-                name = w.objectName() if hasattr(w, 'objectName') else w.__class__.__name__
+                name = w.objectName(
+                    ) if hasattr(w, 'objectName') else w.__class__.__name__
                 g.trace('(c)', name)
             c.requestedFocusWidget = w
 
@@ -3151,7 +3272,8 @@ class Commands:
         c = self
         if w and g.app.gui:
             if trace:
-                name = w.objectName() if hasattr(w, 'objectName') else w.__class__.__name__
+                name = w.objectName(
+                    ) if hasattr(w, 'objectName') else w.__class__.__name__
                 g.trace('(c)', name)
             g.app.gui.set_focus(c, w)
         else:
@@ -3168,7 +3290,7 @@ class Commands:
         c = self
         if 'focus' in g.app.debug:
             c.trace_focus_count += 1
-            g.pr('%4d' % (c.trace_focus_count), c.widget_name(w), g.callers(8))
+            g.pr(f"{c.trace_focus_count:4d}", c.widget_name(w), g.callers(8))
     #@+node:ekr.20070226121510: *5* c.xFocusHelper & initialFocusHelper
     def treeFocusHelper(self):
         c = self
@@ -3245,7 +3367,7 @@ class Commands:
                 return val
 
             keys['command'] = add_commandCallback
-            menu.add_command(** keys)
+            menu.add_command(**keys)
         else:
             g.trace('can not happen: no "command" arg')
     #@+node:ekr.20171123203044.1: *5* c.Menu Enablers
@@ -3261,7 +3383,7 @@ class Commands:
     def canContractAllHeadlines(self):
         """Contract all nodes in the tree."""
         c = self
-        for p in c.all_positions(): # was c.all_unique_positions()
+        for p in c.all_positions():  # was c.all_unique_positions()
             if p.isExpanded():
                 return True
         return False
@@ -3300,7 +3422,7 @@ class Commands:
     def canExpandAllHeadlines(self):
         """Return True if the Expand All Nodes menu item should be enabled."""
         c = self
-        for p in c.all_positions(): # was c.all_unique_positions()
+        for p in c.all_positions():  # was c.all_unique_positions()
             if not p.isExpanded():
                 return True
         return False
@@ -3406,7 +3528,7 @@ class Commands:
             return True
         if c.hoistStack:
             limit, limitIsVisible = c.visLimit()
-            if limitIsVisible: # A hoist
+            if limitIsVisible:  # A hoist
                 return current != limit
             # A chapter.
             return current != limit.firstChild()
@@ -3499,20 +3621,13 @@ class Commands:
                 return True
         return False
     #@+node:ekr.20031218072017.2990: *4* c.Selecting
-    #@+node:ekr.20031218072017.2992: *5* c.endEditing (calls tree.endEditLabel)
-    # Ends the editing in the outline.
-
+    #@+node:ekr.20031218072017.2992: *5* c.endEditing
     def endEditing(self):
+        """End the editing of a headline."""
         c = self
         p = c.p
         if p:
             c.frame.tree.endEditLabel()
-        # The following code would be wrong; c.endEditing is a utility method.
-        # k = c.k
-        # if k:
-            # k.setDefaultInputState()
-            # # Recolor the *body* text, **not** the headline.
-            # k.showStateAndMode(w=c.frame.body.wrapper)
     #@+node:ville.20090525205736.12325: *5* c.getSelectedPositions
     def getSelectedPositions(self):
         """ Get list (PosList) of currently selected positions
@@ -3525,7 +3640,7 @@ class Commands:
     def redrawAndEdit(self, p, selectAll=False, selection=None, keepMinibuffer=False):
         """Redraw the screen and edit p's headline."""
         c, k = self, self.k
-        c.redraw(p) # This *must* be done now.
+        c.redraw(p)  # This *must* be done now.
         if p:
             # This should request focus.
             c.frame.tree.editLabel(p, selectAll=selectAll, selection=selection)
@@ -3553,7 +3668,7 @@ class Commands:
         c = self
         cc = c.chapterController
         if not p:
-            if not g.app.batchMode: # A serious error.
+            if not g.app.batchMode:  # A serious error.
                 g.trace('Warning: no p', g.callers())
             return
         if cc and not cc.selectChapterLockout:
@@ -3573,6 +3688,7 @@ class Commands:
             # We may be in the midst of an undo.
 
     # Compatibility, but confusing.
+
     selectVnode = selectPosition
     #@+node:ekr.20080503055349.1: *5* c.setPositionAfterSort
     def setPositionAfterSort(self, sortChildren):
@@ -3604,40 +3720,10 @@ class Commands:
             c.redraw_after_select(p)
         c.treeFocusHelper()
             # This is essential.
-    #@+node:ekr.20171123135625.51: *4* c.updateBodyPane (handles changeNodeContents)
-    def updateBodyPane(self, head, middle, tail, undoType, oldSel, oldYview, preserveSel=False):
-        """Handle changed text in the body pane."""
-        c, p = self, self.p
-        body = c.frame.body
-        # Update the text and notify the event handler.
-        body.setSelectionAreas(head, middle, tail)
-        # Expand the selection.
-        head = head or ''
-        middle = middle or ''
-        tail = tail or ''
-        if preserveSel:
-            # Leo 5.6: just use the computed oldSel.
-            i, j = oldSel
-        else:
-            i = len(head)
-            j = max(i, len(head) + len(middle) - 1)
-            newSel = i, j
-        body.wrapper.setSelectionRange(i, j)
-        # This handles the undo.
-        body.onBodyChanged(undoType, oldSel=oldSel or newSel, oldYview=oldYview)
-        # Update the changed mark and icon.
-        p.setDirty()
-        c.setChanged()
-        c.redraw_after_icons_changed()
-        # Scroll as necessary.
-        if oldYview:
-            body.wrapper.setYScrollPosition(oldYview)
-        else:
-            body.wrapper.seeInsertPoint()
-        body.wrapper.setFocus()
-        c.recolor()
     #@+node:ekr.20130823083943.12559: *3* c.recursiveImport
     def recursiveImport(self, dir_, kind,
+        add_context=None,  # Override setting only if True/False
+        add_file_context=None,  # Override setting only if True/False
         add_path=True,
         recursive=True,
         safe_at_file=True,
@@ -3671,8 +3757,10 @@ class Commands:
         if g.os_path_exists(dir_):
             # Import all files in dir_ after c.p.
             try:
-                import leo.core.leoImport as leoImport
+                from leo.core import leoImport
                 cc = leoImport.RecursiveImportController(c, kind,
+                    add_context=add_context,
+                    add_file_context=add_file_context,
                     add_path=add_path,
                     recursive=recursive,
                     safe_at_file=safe_at_file,
@@ -3686,16 +3774,16 @@ class Commands:
         else:
             g.es_print(f"Does not exist: {dir_}")
     #@+node:ekr.20171124084149.1: *3* c.Scripting utils
-    #@+node:ekr.20160201072634.1: *4* c.cloneFindByPredicated
+    #@+node:ekr.20160201072634.1: *4* c.cloneFindByPredicate
     def cloneFindByPredicate(self,
-        generator,     # The generator used to traverse the tree.
-        predicate,     # A function of one argument p, returning True
+        generator,  # The generator used to traverse the tree.
+        predicate,  # A function of one argument p, returning True
                        # if p should be included in the results.
         failMsg=None,  # Failure message. Default is no message.
-        flatten=False, # True: Put all matches at the top level.
-        iconPath=None, # Full path to icon to attach to all matches.
-        redraw=True,   # True: redraw the outline,
-        undoType=None, # The undo name, shown in the Edit:Undo menu.
+        flatten=False,  # True: Put all matches at the top level.
+        iconPath=None,  # Full path to icon to attach to all matches.
+        redraw=True,  # True: redraw the outline,
+        undoType=None,  # The undo name, shown in the Edit:Undo menu.
                        # The default is 'clone-find-predicate'
     ):
         """
@@ -3760,7 +3848,7 @@ class Commands:
                     'yoffset': 0,
 
                 })
-                p.v.u ['icons'] = aList
+                p.v.u['icons'] = aList
         elif iconPath:
             g.trace('bad icon path', iconPath)
     #@+node:ekr.20160201075438.1: *5* c.createCloneFindPredicateRoot
@@ -3794,7 +3882,7 @@ class Commands:
         undoData = u.beforeChangeGroup(u_node, undoType)
         changed_node = False
         for idx, head in enumerate(heads):
-            if parent is None and idx == 0: # if parent = None, create top level node for first head
+            if parent is None and idx == 0:  # if parent = None, create top level node for first head
                 if not forcecreate:
                     for pos in self.all_positions():
                         if pos.h == head:
@@ -3806,7 +3894,7 @@ class Commands:
                     n.h = head
                     u.afterInsertNode(n, undoType2, u_d)
                     parent = n
-            else: # else, simply create child nodes each round
+            else:  # else, simply create child nodes each round
                 if not forcecreate:
                     for ch in parent.children():
                         if ch.h == head:
@@ -3821,167 +3909,68 @@ class Commands:
                     parent = n
             changed_node = False
         u.afterChangeGroup(parent, undoType, undoData)
-        return parent # actually the last created/found position
+        return parent  # actually the last created/found position
     #@+node:ekr.20100802121531.5804: *4* c.deletePositionsInList
-    def deletePositionsInList(self, aList, callback=None, redraw=True):
+    def deletePositionsInList(self, aList, redraw=True):
         """
-        Delete all vnodes corresponding to the positions in aList. If a
-        callback is given, the callback is called for every node in the list.
+        Delete all vnodes corresponding to the positions in aList.
 
-        The callback takes one explicit argument, p. As usual, the callback can
-        bind values using keyword arguments.
-
-        This is *very* tricky code. The theory of operation section explains why.
+        See "Theory of operation of c.deletePositionsInList" in LeoDocs.leo.
         """
-        #@+<< theory of operation >>
-        #@+node:ekr.20150312080344.8: *5* << theory of operation >> (deletePositionsInList)
-        #@+at
-        #@@language rest
-        #@@wrap
-        # The Aha: the positions passed to p.deletePositionsInList only
-        # *specify* the desired changes; the only way to *make* those changes is
-        # to operate on vnodes!
-        # 
-        # Consider this outline, containing no clones::
-        # 
-        #     + ROOT
-        #       - A
-        #       - B
-        # 
-        # The fundamental problem is this. If we delete node A, the index of
-        # node B in ROOT.children will change. This problem has (almost) nothing
-        # to do with clones or positions.
-        # 
-        # To make this concrete, let's look at the *vnodes* that represent this
-        # tree. It is the vnodes, and *not* the positions, that represent all of
-        # Leo's data. Let ROOT, A and B be the vnodes corresponding to the nodes
-        # ROOT, A and B. ROOT.children will look like this at first::
-        # 
-        #     ROOT.children = [A,B]
-        # 
-        # That is, the children array contains references (links) to both A and
-        # B. After deleting A, we will have::
-        # 
-        #     ROOT.children = [B]
-        # 
-        # As you can see, the reference to B is at index 1 of ROOT.children
-        # before deleting A, and at index 0 of ROOT.children after deleting A.
-        # Thus, *any* position referring to B will become invalid after deleting
-        # A.
-        # 
-        # Several people, including myself, have proposed an unsound
-        # solution--just delete positions in reverse order, so that B will be
-        # deleted before A. This idea has appeal, but it is wrong. Here is an
-        # outline that shows that there is *no* correct order for deleting
-        # positions. All A' nodes are clones of each other::
-        # 
-        #     + ROOT
-        #       + A'
-        #         - B # at position p1
-        #       + A'
-        #         - B # at position p2
-        # 
-        # **Important**: B is *not* a clone. Also note that there is only *one*
-        # node called A and *one* node called B. The children arrays will look
-        # like::
-        # 
-        #     ROOT.children = [A,A]
-        #     A.children = [B]
-        #     B.children = []
-        # 
-        # It surely must be reasonable to pass either *or both* positions p1 and
-        # p2 to p.deletePositionsInList. But after deleting the B corresponding
-        # to p1, the children arrays will look like:
-        # 
-        #     ROOT.children = [A,A]
-        #     A.children = []
-        #     B.children = [] # B is no longer referenced anywhere!
-        # 
-        # So if p.deletePositionsInList attempts to delete position p2 (from A),
-        # B will no longer appear in A.children!
-        # 
-        # There are many other cases that we could discuss, but the conclusion
-        # in all cases is that we must use the positions passed to
-        # p.deletePositionsInList only as *hints* about what to do.
-        # 
-        # Happily, there is a simple strategy that sidesteps all the
-        # difficulties:
-        # 
-        # Step 1. Verify, *before* making any changes to the outline, that all
-        # the positions passed to p.deletePositionsInList *initially* make
-        # sense.
-        # 
-        # Step 2. Treat each position as a "request" to delete *some* vnode from
-        # the children array in the *position's* parent vnode.
-        # 
-        # This is just a bit subtle. Let me explain it in detail.
-        # 
-        # First, recall that vnodes do not have unique parent vnodes. Because of
-        # clones, a vnode may may have *many* parents. Happily, every position
-        # *does* specify a unique parent (vnode) at that position.
-        # 
-        # Second, as shown above, there is no way to order positions such that
-        # all later positions remain valid. As the example above shows, deleting
-        # (the vnode corresponding to) a position P may cause *all* later
-        # positions referring to P.v to refer to *already deleted* vnodes.
-        # 
-        # In other words, we simply *must* ignore the child indices in
-        # positions. Given a position P, P.parent is well defined. So Step 2
-        # above will simply delete the *first* element in P.parent.children
-        # containing P.v.
-        # 
-        # As we have seen, there may not even *be* any such element of
-        # P.parent.children: a previous delete may have already deleted the last
-        # item of P.parent.children equal to P.v. That should *not* be
-        # considered an error--Step 1 has ensured that all positions
-        # *originally* did make sense.
-        # 
-        # Summary
-        # 
-        # Positions passed to p.deletePositionsInList specify *vnodes* to be
-        # deleted from specific parents, but they do *not* specify at what index
-        # in the parent.children array (if any!) those vnodes are to be found.
-        # The algorithm will delete the *first* item in the children array that
-        # references the vnode to be deleted.
-        # 
-        # This will almost always be good enough. In the unlikely event that
-        # more control is desired, p.deletePositionsInList can not possibly be
-        # used.
-        # 
-        # The new emphasis on vnodes at last puts the problem an a completely
-        # solid foundation. Moreover, the new algorithm should be considerably
-        # faster than the old: there is no need to sort positions.
-        #@-<< theory of operation >>
+        # New implementation by Vitalije 2020-03-17 17:29
         c = self
-        # Verify all positions *before* altering the tree.
-        aList2 = []
-        for p in aList:
-            if c.positionExists(p):
-                aList2.append(p.copy())
-            else:
-                g.trace('invalid position', p)
-        if not aList2:
-            return # Don't redraw the screen unless necessary!
-        # Delete p.v for all positions p in reversed(sorted(aList2)).
-        if callback:
-            for p in reversed(sorted(aList2)):
-                if c.positionExists(p):
-                    callback(p)
-        else:
-            for p in reversed(sorted(aList2)):
-                if c.positionExists(p):
-                    v = p.v
-                    parent_v = p.stack[-1][0] if p.stack else c.hiddenRootNode
-                    if v in parent_v.children:
-                        childIndex = parent_v.children.index(v)
-                        v._cutLink(childIndex, parent_v)
-        # Make sure c.hiddenRootNode always has at least one child.
-        if not c.hiddenRootNode.children:
-            v = leoNodes.VNode(context=c)
-            v._addCopiedLink(childIndex=0, parent_v=c.hiddenRootNode)
+        # Ensure all positions are valid.
+        aList = [p for p in aList if c.positionExists(p)]
+        if not aList:
+            return []
+
+        def p2link(p):
+            parent_v = p.stack[-1][0] if p.stack else c.hiddenRootNode
+            return p._childIndex, parent_v
+
+        links_to_be_cut = sorted(set(map(p2link, aList)), key=lambda x: -x[0])
+        undodata = []
+        for i, v in links_to_be_cut:
+            ch = v.children.pop(i)
+            ch.parents.remove(v)
+            undodata.append((v.gnx, i, ch.gnx))
         if redraw:
-            c.selectPosition(c.rootPosition())
-                # Calls redraw()
+            if not c.positionExists(c.p):
+                c.setCurrentPosition(c.rootPosition())
+            c.redraw()
+        return undodata
+
+    #@+node:vitalije.20200318161844.1: *4* c.undoableDeletePositions
+    def undoableDeletePositions(self, aList):
+        """
+        Deletes all vnodes corresponding to the positions in aList,
+        and make changes undoable.
+        """
+        c = self
+        u = c.undoer
+        data = c.deletePositionsInList(aList)
+        gnx2v = c.fileCommands.gnxDict
+        def undo():
+            for pgnx, i, chgnx in reversed(u.getBead(u.bead).data):
+                v = gnx2v[pgnx]
+                ch = gnx2v[chgnx]
+                v.children.insert(i, ch)
+                ch.parents.append(v)
+            if not c.positionExists(c.p):
+                c.setCurrentPosition(c.rootPosition())
+        def redo():
+            for pgnx, i, chgnx in u.getBead(u.bead + 1).data:
+                v = gnx2v[pgnx]
+                ch = v.children.pop(i)
+                ch.parents.remove(v)
+            if not c.positionExists(c.p):
+                c.setCurrentPosition(c.rootPosition())
+        u.pushBead(g.Bunch(
+            data=data,
+            undoType='delete nodes',
+            undoHelper=undo,
+            redoHelper=redo,
+        ))
     #@+node:ekr.20091211111443.6265: *4* c.doBatchOperations & helpers
     def doBatchOperations(self, aList=None):
         # Validate aList and create the parents dict
@@ -4015,30 +4004,30 @@ class Commands:
     #@+node:ekr.20091002083910.6106: *4* c.find_b & find_h (PosList)
     #@+<< PosList doc >>
     #@+node:bob.20101215134608.5898: *5* << PosList doc >>
-    #@@nocolor-node
+    #@@language rest
     #@+at
     # List of positions
-    # 
+    #
     # Functions find_h() and find_b() both return an instance of PosList.
-    # 
+    #
     # Methods filter_h() and filter_b() refine a PosList.
-    # 
+    #
     # Method children() generates a new PosList by descending one level from
     # all the nodes in a PosList.
-    # 
+    #
     # A chain of PosList method calls must begin with find_h() or find_b().
     # The rest of the chain can be any combination of filter_h(),
     # filter_b(), and children(). For example:
-    # 
+    #
     #     pl = c.find_h('@file.*py').children().filter_h('class.*').filter_b('import (.*)')
-    # 
+    #
     # For each position, pos, in the PosList returned, find_h() and
     # filter_h() set attribute pos.mo to the match object (see Python
     # Regular Expression documentation) for the pattern match.
-    # 
+    #
     # Caution: The pattern given to find_h() or filter_h() must match zero
     # or more characters at the beginning of the headline.
-    # 
+    #
     # For each position, pos, the postlist returned, find_b() and filter_b()
     # set attribute pos.matchiter to an iterator that will return a match
     # object for each of the non-overlapping matches of the pattern in the

@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20100103093121.5339: * @file stickynotes_plus.py
+#@+node:ekr.20100103093121.5339: * @file ../plugins/stickynotes_plus.py
 #@+<< docstring >>
 #@+node:ekr.20100103100944.5389: ** << docstring >>
 ''' Adds simple "sticky notes" feature (popout editors) for Qt gui.
@@ -11,15 +11,12 @@ alt-x stickynote to pop out current node as a note.
 # Disable Qt warnings.
 #@+<< imports >>
 #@+node:ekr.20100103100944.5391: ** << imports >> (stickynotes_plus.py)
-import leo.core.leoGlobals as g
-
-# Fail gracefully if the gui is not qt.
-g.assertUi('qt')
-
-# import sys
 import webbrowser
-
+from leo.core import leoGlobals as g
+from leo.core.leoQt import QString, QtCore, QtGui, QtWidgets
+# Third-party tools.
 try:
+    # pylint: disable=import-error
     import markdown
 except ImportError:
     print('stickynotes_plus.py: can not import markdown')
@@ -27,8 +24,10 @@ except ImportError:
 except SyntaxError:
     print('stickynotes_plus.py: syntax error in markdown')
     markdown = None
-
-from leo.core.leoQt import QString, QtCore, QtGui, QtWidgets # isQt5,
+# Fail gracefully if the gui is not qt.
+g.assertUi('qt')
+#
+# Abbreviations...
 Qt = QtCore.Qt
 # Widgets
 QAction = QtWidgets.QAction
@@ -181,8 +180,7 @@ class notetextedit(QTextEdit):
     #@+others
     #@+node:ekr.20100103100944.5397: *3* __init__
     def __init__(self, get_markdown, save, parent=None):
-        super(notetextedit, self).__init__(parent)
-
+        super().__init__(parent)
         self.save = save
         self.setLineWrapMode(QTextEdit.WidgetWidth)
         self.setTabChangesFocus(True)
@@ -495,7 +493,7 @@ class notetextedit(QTextEdit):
             elif what == notetextedit.Save:
                 self.save()
 
-    #@+node:ekr.20100103100944.5416: *3* mouseMoveEvent
+    #@+node:ekr.20100103100944.5416: *3* mouseMoveEvent (stickynotes.py)
     def mouseMoveEvent(self, event):
         #print "mouseMoveEvent"
         pos = event.pos()

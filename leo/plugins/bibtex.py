@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:timo.20050213160555: * @file bibtex.py
+#@+node:timo.20050213160555: * @file ../plugins/bibtex.py
 #@+<< docstring >>
 #@+node:ekr.20050912175750: ** << docstring >>
 #@@nocolor-node
@@ -62,7 +62,7 @@ BibTeX file.
 
 '''
 #@-<< docstring >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 # By Timo Honkasalo: contributed under the same license as Leo.py itself.
 # 2017/02/23: Rewritten by EKR
 #@+<< define templates dict>>
@@ -91,7 +91,7 @@ entrytypes.append('@string')
 #@+<< to do >>
 #@+node:timo.20050213185039: ** <<to do>>
 #@+at To do list (in approximate order of importance):
-# 
+#
 # - Translating between non-ascii characters and LaTeX code when reading/writing
 # - Checking for duplicate keys
 # - Checking for missing commas when writing the file
@@ -105,7 +105,7 @@ entrytypes.append('@string')
 # - Syntax highligting
 #@-<< to do >>
 #@+others
-#@+node:ekr.20100128073941.5370: ** init
+#@+node:ekr.20100128073941.5370: ** init (bibtex.py)
 def init():
     '''Return True if the plugin has loaded successfully.'''
     ok = not g.app.unitTesting

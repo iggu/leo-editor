@@ -2,7 +2,7 @@
 #@+leo-ver=5-thin
 #@+node:ekr.20150514154159.1: * @file leoHistory.py
 #@@first
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 assert g
 #@+others
 #@+node:ekr.20160514120255.1: ** class NodeHistory
@@ -53,7 +53,7 @@ class NodeHistory:
                 oldChapter = cc.getSelectedChapter()
                 if oldChapter != chapter:
                     cc.selectChapterForPosition(p, chapter=chapter)
-                c.selectPosition(p) # Calls cc.selectChapterForPosition
+                c.selectPosition(p)  # Calls cc.selectChapterForPosition
             finally:
                 self.skipBeadUpdate = False
         # Fix bug #180: Always call self.update here.
@@ -78,12 +78,12 @@ class NodeHistory:
             if c.positionExists(p2):
                 if p == p2:
                     if change:
-                        pass # We'll append later.
+                        pass  # We'll append later.
                     elif found == -1:
                         found = i
                         aList.append(data)
                     else:
-                        pass # Remove any duplicate.
+                        pass  # Remove any duplicate.
                 else:
                     aList.append(data)
         if change or found == -1:

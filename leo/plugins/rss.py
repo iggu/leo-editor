@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20131004162848.11444: * @file rss.py
+#@+node:ekr.20131004162848.11444: * @file ../plugins/rss.py
 #@@language python
 #@@tabwidth -4
 
@@ -134,7 +134,7 @@ __version__ = '0.3'
 #@+<< version history >>
 #@+node:peckj.20131002201824.5540: ** << version history >>
 #@+at
-# 
+#
 # Version 0.1 - initial functionality.  NO UNDO.
 # Version 0.2 - bugfix for bug reported by Viktor Ransmayr regarding not having dates in the feed.
 # Version 0.3 - configurable with a few @settings in myLeoSettings.leo
@@ -142,17 +142,13 @@ __version__ = '0.3'
 
 #@+<< imports >>
 #@+node:peckj.20131002201824.5541: ** << imports >>
-import leo.core.leoGlobals as g
-import time
-
-# Whatever other imports your plugins uses.
-# feedparser = g.importExtension('feedparser',pluginName='rss.py',verbose=False)
-
 try:
     import feedparser
 except ImportError:
     feedparser = None
     print('rss.py: can not import feedparser')
+import time
+from leo.core import leoGlobals as g
 #@-<< imports >>
 
 #@+others

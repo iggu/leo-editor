@@ -79,9 +79,8 @@ from copy import deepcopy
 from datetime import date, datetime
 from hashlib import sha1
 
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 from leo.core.leoNodes import vnode
-
 from leo.core.leoQt import QtCore  # see QTimer in LeoCloud.__init__
 
 # for 'key: value' lines in body text
@@ -518,7 +517,7 @@ class LeoCloud:
         # but... (a) top node is ending up dirty anyway, and (b) this is ok
         # because we want the user to understand why the outline's changed,
         # so just ignore top node dirtiness in self.subtree_changed()
-        self.c.setChanged(changedFlag=True)
+        self.c.setChanged()
         p.v.u.setdefault('_leo_cloud', {})['last_read'] = datetime.now().isoformat()
 
 

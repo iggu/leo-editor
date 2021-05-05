@@ -10,13 +10,11 @@ Clones and derived files are ignored.  Useful for scanning
 multiple .leo files quickly.
 """
 
-from __future__ import print_function
-
-import leo.core.leoGlobals as g
+from binascii import unhexlify
+from pickle import loads
 from xml.sax.handler import ContentHandler
 from xml.sax import parseString
-from pickle import loads
-from binascii import unhexlify
+from leo.core import leoGlobals as g
 
 #@+node:ekr.20120519121124.9921: ** class LeoNode
 class LeoNode:
@@ -40,7 +38,6 @@ class LeoNode:
     """
     #@+others
     #@+node:ekr.20120519121124.9922: *3* __init__
-
     def __init__(self):
         """Set ivars"""
         self.children = []
@@ -56,14 +53,14 @@ class LeoNode:
     def __str__(self, level=0):
         """Return long text representation of node and
         descendents with indentation"""
-        ans = [("%s%s (%s)" % ('  '*(level-1), self.h, self.gnx))[:78]]
+        ans = [("%s%s (%s)" % ('  ' * (level - 1), self.h, self.gnx))[:78]]
         for k in self.u:
             s = self.u[k]
-            ans.append(("%s@%s: %s"%('  '*(level+1), k, repr(s)))[:78])
+            ans.append(("%s@%s: %s" % ('  ' * (level + 1), k, repr(s)))[:78])
         for line in self.b[:5]:
-            ans.append(('  '*(level+1) + '|' + line)[:78])
+            ans.append(('  ' * (level + 1) + '|' + line)[:78])
         for child in self.children:
-            ans.append(child.__str__(level=level+1))
+            ans.append(child.__str__(level=level + 1))
         return '\n'.join(ans)
 
     #@+node:ekr.20120519121124.9924: *3* UNL
@@ -77,8 +74,7 @@ class LeoNode:
         """
 
         pos = node.parent.children.index(node)
-        count = len([i for i in node.parent.children[:pos]
-                     if i.h == node.h])
+        count = len([i for i in node.parent.children[:pos] if i.h == node.h])
         return node.h, pos, count
 
     def UNL(self):

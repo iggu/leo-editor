@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #@+leo-ver=5-thin
-#@+node:ekr.20120309073748.9872: * @file bigdash.py
+#@+node:ekr.20120309073748.9872: * @file ../plugins/bigdash.py
 #@@first
 '''
 Global search window
@@ -17,13 +17,13 @@ Requires the whoosh library ('easy_install whoosh') to do full text searches.
 #@+node:ville.20120302233106.3583: ** << notes >> (bigdash.py)
 #@@nocolor-node
 #@+at
-# 
+#
 # Terry: I added an index of the oulines containing hits at the top of the
 # output. Because the link handling is already handled by BigDash and not the
 # WebView widget, I couldn't find a way to use the normal "#id" <href>/<a>
 # index jumping, so I extended the link handling to re-run the search and
 # render hits in the outline of interest at the top.
-# 
+#
 # EKR:
 # - This plugin does not use leofts.
 # - g.app.__global_search contains the singleton GlobalSearch instance.
@@ -35,7 +35,9 @@ Requires the whoosh library ('easy_install whoosh') to do full text searches.
 #@-<<  notes >>
 #@+<< imports >>
 #@+node:ekr.20140920041848.17949: ** << imports >> (bigdash.py)
-import leo.core.leoGlobals as g
+import os
+import sys
+from leo.core import leoGlobals as g
 from leo.core.leoQt import isQt5,QtCore,QtWidgets,QtWebKitWidgets # QtGui
 # This code no longer uses leo.plugins.leofts.
 try:
@@ -48,8 +50,6 @@ try:
     from whoosh.analysis import RegexTokenizer, LowercaseFilter, StopFilter
 except ImportError:
     whoosh = None
-import os
-import sys
 #@-<< imports >>
 index_error_given = False
 #@+others
@@ -256,10 +256,7 @@ class GlobalSearch:
                 hits.append("</div>")
                 # always show opener link because r['f'] is True when
                 # outline was open but isn't any more (GnxCache stale)
-                if False and r['f']:
-                    opener = ""
-                else:
-                    opener = ' (<a href="unl!%s">open</a>)' % r["parent"]
+                opener = ' (<a href="unl!%s">open</a>)' % r["parent"]
                 hl = r.get("highlight")
                 if hl:
                     hits.append("<pre>%s</pre>" % hl)

@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.730: * @file dump_globals.py
+#@+node:edream.110203113231.730: * @file ../plugins/dump_globals.py
 """Dumps Python globals at startup."""
 #@@language python
 #@@tabwidth -4
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 __version__ = "1.2"
 #@+others
 #@+node:ekr.20100128091412.5380: ** init

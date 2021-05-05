@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20040331151007: * @file niceNosent.py
+#@+node:ekr.20040331151007: * @file ../plugins/niceNosent.py
 #@+<< docstring >>
 #@+node:ekr.20101112180523.5420: ** << docstring >>
 """ Ensures that all descendants of @file-nosent nodes end
@@ -16,7 +16,7 @@ __version__ = "0.3"
 #@+<< version history >>
 #@+node:ekr.20040909122647: ** << version history >>
 #@+at
-# 
+#
 # 0.2 EKR:
 #     - Use isAtNoSentinelsFileNode and atNoSentinelsFileNodeName.
 #     - Use g.os_path_x methods for better unicode support.
@@ -28,7 +28,7 @@ __version__ = "0.3"
 #@-<< version history >>
 #@+<< imports >>
 #@+node:ekr.20040909122647.1: ** << imports >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 #@-<< imports >>
 
@@ -58,9 +58,9 @@ def onPreSave(tag=None, keywords=None):
                 nosentNodes.append(p.copy())
                 for p2 in p.self_and_subtree():
                     s = p2.b
-                    lastline = s.split("\n")[-1]
+                    lastline = s.split('\n')[-1]
                     if lastline.strip():
-                        c.setBodyString(p2,s+"\n")
+                        p2.b = s + '\n'
 #@+node:ekr.20040331151007.2: ** onPostSave
 def onPostSave(tag=None, keywords=None):
     """After saving an @nosent file, replace all tabs with spaces."""

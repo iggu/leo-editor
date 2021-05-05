@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20101110095202.5882: * @file zenity_file_dialogs.py
+#@+node:ekr.20101110095202.5882: * @file ../plugins/zenity_file_dialogs.py
 ''' Replaces the tk file dialogs on Linux with external
 calls to the zenity gtk dialog package.
 
@@ -11,10 +11,9 @@ Despite this, some Linux users might prefer it to the
 tk dialogs.
 
 '''
-import leo.core.leoGlobals as g
-import leo.core.leoPlugins as leoPlugins
-# import os
 import subprocess
+from leo.core import leoGlobals as g
+from leo.core import leoPlugins
 trace = False
 #@+others
 #@+node:ekr.20101110095557.5886: ** testForZenity

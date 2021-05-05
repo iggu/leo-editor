@@ -1,6 +1,6 @@
 # coding: utf-8
 #@+leo-ver=5-thin
-#@+node:tbrown.20070117104409: * @file quickMove.py
+#@+node:tbrown.20070117104409: * @file ../plugins/quickMove.py
 #@@first
 #@+<< docstring >>
 #@+node:tbrown.20070117104409.1: ** << docstring >>
@@ -148,9 +148,7 @@ __version__ = '0.7'
 #@+<< imports >>
 #@+node:tbrown.20070117104409.2: ** << imports >>
 from copy import deepcopy
-
-import leo.core.leoGlobals as g
-
+from leo.core import leoGlobals as g
 from leo.plugins.mod_scripting import scriptingController
 
 if g.app.gui.guiName() == "qt":

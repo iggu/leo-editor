@@ -77,6 +77,7 @@
 <v t="maphew.20180128213245.1"><vh>Not recommended: Test with TestPyPI</vh></v>
 <v t="maphew.20180128212042.5"><vh>Caveats</vh></v>
 </v>
+<v t="maphew.20200506223713.1"><vh>How to build Leo exe (draft)</vh></v>
 <v t="ekr.20141118074110.3"><vh>How to Install Leo on Linux</vh></v>
 <v t="ekr.20101027160251.1500"><vh>NSIS Notes</vh>
 <v t="ekr.20101027135430.1492"><vh>@url nsi new ui readme</vh></v>
@@ -136,12 +137,16 @@
 </v>
 <v t="EKR.20040519090846"><vh>Distribution files</vh>
 <v t="ekr.20141016105045.2119"><vh>@clean ../../.gitattributes</vh></v>
-<v t="ekr.20130809141000.1990"><vh>@asis ../../INSTALL.TXT</vh></v>
-<v t="matt.20190205105334.1"><vh>@clean ../../.travis.yml</vh></v>
 <v t="EKR.20040519090846.1"><vh>@clean ../../LICENSE</vh></v>
 <v t="EKR.20040519090846.8"><vh>@clean ../../PKG-INFO.TXT</vh></v>
 <v t="EKR.20040519090846.9"><vh>@clean ../../README.md</vh></v>
-<v t="ekr.20151227063335.1"><vh>@clean ../../About leo.exe.TXT</vh></v>
+<v t="maphew.20200605112459.1"><vh>Continual Integration</vh>
+<v t="matt.20190205105334.1"><vh>@clean ../../.travis.yml</vh></v>
+<v t="maphew.20200605112532.1"><vh>@clean ../../.github/workflows/build-leo-exe.yml</vh></v>
+</v>
+<v t="mhw.20191107064451.1"><vh>Desktop integration</vh>
+<v t="mhw.20191107064521.1"><vh>@clean leo-editor.desktop</vh></v>
+</v>
 <v t="ekr.20150425135153.1"><vh>homebrew install script</vh>
 <v t="ekr.20150425135153.2"><vh>brew install formula</vh></v>
 </v>
@@ -149,25 +154,38 @@
 <v t="maphew.20180224170853.1"><vh>@file ../../setup.py</vh></v>
 <v t="maphew.20190208135916.1"><vh>@clean ../../setup.cfg</vh></v>
 <v t="maphew.20190206032329.1"><vh>@clean ../../pyproject.toml</vh></v>
-<v t="maphew.20190208142757.1"><vh>@clean ../../optional-tools.txt</vh></v>
+</v>
+<v t="maphew.20200424174643.1"><vh>Conda</vh>
+<v t="maphew.20200426185115.1"><vh>Outdated Preliminary build recipe</vh></v>
+<v t="maphew.20200424174722.1"><vh>@auto ../dist/conda/leo/meta.yaml</vh></v>
 </v>
 <v t="mhw.20190718140254.1"><vh>Travis</vh>
 <v t="mhw.20190718140259.1"><vh>@clean ../../.travis.yml</vh></v>
 </v>
 </v>
 <v t="ekr.20180405171433.1"><vh>Distribution checklist (GitHub Only)</vh>
-<v t="ekr.20180405171433.4"><vh>Pre-testing</vh></v>
+<v t="ekr.20200313063940.1"><vh>Create the release branch *first*</vh></v>
 <v t="ekr.20180405171433.2"><vh>Files</vh></v>
+<v t="ekr.20180405171433.4"><vh>Pre-testing</vh></v>
 <v t="ekr.20180405171433.3"><vh>Web docs</vh></v>
-<v t="ekr.20180828095749.1"><vh>Create a -rel *branch* late.</vh></v>
-<v t="ekr.20180828095843.1"><vh>Update verions.py in the -rel branch</vh></v>
-<v t="ekr.20190618104430.1"><vh>Merge -rel branch into master</vh></v>
+<v t="ekr.20180828095843.1"><vh>Update versions.py in the release branch</vh></v>
+<v t="ekr.20190618104430.1"><vh>Merge release branch into master</vh></v>
 <v t="ekr.20190802115604.1"><vh>After-merge testing</vh></v>
 <v t="ekr.20180405171433.7"><vh>Create git tag in master</vh></v>
-<v t="ekr.20190618104609.1"><vh>Merge git *tag* into devel</vh></v>
+<v t="ekr.20190618104609.1"><vh>Merge master into devel</vh></v>
 <v t="ekr.20181001112218.1"><vh>Update version in devel branch</vh></v>
 <v t="ekr.20190618104622.1"><vh>Publish release</vh></v>
 <v t="ekr.20190618104704.1"><vh>Announcements</vh></v>
+</v>
+<v t="mhw.20191107063807.1"><vh>Clean up root dir</vh>
+<v t="mhw.20191101123146.1"><vh>To Delete</vh>
+<v t="ekr.20151227063335.1"><vh>@@clean ../../About leo.exe.TXT</vh></v>
+<v t="maphew.20190208142757.1"><vh>@@clean ../../optional-tools.txt</vh></v>
+<v t="ekr.20130809141000.1990"><vh>@@clean ../../INSTALL.TXT</vh></v>
+</v>
+<v t="mhw.20191107063030.1"><vh>To Move</vh>
+<v t="ekr.20150416081546.7"></v>
+</v>
 </v>
 </vnodes>
 <tnodes>
@@ -176,7 +194,7 @@
 </t>
 <t tx="EKR.20040519090846.1">MIT License
 
-Copyright (c) 1997-2019 by Edward K. Ream.
+Copyright (c) 1997-2020 by Edward K. Ream.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -209,7 +227,7 @@ These parts are are clearly marked in Leo's code as follows:
     
 Portions of Leo's pyzo interface uses code from pyzo:
 
-    Copyright (C) 2013-2019, the Pyzo development team
+    Copyright (C) 2013-2020, the Pyzo development team
     
     Pyzo is distributed under the terms of the (new) BSD License.
     The full license can be found in 'license.txt'.
@@ -220,7 +238,7 @@ Portions of Leo's pyzo interface uses code from pyzo:
 </t>
 <t tx="EKR.20040519090846.8">Metadata-Version: 1.0
 Name: leo
-Version: 6.1
+Version: 6.3
 Summary: An IDE, PIM and Outliner. See leoeditor.com/preface.html.
 Description: See users own descriptions of Leo at leoeditor.com/testimonials.html.
 Home-page: http://leoeditor.com/
@@ -228,7 +246,7 @@ Author: Edward K. Ream
 Author-email: edreamleo@gmail.com
 License: MIT
 Keywords: Outliner, IDE, PIM, DAG, Scripting
-Platform: Windows, Linux, MaxOS
+Platform: Windows, Linux, MacOS
 Classifier: Development Status :: 6 - Mature
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: MacOS
@@ -237,26 +255,22 @@ Classifier: Operating System :: POSIX :: Linux
 Classifier: Programming Language :: Python
 Classifier: Topic :: Software Development
 Classifier: Topic :: Text Processing
-Download-URL: http://sourceforge.net/projects/leo/files/
+Download-URL: https://github.com/leo-editor/leo-editor/releases
 </t>
-<t tx="EKR.20040519090846.9">Leo 6.1, http://leoeditor.com, is now available on
+<t tx="EKR.20040519090846.9">[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fleo-editor%2Fleo-editor&amp;count_bg=%2379C83D&amp;title_bg=%23555555&amp;icon=&amp;icon_color=%23E7E7E7&amp;title=PAGE+VIEWS&amp;edge_flat=false)](https://hits.seeyoufarm.com)
+
+Leo 6.3, http://leoeditor.com, is now available on
 [GitHub](https://github.com/leo-editor/leo-editor).
 
-Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
+Leo is an [IDE, outliner and PIM](http://leoeditor.com/preface.html).
 
-**The highlights of Leo 6.1**
+**The highlights of Leo 6.3**
 
-- Pyzo in Leo: Pyzo can optionally run *within* Leo.
-- Added support for asciidoc and asciidoctor.
-- Added support for pandoc and sphinx.
-- Added support for black.
-- The history_tracer plugin animates git commits.
-- Integration of Leo with VS code.
-- New command-line arguments: --global-docks and --window-spot.
-- New cursor-movement commands.
-
-Special thanks to Vitalije Milosevic, Brian Theado, and Matt Wilkie for
-their contributions to Leo 6.1.
+- leoAst.py: The unification of Python's token and ast worlds.
+- Retired all Qt Dock code.
+- Improved viewrendered and viewrendered3 plugins.
+- Improved several importer plugins.
+- Refactored Leo's key handling code.
 
 **Links**
 
@@ -560,12 +574,9 @@ editing ``.leoID.txt``.
 
 git-manifest.txt                export-ignore
 MakeFile                        export-ignore
-MANIFEST.in                     export-ignore
 
 leoStandAloneGlobals.py         export-ignore
 stand_alone_globals.leo         export-ignore
-# setup.cfg                     export-ignore
-# setup.py                      export-ignore
 
 # Do not include the top-level docs folder in distributions
 docs/                           export-ignore
@@ -588,7 +599,7 @@ leo/test/unittest/.leo_shadow/  export-ignore
 
 2. Search for copyright
 
-    Latest copyright date: 2019.
+    Latest copyright date: 2020.
 
     Note: install.txt file embeds a copyright message in the nsi installer.</t>
 <t tx="ekr.20150416081546.1"></t>
@@ -1607,7 +1618,6 @@ g.es_print('done')
     'doc/quickstart.leo',
     'external/leo2html.leo',
     'plugins/leoGuiPluginsRef.leo',
-    'plugins/leoPluginsRef.leo',
     'scripts/scripts.leo',
     'test/test.leo',
 )</t>
@@ -1619,9 +1629,18 @@ g.es_print('done')
 
 Overview:
 
-1. Do as much work as possible in "devel".
-2. Update leoVersion.py *after* creating -rel branch.
-</t>
+1. Create a **release branch**, called 6.3.
+   This branch should be based on devel.
+   This branch will hold all work for 6.3-b1 and 6.3 final.
+
+2. *Never* merge devel into the release branch.
+   It's fine to merge the release branch into devel.
+   
+3. Fix last-minute bugs in a **bug-fix branch**.
+   Base bug-fix branches on the *release* branch, not devel.
+   After fixing the bug, merge the bug-fix branch into both devel and the release branch.
+   
+4. Update leoVersion.py (in devel) after merging the release branch into devel.</t>
 <t tx="ekr.20180405171433.2" __bookmarks="7d7100580700000069735f6475706571014930300a732e">LeoDocs.leo:
 - Make sure copyright dates are correct.
 - Update the "last updated" text in index.html.
@@ -1642,42 +1661,40 @@ LeoDist.leo:
 - Make sure no distributed .leo file contains xml-stylesheet elements.
   Run @button check .leo files in leo-dist.leo.
 
-LeoPyRef.leo and LeoPluginsRef.leo:
-- Regenerate from corresponding local file.
-- Remove top-level clones.
+LeoPyRef.leo:
+- Regenerate from leoPy.leo:
+  - Run `script: check-files`.
+  - run write-LeoPyRef button in LeoPy.leo.
 </t>
 <t tx="ekr.20180405171433.3" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Regenerate all .html files.
 - Copy files to web, including leo/doc/html/index.html
   Do **not** copy searchindex.js.
-</t>
+- tools/webroot/*  go to top of website, e.g.
+      tools/webroot/load-leo.html --&gt; http://leoeditor.com/load-leo.html</t>
 <t tx="ekr.20180405171433.4" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Make sure Leo looks good without myLeoSettings.leo.
-- Run the "check-bindings" button in leoSettings.leo.
-- Run all unit tests with Python 3.
-- Run ll -a with with Python 3.</t>
+- Run all "check" buttons in leoSettings.leo.
+- Run all unit tests, on Windows and Linux.
+- Run pylint (EKR's ll -a script).
+</t>
 <t tx="ekr.20180405171433.7" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Create a git tag **last**
 
 - Create a full (annotated) tag:
   - Do not use the -f option.
-  - Make sure the tag does not conflict with the release branch.
-    Release *branches* should end with "-rel"
-    Tags should start with "v".
-    Tags should *not* end with "-rel"
+  - Tags should start with "v"
 
-git tag -a v5.9.x -m "Added v5.9.x tag"
+git checkout master
+git tag -a v6.3 -m "Added v6.3 tag"
 git push --follow-tags
-</t>
-<t tx="ekr.20180828095749.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">git checkout -b x.y-final-rel
-git push origin x.y-final-rel
 </t>
 <t tx="ekr.20180828095843.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">leoVersion.py:
 - Update version constant.
-</t>
-<t tx="ekr.20181001112218.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Matt: After merge create dev tag that matches
+- Update date of the release.</t>
+<t tx="ekr.20181001112218.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">Matt: After merge, create dev tag that matches
     static version added to leoversion.py earlier.
-    #static version = '6.0-b2-devel'
+    #static version = '6.4-devel'
 
 git checkout devel
-git tag -a v6.0-b2-dev -m "Added v6.0-b2-dev tag"
+git tag -a v6.4-devel -m "Added v6.4.devel tag"
 git push --follow-tags
 update version in leoVersion.py.
 </t>
@@ -2137,8 +2154,9 @@ zipFile2 =      abspath(join(rootDir,'Leo-%s-temp.zip' % (version)))
             if exists(src_path) and exists(dst_path):
                 shutil.copyfile(src_path,dst_path)
 </t>
-<t tx="ekr.20190618104430.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">From rel branch:
+<t tx="ekr.20190618104430.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">From 6.3 branch:
     
+- Push any changes to release branch.
 - git merge master
 - Fix any conflicts and push.
 - git checkout master
@@ -2153,10 +2171,14 @@ git push</t>
 This must be done *soon* after the release's actual commit.
 There is a "Draft New Release" button at the top-right of the page.
 </t>
-<t tx="ekr.20190618104704.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Announce to SourceForge:  http://sourceforge.net/projects/leo/
+<t tx="ekr.20190618104704.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Announce to leo-editor first.
+
+Public announcements, after Matt creates a package:
+
+- Update version number on Wikipedia: https://en.wikipedia.org/wiki/Leo_(text_editor)
+
+- Announce to SourceForge:  http://sourceforge.net/projects/leo/
    **Markdown accepted, so paste release notes in LeoDocs.leo.**.
-   
-- Announce to leo-editor.
 
 - Announce to Python-announce-list using email:
    python-announce-list@python.org
@@ -2174,6 +2196,9 @@ There is a "Draft New Release" button at the top-right of the page.
 </t>
 <t tx="ekr.20190802115604.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">- Run all unit tests.
 - Run pylint on all files.
+</t>
+<t tx="ekr.20200313063940.1">git checkout -b 6.3
+git push origin 6.3
 </t>
 <t tx="maphew.20180128212042.1">@language md
 @wrap
@@ -2341,7 +2366,7 @@ build-backend = 'setuptools.build_meta'
 # This flag says that the code is written to work on both Python 2 and Python
 # 3. If at all possible, it is good practice to do this. If you cannot, you
 # will need to generate wheels for each Python version that you support.
-universal=1
+universal=0
 </t>
 <t tx="maphew.20190208142757.1">@language python
 # A list of pip installable tools and libraries in the Requirements File Format
@@ -2354,6 +2379,174 @@ universal=1
 
 pyenchant  # spell check support. No wheels for some platforms, e.g. amd64
 pyxml; python_version &lt; "3.0"   # Used for XML import. Appears to be only python 2 package
+</t>
+<t tx="maphew.20200424174643.1">@language md
+
+# Build new Leo Anaconda Release
+_a work in progress (matt)_
+
+_I discovered Conda-Forge recipes already integrated with Continual Integration, and, once accepted, publishing to the conda forge package system. Here's what I know so far._
+
+Local fork:
+https://github.com/leo-editor/conda-forge-recipes/tree/leo
+
+PR to merge with upstream:
+https://github.com/conda-forge/staged-recipes/pull/11380
+
+
+Note: the `meta.yaml` file in this folder is for reference not the real one used by the Conda Forge system. The local _staged recipes_ fork is the authoritative version:
+
+https://github.com/leo-editor/conda-forge-recipes/tree/leo/recipes/leo/meta.yaml
+
+## Release Procedure
+
+1. Get tag name of release
+2. Get sha256 hash for the release archive
+3. Update `leo/meta.yaml` accordingly
+4. Push to local fork
+5. Check CI results in about 10 minutes
+
+Follow up as needed.
+
+
+
+
+### References
+
+ - Conda Forge docs - [contributing packages][0]
+ 
+ 
+ [0]: https://conda-forge.org/docs/maintainer/adding_pkgs.html
+ </t>
+<t tx="maphew.20200426185115.1"># Prelimnary build recipe
+
+    pushd code\leo-editor
+    python setup.py sdist
+
+Make note of archive name in dist/ and update meta.yaml accordingly:
+
+    url: "../../../../dist/leo-6.2.dev106.tar.gz"
+
+then:
+
+    conda build leo\dist\conda\leo
+
+There's **a lot** of disk use and screen output. Takes about 10 minutes. Basically it packages and installs Leo in a test env, and then packages that into final output, and then tests installing that again in turn.
+
+If successful, test a local install in new env:
+
+    conda create -n leo-conda
+    conda activate leo-conda
+    conda install c:\apps\Miniconda3\conda-bld\win-64\leo-6.2.dev106-py36_0.tar.bz2
+
+If successful (according to docs, haven't made it this far yet):
+
+    anaconda upload c:\apps\Miniconda3\conda-bld\win-64\leo-6.2.dev106-py36_0.tar.bz2
+
+### Sources
+
+- Official docs - https://docs.conda.io/projects/conda-build/en/latest/concepts/recipe.html
+
+- @stas00; creating tarball using setup.py to stop copying entire work folder; https://github.com/conda/conda-build/issues/3214#issuecomment-431920525
+</t>
+<t tx="maphew.20200506223713.1">2020-05-06, matt
+
+Having another go at building an all-in-one portable Leo executable with
+PyInstaller
+
+
+Guide: https://blog.aaronhktan.com/posts/2018/05/14/pyqt5-pyinstaller-executable
+
+fix ModuleNotFoundError: No module named 'pkg_resources.py2_warn'
+https://github.com/pypa/setuptools/issues/1963#issuecomment-574265532
+
+-----
+
+&gt; pip install pyinstaller
+&gt; pyinstaller launchLeo.py
+    # one time only, to make template .spec file
+
+&gt; rename launchLeo.spec leo.spec
+
+#edit .spec file and add:
+
+a = Analysis(['launchLeo.py'],
+             ...
+             datas=[('leo', 'leo')],
+             hiddenimports=['pkg_resources.py2_warn'],
+             ...
+             )
+
+&gt; pyinstaller leo\dist\leo.spec
+
+# open new CMD shell, verify no python or leo present, then:
+
+&gt; dist\leo\leo.exe
+
+# fix errors as can until everything works.
+
+-----</t>
+<t tx="maphew.20200605112459.1"></t>
+<t tx="maphew.20200605112532.1">@language yaml
+# Create an "all in one" bundle of Leo and all dependencies for Windows that 
+# doesn't need to be installed in order to run, just unzip and use.
+
+name: Build standalone leo.exe
+
+on:
+  push:
+    branches: [ master, devel, gh-act ]
+    tags: 
+      - 'v*' 
+  pull_request:
+    branches: [ master, devel, gh-act ]
+    tags: 
+      - 'v*' 
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip packages
+      uses: actions/cache@v2
+      with:
+        path: ~\Appdata\Local\pip\Cache
+        # note addition of py ver, https://github.com/actions/cache/issues/175#issuecomment-586641991
+        #key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-pip
+    
+    - name: Install Leo and dependencies
+      run: |
+        python -m pip install --upgrade pip
+        #if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install wheel pyinstaller
+        pip install --editable .
+    - name: pyinstaller build
+      run: |
+        $ErrorView = 'NormalView'
+        pwd
+        ls
+        pyinstaller leo/dist/leo.spec
+    - name: create dist archive
+      run: |
+        $ErrorView = 'NormalView'
+        python leo/dist/zip-leo-exe.py
+    - uses: actions/upload-artifact@v2
+      with:
+        name: leo-windows-exe
+        path: dist/*.zip
 </t>
 <t tx="matt.20181004031246.1">@language md
 
@@ -2373,13 +2566,15 @@ that updates yml file will delete any comments within it. (e.g. `travis encrypt
 ...`)
 
 </t>
-<t tx="matt.20190205105334.1">language: python
+<t tx="matt.20190205105334.1">@language yaml
+language: python
 python:
   - "3.6"
 git:
     ## Clone depth, must be big enough to include a tag
     depth: 500
 install:
+    - python -m pip install --upgrade pip
     - pip --version
     - pip install setupext-janitor asttokens
 script:
@@ -2410,10 +2605,9 @@ git:
     ## Clone depth, must be big enough to include a tag
     depth: 500
 install:
-    ## Using PEP-518 (pypoject.toml) requires pip &gt;v10 
     - python -m pip install --upgrade pip
     - pip --version
-    - pip install setupext-janitor
+    - pip install setupext-janitor asttokens
 script:
     ## Test: Unit tests
     - python run_travis_unit_tests.py
@@ -2432,6 +2626,41 @@ deploy:
     on:
       tags: true
       branch: master
+</t>
+<t tx="mhw.20191101123146.1">Refresh / audit MANIFEST.in excludes and includes
+https://github.com/leo-editor/leo-editor/issues/1077
+
+Files in this tree are or will be deleted from the Leo's root directory. They're
+kept here for easy restoration or migration to another place if it's decided
+they should be kept.
+
+-matt (@maphew)
+</t>
+<t tx="mhw.20191107063030.1">_Files and nodes which could probably live somewhere else._
+
+
+This is an organizer node of clones for the things-to-be-moved, e.g. use "Go to
+clone" and move that. These nodes can be removed when satisfied nothing was
+broken.</t>
+<t tx="mhw.20191107063807.1">Refresh / audit MANIFEST.in excludes and includes
+https://github.com/leo-editor/leo-editor/issues/1077
+
+-matt (@maphew)
+</t>
+<t tx="mhw.20191107064451.1">There is conceptual overlap between this node and the Desktop-integration
+scripts held in Scripts.leo. My current thinking is the scripts should be moved
+to or at least managed from Dist.
+
+-matt  </t>
+<t tx="mhw.20191107064521.1">@language unknown_language
+[Desktop Entry]
+Encoding=UTF-8
+Version=master
+Type=Application
+Terminal=true
+Exec=/snap/bin/leo-editor.leo
+Name=Leo Editor
+Icon=/snap/meta/gui/icon.png
 </t>
 </tnodes>
 </leo_file>

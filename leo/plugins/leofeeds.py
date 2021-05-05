@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20110206142055.10640: * @file leofeeds.py
+#@+node:ville.20110206142055.10640: * @file ../plugins/leofeeds.py
 #@+<< docstring >>
 #@+node:ville.20110206142055.10641: ** << docstring >>
 '''
@@ -18,11 +18,13 @@ Do alt-x act-on-node on that node to populate the subtree from the feed data. Re
 # By Ville M. Vainio.
 #@+<< imports >>
 #@+node:ville.20110206142055.10643: ** << imports >>
-import leo.core.leoGlobals as g
+import html.parser as HTMLParser
+# Third-party imports
+import feedparser
+# Leo imports.
+from leo.core import leoGlobals as g
 from leo.core import leoPlugins
     # Uses leoPlugins.TryNext
-import feedparser
-import html.parser as HTMLParser
 #@-<< imports >>
 
 #@+others

@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
 #@+node:ekr.20110605121601.17996: * @file ../plugins/qt_commands.py
 """Leo's Qt-related commands defined by @g.command."""
-import leo.core.leoGlobals as g
-import leo.core.leoColor as leoColor
-import leo.core.leoConfig as leoConfig
+from leo.core import leoGlobals as g
+from leo.core import leoColor
+from leo.core import leoConfig
 from leo.core.leoQt import QtGui, QtWidgets
 #@+others
 #@+node:ekr.20110605121601.18000: ** init
@@ -83,9 +83,9 @@ def showColorNames(event=None):
         color_list = []
         box = QtWidgets.QComboBox()
 
-        def onActivated(n,*args,**keys):
+        def onActivated(n, *args, **keys):
             color = color_list[n]
-            sheet = template % (color,color)
+            sheet = template % (color, color)
             box.setStyleSheet(sheet)
             g.es("copied to clipboard:", color)
             QtWidgets.QApplication.clipboard().setText(color)
@@ -93,17 +93,17 @@ def showColorNames(event=None):
         box.activated.connect(onActivated)
         color_db = leoColor.leo_color_database
         for key in sorted(color_db):
-            if not key.startswith('grey'): # Use gray, not grey.
+            if not key.startswith('grey'):  # Use gray, not grey.
                 val = color_db.get(key)
                 color = QtGui.QColor(val)
                 color_list.append(val)
-                pixmap = QtGui.QPixmap(40,40)
+                pixmap = QtGui.QPixmap(40, 40)
                 pixmap.fill(color)
                 icon = QtGui.QIcon(pixmap)
-                box.addItem(icon,key)
+                box.addItem(icon, key)
 
         c.frame.iconBar.addWidget(box)
-        setattr(c,ivar,True)
+        setattr(c, ivar, True)
         g.es('created color picker in icon area')
             # Do this last, so errors don't prevent re-execution.
 #@+node:ekr.20170324142416.1: ** qt: show-color-wheel
@@ -119,7 +119,7 @@ def showColorWheel(self, event=None):
             text = p.h.split('=', 1)[1].strip()
         color = QtGui.QColor(text)
         picker.setCurrentColor(color)
-    except (ValueError, IndexError) as e:
+    except(ValueError, IndexError) as e:
         g.trace('error caught', e)
     if not picker.exec_():
         g.es("No color selected")
@@ -159,97 +159,13 @@ def showFonts(self, event=None):
         comments = [x for x in g.splitLines(p.b) if x.strip().startswith('#')]
         defs = [
             '\n' if comments else '',
-            '%s_family = %s\n'%(name, font.family()),
-            '%s_weight = %s\n'%(name, 'bold' if font.bold() else 'normal'),
-            '%s_slant = %s\n'%(name, 'italic' if font.italic() else 'roman'),
-            '%s_size = %s\n'%(name, font.pointSizeF())
+            f"{name}_family = {font.family()}\n",
+            f"{name}_weight = {'bold' if font.bold() else 'normal'}\n",
+            f"{name}_slant = {'italic' if font.italic() else 'roman'}\n",
+            f"{name}_size = {font.pointSizeF()}\n"
         ]
         p.b = ''.join(comments + defs)
         c.undoer.afterChangeNodeContents(p, 'change-font', udata)
-#@+node:ekr.20190724172314.1: ** qt: show-hide-body-dock
-@g.command('show-hide-body-dock')
-def show_hide_body_dock(event):
-    """Show or hide the Tabs dock."""
-    c = event.get('c')
-    dw = c and c.frame.top
-    if not dw:
-        return
-    if not g.app.dock:
-        g.es('this command works only when using docks')
-        return
-    dock = dw.body_dock
-    if not dock:
-        return
-    if g.app.get_central_widget(c) == 'body':
-        g.es('can not hide the central dock widget')
-        return
-    if dock.isVisible():
-        dock.hide()
-    else:
-        dock.show()
-#@+node:ekr.20190724172258.1: ** qt: show-hide-outline-dock
-@g.command('show-hide-outline-dock')
-def show_hide_outline_dock(event):
-    """Show or hide the Outline dock."""
-    c = event.get('c')
-    dw = c and c.frame.top
-    if not dw:
-        return
-    if not g.app.dock:
-        g.es('this command works only when using docks')
-        return
-    dock = dw.outline_dock
-    if not dock:
-        return
-    if g.app.get_central_widget(c) == 'outline':
-        g.es('can not hide the central dock widget')
-        return
-    if dock.isVisible():
-        dock.hide()
-    else:
-        dock.show()
-#@+node:ekr.20190724172547.1: ** qt: show-hide-render-dock
-@g.command('show-hide-render-dock')
-def show_hide_render_dock(event):
-    """Show or hide the Tabs dock."""
-    c = event.get('c')
-    dw = c and c.frame.top
-    if not dw:
-        return
-    if not g.app.dock:
-        g.es('this command works only when using docks')
-        return
-    pc = g.app.pluginsController
-    vr = pc.getPluginModule('leo.plugins.viewrendered')
-    x = vr and vr.controllers.get(c.hash())
-    dock = x and x.leo_dock
-    if not dock:
-        return
-    if dock.isVisible():
-        dock.hide()
-    else:
-        dock.show()
-#@+node:ekr.20190724170436.1: ** qt: show-hide-tabs-dock
-@g.command('show-hide-tabs-dock')
-def show_hide_tabs_dock(event):
-    """Show or hide the Tabs dock."""
-    c = event.get('c')
-    dw = c and c.frame.top
-    if not dw:
-        return
-    if not g.app.dock:
-        g.es('this command works only when using docks')
-        return
-    dock = dw.tabs_dock
-    if not dock:
-        return
-    if g.app.get_central_widget(c) == 'tabs':
-        g.es('can not hide the central dock widget')
-        return
-    if dock.isVisible():
-        dock.hide()
-    else:
-        dock.show()
 #@+node:ekr.20140918124632.17893: ** qt: show-style-sheet
 @g.command('show-style-sheet')
 def print_style_sheet(event):

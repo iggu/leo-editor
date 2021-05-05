@@ -1,7 +1,7 @@
 #@+leo-ver=5-thin
 #@+node:ekr.20170428084207.422: * @file ../external/npyscreen/proto_fm_screen_area.py
 #!/usr/bin/env python
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 assert g
 #@+others
 #@+node:ekr.20170428084207.423: ** Declarations
@@ -168,8 +168,9 @@ class ScreenArea:
         except curses.error:
             pass
         self.ALL_SHOWN = (
-            self.show_from_y is 0 and
-            self.show_from_x is 0 and
+            # #1525: change 'is' to '==' to avoid deprecation warning.
+            self.show_from_y == 0 and
+            self.show_from_x == 0 and
             _my >= self.lines and
             _mx >= self.columns
         )

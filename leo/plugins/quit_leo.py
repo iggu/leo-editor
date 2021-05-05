@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.734: * @file quit_leo.py
+#@+node:edream.110203113231.734: * @file ../plugins/quit_leo.py
 """ Shows how to force Leo to quit."""
 #@@language python
 #@@tabwidth -4
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 def init():
     '''Return True if the plugin has loaded successfully.'''

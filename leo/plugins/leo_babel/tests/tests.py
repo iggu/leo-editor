@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #coding=utf-8
 #@+leo-ver=5-thin
-#@+node:bob.20180125160225.1: * @file leo_babel/tests/tests.py
+#@+node:bob.20180125160225.1: * @file ../plugins/leo_babel/tests/tests.py
 #@@first
 #@@first
 #@@language python
@@ -32,11 +32,10 @@ import argparse
 import codecs
 import os
 
-import leo.core.leoBridge as leoBridge
-import leo.core.leoGlobals as leoG
+from leo.core import leoBridge
+from leo.core import leoGlobals as leoG
+from leo.plugins.leo_babel.tests import idle_time, lib_test
 
-from leo_babel.tests import idle_time
-from leo_babel.tests import lib_test
 #@-<< imports >>
 #@+<< version >>
 #@+node:bob.20180125160847.1: ** << version >>

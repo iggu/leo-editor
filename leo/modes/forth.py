@@ -1,17 +1,17 @@
 # Hand-written Leo colorizer control file for forth mode.
 # This file is in the public domain.
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 # Rules for forth_main ruleset.
 
 def forth_block_comment_rule(colorer, s, i):
     return colorer.match_span(s, i, kind="comment2", begin="(", end=")",
-        at_line_start=False, at_whitespace_end=False, at_word_start=True, # Require word.
+        at_line_start=False, at_whitespace_end=False, at_word_start=True,  # Require word.
         delegate="", exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 
 def forth_comment_rule(colorer, s, i):
     return colorer.match_eol_span(s, i, kind="comment1", seq="\\",
-        at_line_start=False, at_whitespace_end=False, at_word_start=True, # Require word
+        at_line_start=False, at_whitespace_end=False, at_word_start=True,  # Require word
         delegate="", exclude_match=False)
 
 def forth_keyword_rule(colorer, s, i):
@@ -19,7 +19,7 @@ def forth_keyword_rule(colorer, s, i):
 
 def forth_string_rule(colorer, s, i):
     return colorer.match_span(s, i, kind="literal1", begin="\"", end="\"",
-        at_line_start=False, at_whitespace_end=False, at_word_start=True, # Require word
+        at_line_start=False, at_whitespace_end=False, at_word_start=True,  # Require word
         delegate="", exclude_match=False,
         no_escape=False, no_line_break=False, no_word_break=False)
 # ==========================
@@ -115,13 +115,16 @@ if 0:
         return colorer.match_seq(s, i, kind="operator", seq="~",
             at_line_start=False, at_whitespace_end=False, at_word_start=False, delegate="")
 
+    # #1821.
     def forth_rule20(colorer, s, i):
-        return colorer.match_mark_previous(s, i, kind="function", pattern="(",
-            at_line_start=False, at_whitespace_end=False, at_word_start=False, exclude_match=True)
+        return 0
+        # return colorer.match_mark_previous(s, i, kind="function", pattern="(",
+            # at_line_start=False, at_whitespace_end=False, at_word_start=False, exclude_match=True)
 
     def forth_rule21(colorer, s, i):
         return colorer.match_keywords(s, i)
 # Properties for forth mode.
+
 properties = {
     # "indentNextLines": "\\s*[^#]{3,}:\\s*(#.*)?",
     "lineComment": "\\",
@@ -140,7 +143,7 @@ attributesDictDict = {
     "forth_main": forth_main_attributes_dict,
 }
 # Keywords dict for forth_main ruleset.
-forth_main_keywords_dict = {} # Created by extendForth class.
+forth_main_keywords_dict = {}  # Created by extendForth class.
 # Dictionary of keywords dictionaries for forth mode.
 keywordsDictDict = {
     "forth_main": forth_main_keywords_dict,
@@ -158,10 +161,13 @@ rulesDictDict = {
 }
 # Import dict for forth mode.
 importDict = {}
+
+
 class extendForth:
     """A helper class to extend the mode tables from @data forth-x settings."""
+
     def __init__(self):
-        self.c = None # set by pre_init_mode function.
+        self.c = None  # set by pre_init_mode function.
         #
         # Default forth keywords: extended by @data forth-words
         # Forth words to be rendered in boldface: extended by @data forth-bold-words
@@ -172,7 +178,7 @@ class extendForth:
         self.bolditalicwords = []
         #
         # Forth words that define brackets: extended by @data forth-delimiter-pairs
-        self.brackets = [] # Helper: a list of tuples.
+        self.brackets = []  # Helper: a list of tuples.
         self.brackets1 = []
         self.brackets2 = []
         #
@@ -203,7 +209,7 @@ class extendForth:
         self.stringwords = []
         self.stringwords1 = []
         self.stringwords2 = []
-        self.verbose = False # True: tell when extending forth words.
+        self.verbose = False  # True: tell when extending forth words.
 
     def init(self):
         """Set our ivars from settings."""
@@ -219,7 +225,7 @@ class extendForth:
             (self.italicwords, "forth-italic-words"),
         )
         # Add entries from @data nodes (if they exist) to the corresponding lists.
-        for(ivarList, setting) in table:
+        for (ivarList, setting) in table:
             extras = []
             aList = c.config.getData(setting)
             if aList:
@@ -237,8 +243,9 @@ class extendForth:
             ("brackets", "@data forth-delimiter-pairs"),
             ("stringwords", "@data forth-string-word-pairs"),
         )
-        for(ivar, setting) in table2:
+        for (ivar, setting) in table2:
             self.splitList(ivar, setting)
+
     def splitList(self, ivar, setting):
         """Process lines containing pairs of entries
         in a list whose *name* is ivar.
@@ -258,6 +265,7 @@ class extendForth:
         name2 = '%s2' % ivar
         setattr(self, name1, result1)
         setattr(self, name2, result2)
+
     def createBracketRules(self):
         for z in self.brackets1:
             func = self.createBracketRule(z)
@@ -269,11 +277,12 @@ class extendForth:
 
         def forth_bracket_rule(colorer, s, i):
             return colorer.match_span(s, i, kind="bracketRange", begin=begin, end=end,
-                at_line_start=False, at_whitespace_end=False, at_word_start=True, # Require word.
+                at_line_start=False, at_whitespace_end=False, at_word_start=True,  # Require word.
                 delegate="", exclude_match=False,
-                no_escape=False, no_line_break=False, no_word_break=True) # Require word.
+                no_escape=False, no_line_break=False, no_word_break=True)  # Require word.
 
         return forth_bracket_rule
+
     def createDefiningWordRules(self):
         for z in self.definingwords:
             func = self.createDefiningWordRule(z)
@@ -284,14 +293,15 @@ class extendForth:
         def forth_defining_word_rule(colorer, s, i):
 
             return colorer.match_word_and_regexp(s, i,
-                kind1="keyword2", # defining word
+                kind1="keyword2",  # defining word
                 word=word,
-                kind2="keyword3", # bold
+                kind2="keyword3",  # bold
                 pattern=r'(\s)*(\S)+',
                 at_line_start=False, at_whitespace_end=False, at_word_start=False,
                 exclude_match=False)
 
         return forth_defining_word_rule
+
     def createKeywords(self):
         """
         Create the mode keyword table and
@@ -318,6 +328,7 @@ class extendForth:
                 # Always make the entry.
                 d[z] = kind
                 self.extendRulesDict(ch=z[0], func=func)
+
     def createStringRule(self, d, pair):
         """Create an entry in d for a string keyword."""
         aList = pair.split(' ')
@@ -328,11 +339,12 @@ class extendForth:
 
         def forth_string_word_rule(colorer, s, i):
             return colorer.match_span(s, i, kind="literal1", begin=begin.strip(), end=end.strip(),
-                at_line_start=False, at_whitespace_end=False, at_word_start=True, # Require word.
+                at_line_start=False, at_whitespace_end=False, at_word_start=True,  # Require word.
                 delegate="", exclude_match=False,
-                no_escape=False, no_line_break=False, no_word_break=False) # Don't require ending word.
+                no_escape=False, no_line_break=False, no_word_break=False)  # Don't require ending word.
 
         return forth_string_word_rule
+
     def extendRulesDict(self, ch, func):
         global rulesDict
         # Extend the rulesDict entry for the first character of z.
@@ -340,6 +352,7 @@ class extendForth:
         if func not in aList:
             aList.append(func)
             rulesDict[ch] = aList
+
 e = extendForth()
 
 def pre_init_mode(c):
@@ -348,3 +361,4 @@ def pre_init_mode(c):
     e.createKeywords()
     e.createBracketRules()
     e.createDefiningWordRules()
+

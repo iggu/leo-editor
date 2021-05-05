@@ -142,6 +142,10 @@
 <v t="ekr.20190113120734.2"><vh>spam</vh></v>
 <v t="ekr.20190113120734.3"><vh>eggs</vh></v>
 </v>
+<v t="ekr.20200205065723.1"><vh>@asis unittest/at-asis-test2.txt</vh>
+<v t="ekr.20200205065723.2"><vh>spam</vh></v>
+<v t="ekr.20200205065723.3"><vh>@@eggs</vh></v>
+</v>
 <v t="ekr.20190113123439.5"><vh>@auto unittest/at-auto-line-number-test.py</vh></v>
 <v t="ekr.20190113123439.7"><vh>@auto unittest/at-auto-md-line-number-test.md</vh></v>
 <v t="ekr.20190113123439.11"><vh>@auto unittest/at-auto-section-ref-test.py</vh></v>
@@ -172,21 +176,70 @@
 <v t="ekr.20100731163237.5782"><vh>@thin unittest/at-thin-html-test.html</vh></v>
 <v t="ekr.20090704085350.5022"><vh>@thin unittest/at-thin-test.py</vh></v>
 </v>
+<v t="ekr.20111112092813.4060"><vh>@mark-for-unit-tests</vh>
+<v t="ekr.20111113102936.4600"><vh>Test headline abc</vh></v>
+<v t="ekr.20120212130242.3980"><vh>newHeadline</vh></v>
+<v t="ekr.20090529141856.4700"><vh>importTests</vh>
+<v t="ekr.20090529141856.4710"><vh>importCWEBFiles</vh>
+<v t="ekr.20090529141856.4711"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4704"><vh>importDerivedFile</vh>
+<v t="ekr.20090529141856.4705"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4708"><vh>importFlattenedOutline</vh>
+<v t="ekr.20090529141856.4709"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20161006155420.1"><vh>importMOREFiles</vh>
+<v t="ekr.20161006155420.2"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4706"><vh>importNowebFiles</vh>
+<v t="ekr.20090529141856.4707"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20161006154740.1"><vh>importTabFiles</vh>
+<v t="ekr.20161006154802.1"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4712"><vh>removeSentinels</vh>
+<v t="ekr.20090529141856.4713"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4701"><vh>tempNode</vh></v>
+</v>
+<v t="ekr.20090529141856.4686"><vh>exportTests</vh>
+<v t="ekr.20111115105448.3880"><vh>tempNode</vh></v>
+<v t="ekr.20090529141856.4688"><vh>exportHeadlines</vh>
+<v t="ekr.20090529141856.4689"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4690"><vh>flattenOutline</vh>
+<v t="ekr.20090529141856.4691"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4692"><vh>weave</vh>
+<v t="ekr.20090529141856.4693"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4694"><vh>outlineToNoweb</vh>
+<v t="ekr.20090529141856.4695"><vh>dialog</vh></v>
+</v>
+<v t="ekr.20090529141856.4696"><vh>outlineToCWEB</vh>
+<v t="ekr.20090529141856.4697"><vh>dialog</vh></v>
+</v>
+</v>
+<v t="ekr.20111006072734.3640"><vh>@common x-marked-nodes test code</vh>
+<v t="ekr.20111006072734.3641"><vh>setup_test</vh></v>
+<v t="ekr.20111006115024.3613"><vh>tear_down</vh></v>
+<v t="ekr.20111006105711.3734"><vh>delete_children</vh></v>
+<v t="ekr.20111006072734.3642"><vh>test_children</vh></v>
+<v t="ekr.20111211094602.3972"><vh>data</vh>
+<v t="ekr.20111211094602.3978"><vh>a</vh>
+<v t="ekr.20111211094602.3979"><vh>b</vh></v>
+</v>
+<v t="ekr.20111211094602.3975"><vh>c</vh></v>
+<v t="ekr.20111211094602.3976"><vh>d</vh></v>
+<v t="ekr.20111211094602.3977"><vh>e</vh>
+<v t="ekr.20111211094602.3978"></v>
+</v>
+</v>
+</v>
+</v>
 <v t="ekr.20101220161557.6016"><vh>Active Unit Tests</vh>
-<v t="edward.20160314170027.56" descendentVnodeUnknownAttributes="7d7100285808000000302e342e31322e3471017d71025809000000756e69745f7465737471035804000000616263647104735809000000302e342e31382e333571057d710658090000006d795f706c7567696e7107580300000076616c710873752e"><vh>@file activeUnitTests.txt</vh></v>
-</v>
-<v t="ekr.20190923014948.1"><vh>Failures when run from bridge w/ readSettings=False</vh>
-<v t="ekr.20150430053825.1"><vh>@test abbrevCommands.next_place</vh>
-<v t="ekr.20150430061225.1"><vh>child</vh></v>
-</v>
-<v t="ekr.20051107115231.18"><vh>@test paste and undo in headline - at end</vh></v>
-<v t="ekr.20051107115231.20"><vh>@test paste and undo in headline - with selection</vh></v>
-<v t="ekr.20051107115231.16"><vh>@test paste at end of headline</vh></v>
-<v t="ekr.20060325071703.1"><vh>@test ifplatform</vh></v>
-<v t="ekr.20111124090010.3939"><vh>@test g.app.config @buttons and @commands logic</vh></v>
-<v t="ekr.20100212104817.5351"><vh>@test help-for-command</vh></v>
-<v t="ekr.20100204165850.5373"><vh>@test most toggle commands</vh></v>
-<v t="ekr.20051107115231.17"><vh>@test typing and undo in headline - at end</vh></v>
+<v t="edward.20160314170027.56" descendentVnodeUnknownAttributes="7d7100285808000000302e332e31322e3371017d71025809000000756e69745f7465737471035804000000616263647104735809000000302e332e31382e333571057d710658090000006d795f706c7567696e7107580300000076616c710873752e"><vh>@file activeUnitTests.txt</vh></v>
 </v>
 </vnodes>
 <tnodes>
@@ -454,169 +507,6 @@ It also includes a trace back, but for AssertionErrors, it does not seem to offe
 assert('Spam' == 'Ham')</t>
 <t tx="ekr.20051012104957">@nosearch</t>
 <t tx="ekr.20051013162226"></t>
-<t tx="ekr.20051107115231.16">import sys
-if sys.platform.startswith('linux'):
-    self.skipTest('Not for Linux')
-
-k = c.keyHandler
-frame = c.frame ; tree = frame.tree ; canvas = tree.canvas
-h = 'Test headline abc'
-p = c.testManager.findNodeAnywhere(h)
-assert p,'node not found: %s' % h
-c.redrawAndEdit(p) # To make node visible
-w = c.edit_widget(p)
-g.app.gui.set_focus(c,w)
-w2 = g.app.gui.get_focus(c)
-try:
-    assert w
-    paste = 'ABC'
-    g.app.gui.replaceClipboardWith(paste)
-    g.app.gui.set_focus(c,w)
-    w2 = g.app.gui.get_focus(c)
-    w.setSelectionRange('end','end')
-    if g.app.gui.guiName() == 'curses':
-        c.frame.pasteText(event=g.Bunch(widget=w))
-    else:
-        stroke = k.getStrokeForCommandName('paste-text')
-        if stroke is None:
-            self.skipTest('no binding for paste-text') # #1345
-        k.manufactureKeyPressForCommandName(w,'paste-text')
-        g.app.gui.event_generate(c,'\n','Return',w)
-    assert p.h == h + paste,'Expected: %s, got %s' % (
-        h + paste,p.h)
-finally:
-    if 1:
-        c.setHeadString(p,h) # Essential
-        c.redraw(p)
-</t>
-<t tx="ekr.20051107115231.17">import sys
-if sys.platform.startswith('linux'):
-    self.skipTest('skip headline test')
-if g.app.gui.guiName() == 'curses':
-    # This could be adapted, but not now.
-    self.skipTest('Not for curses gui')
-k = c.k
-if k.defaultUnboundKeyAction != 'insert':
-    self.skipTest('defaultUnboundKeyAction != insert')
-if not k.getStrokeForCommandName('undo'):
-    self.skipTest('no settings')
-
-frame = c.frame ; tree = frame.tree ; canvas = tree.canvas
-h = 'Test headline abc'
-p = c.testManager.findNodeAnywhere(h)
-assert p,'node not found: %s' % h
-c.redrawAndEdit(p) # To make the node visible.
-w = c.edit_widget(p)
-try:
-    assert w, 'oops1'
-    wName = g.app.gui.widget_name(w)
-    assert wName.startswith('head'),'w.name:%s' % wName
-    w.setSelectionRange('end','end')
-    g.app.gui.event_generate(c,'X','Shift+X',w)
-    g.app.gui.event_generate(c,'Y','Shift+Y',w)
-    g.app.gui.event_generate(c,'Z','Shift+Z',w)
-    g.app.gui.event_generate(c,'\n','Return',w)
-    assert p.h == h + 'XYZ',(
-        'oops2: expected: %s, got: %s' % (
-            h + 'XYZ',p.h))
-    if g.app.gui.guiName() != 'nullGui':
-        assert c.undoer.undoMenuLabel == 'Undo Typing','oops3: %s' % (
-            c.undoer.undoMenuLabel)
-    k.manufactureKeyPressForCommandName(w,'undo')
-    if g.app.gui.guiName() != 'nullGui':
-        assert c.undoer.redoMenuLabel == 'Redo Typing','oops4'
-    assert p.h == h,'oops5 got: %s, expected: %s' % (
-        p.h,h)
-finally:
-    if 1:
-        c.setHeadString(p,h) # Essential
-        c.redraw(p)
-</t>
-<t tx="ekr.20051107115231.18">import sys
-if sys.platform.startswith('linux'):
-    self.skipTest('Not for Linux')
-
-k = c.keyHandler
-h = 'Test headline abc'
-p = c.testManager.findNodeAnywhere(h)
-assert p,'node not found: %s' % h
-frame = c.frame
-tree = frame.tree
-canvas = tree.canvas
-c.redrawAndEdit(p) # To make node visible
-w = c.edit_widget(p)
-try:
-    assert w,'oops1'
-    w.setSelectionRange('end','end')
-    paste = 'ABC'
-    g.app.gui.replaceClipboardWith(paste)
-    w.setSelectionRange('end','end')
-    if g.app.gui.guiName() == 'curses':
-        c.frame.pasteText(event=g.Bunch(widget=w))
-    else:
-        stroke = k.getStrokeForCommandName('paste-text')
-        if stroke is None:
-            self.skipTest('no binding for paste-text') # #1345
-        k.manufactureKeyPressForCommandName(w,'paste-text')
-        g.app.gui.event_generate(c,'\n','Return',w)
-    assert p.h == h + paste,'oops2 got: %s' % p.h
-    k.manufactureKeyPressForCommandName(w,'undo')
-    assert p.h == h,'oops3 got: %s' % p.h
-finally:
-    if 1:
-        c.setHeadString(p,h) # Essential
-        c.redraw(p)
-</t>
-<t tx="ekr.20051107115231.20">import sys
-if sys.platform.startswith('linux'):
-    self.skipTest('skip headline test')
-else:
-    k = c.keyHandler
-    frame = c.frame ; tree = frame.tree ; canvas = tree.canvas
-    h = 'Test headline abc'
-    p = c.testManager.findNodeAnywhere(h)
-    assert p,'node not found: %s' % h
-    c.redraw(p) # To make node visible
-    tree.editLabel(p)
-    w = c.edit_widget(p)
-    try:
-        assert w, 'Null w'
-        paste = 'ABC'
-        g.app.gui.replaceClipboardWith(paste)
-        w.setSelectionRange('1.1','1.2')
-        if g.app.gui.guiName() == 'curses':
-            c.frame.pasteText(event=g.Bunch(widget=w))
-        else:
-            stroke = k.getStrokeForCommandName('paste-text')
-            if stroke is None:
-                self.skipTest('no binding for paste-text') # #1345
-            k.manufactureKeyPressForCommandName(w,'paste-text')
-            g.app.gui.event_generate(c,'\n','Return',w)
-        assert p.h == h[0] + paste + h[2:]
-        k.manufactureKeyPressForCommandName(w,'undo')
-        assert p.h == h, 'head mismatch'
-    finally:
-        if 1:
-            c.setHeadString(p,h) # Essential
-            c.redraw(p)
-</t>
-<t tx="ekr.20060325071703.1">import sys
-
-win32  = c.config.getBool('test_win32_setting')
-darwin = c.config.getBool('test_darwin_setting')
-
-if win32 is None and darwin is None:
-    self.skipTest('settings not loaded') # #1345
-
-if sys.platform == 'win32':
-    assert(win32)
-    assert(not darwin)
-
-elif sys.platform== 'darwin':
-    assert(not win32)
-    assert(darwin)
-
-</t>
 <t tx="ekr.20070113145100"># Not part of cvs distributions, but needed for two unit tests.
 
 dir = g.os_path_join(g.app.loadDir,'..','test','unittest',g.u('chinese\u8116folder'),encoding='utf-8')
@@ -767,19 +657,7 @@ else:
         i = j = w.getInsertPoint()
         sel = (i,i)
     return i,j</t>
-<t tx="ekr.20070417092935"># TARGETWORD
-
-w = c.frame.body.wrapper
-
-for (which,result) in (('cap','Targetword'),('low','targetword'),('up','TARGETWORD')):
-    w.setInsertPoint(5)
-    c.editCommands.capitalizeHelper(event=None,which=which,undoType=None)
-    s = w.getAllText()
-    word = s[2:12]
-    assert word == result, 'Expected %s, got: %s' % (result,repr(word))
-    i = w.getInsertPoint()
-    assert i == 5, 'Expected 5, got: %d' % i
-</t>
+<t tx="ekr.20070417092935"></t>
 <t tx="ekr.20070503064257"></t>
 <t tx="ekr.20070528100318"># Required to make a typing test work.
 </t>
@@ -811,6 +689,51 @@ for h in sorted(d2.keys()):
 <t tx="ekr.20080324133327.2">True: allow linux-like pastes using a mouse's middle button.
 
 Important: this may cause crashes on some platforms.
+</t>
+<t tx="ekr.20090529141856.4686">@language plain
+</t>
+<t tx="ekr.20090529141856.4688"></t>
+<t tx="ekr.20090529141856.4689">saveFileDialog
+test\\unittest\\output\\exportHeadlines.txt
+</t>
+<t tx="ekr.20090529141856.4690"></t>
+<t tx="ekr.20090529141856.4691">saveFileDialog
+test\\unittest\\output\\flattenOutline.txt
+</t>
+<t tx="ekr.20090529141856.4692"></t>
+<t tx="ekr.20090529141856.4693">saveFileDialog
+test\\unittest\\output\\weave.txt
+</t>
+<t tx="ekr.20090529141856.4694"></t>
+<t tx="ekr.20090529141856.4695">saveFileDialog
+test\\unittest\\output\\outlineToNoweb.txt
+</t>
+<t tx="ekr.20090529141856.4696"></t>
+<t tx="ekr.20090529141856.4697">saveFileDialog
+test\\unittest\\output\\outlineToCweb.txt
+</t>
+<t tx="ekr.20090529141856.4700">@language plain
+</t>
+<t tx="ekr.20090529141856.4701"></t>
+<t tx="ekr.20090529141856.4704"></t>
+<t tx="ekr.20090529141856.4705">openFileDialog
+core\\runLeo.py
+</t>
+<t tx="ekr.20090529141856.4706"></t>
+<t tx="ekr.20090529141856.4707">openFileDialog
+test\\unittest\\input\\noweave.nw.txt
+</t>
+<t tx="ekr.20090529141856.4708"></t>
+<t tx="ekr.20090529141856.4709">openFileDialog
+test\\unittest\\input\\flat.txt
+</t>
+<t tx="ekr.20090529141856.4710"></t>
+<t tx="ekr.20090529141856.4711">openFileDialog
+test\\unittest\\input\\cweave.w
+</t>
+<t tx="ekr.20090529141856.4712"></t>
+<t tx="ekr.20090529141856.4713">openFileDialog
+test\\unittest\\input\\testLeoAtFile.py
 </t>
 <t tx="ekr.20091206090247.5060"># Use these with caution.</t>
 <t tx="ekr.20091206090247.5061">count = 0
@@ -1021,59 +944,92 @@ for tag,aList in table:
         d2 = inspect.getargspec(func2)
         assert d1==d2,'\n%s\n\nd1 %s\n\nd2 %s' % (z,d1,d2)
 </t>
-<t tx="ekr.20100204165850.5373">if g.app.inBridge:
-    self.skipTest('in bridge')
-k = c.k
-colorizer = c.frame.body.getColorizer()
-ed = c.editCommands
-# These don't set ivars
-    # 'toggle-active-pane'),
-    # 'toggle-angle-brackets',
-    # 'toggle-input-state'),
-    # 'toggle-mini-buffer'),
-    # 'toggle-split-direction'),
-table = [
-    (k,'abbrevOn','toggle-abbrev-mode'),
-    (ed,'extendMode','toggle-extend-mode'),
-]
-# Not valid for external tests.
-table2 = [
-    (k,'enable_autocompleter','toggle-autocompleter'),
-    (k,'enable_calltips','toggle-calltips'),
-    (c,'sparse_find','toggle-find-collapses-nodes'),
-    (colorizer,'showInvisibles','toggle-invisibles'),
-    (c,'sparse_move','toggle-sparse-move'),
-]
-if not g.app.isExternalUnitTest:
-    table.extend(table2)
-for obj,ivar,command in table:
-    val1 = getattr(obj,ivar)
-    try:
-        k.simulateCommand(command)
-        val2 = getattr(obj,ivar)
-        assert val2 == (not val1),'failed 1 %s' % command
-        k.simulateCommand(command)
-        val3 = getattr(obj,ivar)
-        assert val3 == val1,'failed 2 %s' % command
-    finally:
-        setattr(obj,ivar,val1)
-</t>
-<t tx="ekr.20100212104817.5351">result = c.helpCommands.getBindingsForCommand('help')
-if not result:
-    self.skipTest('no settings')
-assert result.strip().lower()=='f1', repr(result)
-</t>
 <t tx="ekr.20101220161557.6016"># Nov. 2016: 878 tests.
 # Nov. 2017: 916 tests, 25 skipped.
 # Dec. 2019: 938 tests, 16 skipped.
 
 # Some tests are disabled when g.app.isExternalUnitTest is True.
 # Using self.skipTest(reason) is now preferred.
-</t>
+
+# Search for `@test python -m` to find all new-style tests.</t>
 <t tx="ekr.20110521073115.3494"></t>
 <t tx="ekr.20110521073115.3495">builtins, including cython builtins
 </t>
 <t tx="ekr.20110521073115.3496">cython keywords
+</t>
+<t tx="ekr.20111006072734.3640">@others
+</t>
+<t tx="ekr.20111006072734.3641">def setup_test(target):
+    
+    c.unmarkAll() # Make sure we move only the test nodes!
+    
+    common = g.findNodeAnywhere(c,'@common x-marked-nodes test code')
+    assert common,'no common'
+    data = g.findNodeInTree(c,common,'data')
+    assert data,'no data'
+    
+    delete_children(target)
+
+    # Copy the nodes.
+    c.selectPosition(data)
+    c.copyOutline()
+    c.selectPosition(target)
+    c.pasteOutline()
+    c.moveOutlineRight()
+    c.promote()
+    c.deleteOutline()
+    c.redraw()
+        
+    for h in ('a','b','c'):
+        p2 = g.findNodeInTree(c,target,h)
+        assert p2,'not found: %s' % (h)
+        p2.setMarked()
+        
+    if 1: # This is correct.
+        for child in target.children():
+            if child.h == 'a':
+                assert child.isCloned(),'not cloned!: %s' % (child)
+            else:
+                assert not child.isCloned(),'cloned!: %s' % (child)
+        
+    # g.trace('setup complete')
+    
+</t>
+<t tx="ekr.20111006072734.3642">def test_children(p):
+    
+    n = p.numberOfChildren()
+    assert n == 3 ,'children: %s' % (n)
+    
+    child = p.firstChild()
+    assert child.h == 'a','child1: %s' % (child)
+    
+    child = child.next()
+    assert child.h == 'c','child2: %s' % (child)
+    
+    child = child.next()
+    assert child.h == 'a','child3: %s' % (child)
+</t>
+<t tx="ekr.20111006105711.3734">def delete_children(p):
+
+    while p.hasChildren():
+        p.firstChild().doDelete()
+</t>
+<t tx="ekr.20111006115024.3613">def tear_down(p,h=None):
+    
+    if 1:
+        delete_children(p)
+    
+    if h:
+        node = g.findNodeAnywhere(c,h)
+        if node:
+            node.doDelete()
+            # g.trace('deleted',node.h)
+
+    common = g.findNodeAnywhere(c,'@common x-marked-nodes test code')
+    common.contract()
+
+    c.selectPosition(p)
+    c.redraw()
 </t>
 <t tx="ekr.20111026111009.3972"># lowercase xml tags, one per line.
 
@@ -1084,6 +1040,11 @@ div
 table
 nodeA
 nodeB
+</t>
+<t tx="ekr.20111112092813.4060">@nocolor-node
+
+All support code should be placed as a child of this @mark-for-unit-test node
+so that it will be copied to dynamicUnitTest.leo when running tests externally.
 </t>
 <t tx="ekr.20111112092813.4154">g.cls()</t>
 <t tx="ekr.20111112093605.4679"># leoSettings.leo no longer sets any bindings for run-xxx-unit-test.
@@ -1096,7 +1057,9 @@ run-all-unit-tests-locally          = Alt-6
 
 # Important: Alt-9 is used by a unit test
 </t>
+<t tx="ekr.20111113102936.4600"></t>
 <t tx="ekr.20111115080347.3872"></t>
+<t tx="ekr.20111115105448.3880"></t>
 <t tx="ekr.20111123042627.6654"># Leo loads plugins in the order they appear here.
 
 # **Important**: to change these defaults, put
@@ -1108,35 +1071,10 @@ free_layout.py # needs to be early
 viewrendered.py
 
 # Recommended plugins:
-### contextmenu.py
-# leo_to_html.py
 mod_scripting.py
-# nav_qt.py
-# quicksearch.py
-# stickynotes.py
-# todo.py
-</t>
-<t tx="ekr.20111124090010.3939">if g.app.gui.guiName() == 'browser':
-    self.skipTest('browser gui')
-if g.app.isExternalUnitTest:
-    self.skipTest('Can not be run externally')
-if getattr(g.app, 'isBrowserTest', None):
-    # Set only in test_browser_gui.py.
-    self.skipTest('Browser Gui test')
-d = g.app.config.unitTestDict # Always created for this unit test.
-keys = ('config.doButtons-file-names','config.doCommands-file-names')
-for key in keys:
-    aList = d.get(key,[])
-    if 'leoSettings' not in aList:
-        self.skipTest('no settings') # #1345
-    for base in ('leoSettings', 'unitTest'):
-        for ext in ('.leo', '.db'):
-            if base+ext in aList:
-                break
-        else:
-            print('key', key, 'ext', ext, 'base', base)
-            g.printObj(aList)
-            assert False,'%s not in unitTestDict[%s]' % (base,key)
+
+# Testing:
+todo.py  # #1691.
 </t>
 <t tx="ekr.20111124094121.3941"># These exist for a unit test.</t>
 <t tx="ekr.20111124094121.3942"></t>
@@ -1178,7 +1116,14 @@ try:
     assert child.h.lower() == h.lower(),child.h
 finally:
     setup()</t>
+<t tx="ekr.20111211094602.3972"></t>
+<t tx="ekr.20111211094602.3975"></t>
+<t tx="ekr.20111211094602.3976"></t>
+<t tx="ekr.20111211094602.3977"></t>
+<t tx="ekr.20111211094602.3978"></t>
+<t tx="ekr.20111211094602.3979"></t>
 <t tx="ekr.20111211094936.3970"></t>
+<t tx="ekr.20120212130242.3980"></t>
 <t tx="ekr.20131111155830.4249"></t>
 <t tx="ekr.20131111155830.4250"># Not yet...
 
@@ -1455,33 +1400,17 @@ char t
 <t tx="ekr.20150216110251.11"># Do not delete this node.
 # It is used by unit tests.</t>
 <t tx="ekr.20150321155210.11"></t>
-<t tx="ekr.20150430053825.1">ac = c.abbrevCommands
-assert ac
-if c.abbrev_place_start is None or c.abbrev_place_end is None:
-    self.skipTest('no abbreviation settings') # #1345.
-child = g.findNodeInTree(c,p,'child')
-assert child
-old_b = child.b
-try:
-    i,j,val = 0,0,child.b
-    # ac.make_script_substitutions(i,j,val)
-    # ac.find_place_holder(child,True)
-    new_s,i,j = ac.next_place(child.b,offset=0)
-    assert i == 34 and j == 40,(i,j)
-    new_s2,i,j = ac.next_place(new_s,offset=40)
-    assert i == 54 and j == 58,(i,j)
-finally:
-    child.b = old_b
-</t>
-<t tx="ekr.20150430061225.1">def spam ():
-    """None - Return &lt;|return|&gt;
-    """
-
-    &lt;|code|&gt;
-</t>
 <t tx="ekr.20150602215639.1">True: Automatically beautify all @&lt;file&gt; nodes when saving an outline.
 
 # This *must* be False in unitTest.leo!</t>
+<t tx="ekr.20161006154740.1"></t>
+<t tx="ekr.20161006154802.1">openFileDialog
+test\\unittest\\perfectImport\\tab_file_test.txt
+</t>
+<t tx="ekr.20161006155420.1"></t>
+<t tx="ekr.20161006155420.2">openFileDialog
+test\\unittest\\perfectImport\\MORE_file_test.txt
+</t>
 <t tx="ekr.20161011095551.1">True: (Experimental): The @auto write code expands section references.
 False: (Legacy):      The @auto write code ignores section references.
 </t>
@@ -1563,7 +1492,6 @@ nodeB
 </t>
 <t tx="ekr.20190113124135.3">def eggs(): # line 4
     pass</t>
-<t tx="ekr.20190923014948.1"></t>
 <t tx="ekr.20191207060251.1">@language python
 @tabwidth -4
 @others
@@ -1580,5 +1508,13 @@ nodeB
 <t tx="ekr.20191215093835.15"></t>
 <t tx="ekr.20191215093835.16"></t>
 <t tx="ekr.20191215093835.9"></t>
+<t tx="ekr.20200205065723.1">@language python
+@others
+</t>
+<t tx="ekr.20200205065723.2">def spam():
+    pass</t>
+<t tx="ekr.20200205065723.3">def eggs():
+    pass
+</t>
 </tnodes>
 </leo_file>

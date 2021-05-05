@@ -3,10 +3,10 @@
 #@+node:ekr.20171124073126.1: * @file ../commands/commanderHelpCommands.py
 #@@first
 """Help commands that used to be defined in leoCommands.py"""
-import leo.core.leoGlobals as g
 import os
 import sys
 import time
+from leo.core import leoGlobals as g
 #@+others
 #@+node:ekr.20031218072017.2939: ** c_help.about (version number & date)
 @g.commander_command('about-leo')
@@ -33,7 +33,7 @@ def editOneSetting(self, event=None):
         func = c.commandsDict.get('show-fonts')
     elif p.h.startswith('@color '):
         func = c.commandsDict.get('show-color-wheel')
-    elif p.h.startswith(('@shortcuts','@button','@command')):
+    elif p.h.startswith(('@shortcuts', '@button', '@command')):
         c.editShortcut()
         return
     else:
@@ -104,7 +104,8 @@ def openCheatSheet(self, event=None, redraw=True):
 def openDesktopIntegration(self, event=None):
     """Open Desktop-integration.leo."""
     c = self
-    fileName = g.os_path_finalize_join(g.app.loadDir, '..', 'scripts', 'desktop-integration.leo')
+    fileName = g.os_path_finalize_join(
+        g.app.loadDir, '..', 'scripts', 'desktop-integration.leo')
     # only call g.openWithFileName if the file exists.
     if g.os_path_exists(fileName):
         c2 = g.openWithFileName(fileName, old_c=c)
@@ -122,27 +123,13 @@ def openLeoDist(self, event=None):
         c2 = g.openWithFileName(fileName, old_c=c)
         if c2: return
     g.es("not found:", name)
-#@+node:ekr.20050130152008: *3* c_help.openLeoPlugins
-@g.commander_command('open-leo-plugins-leo')
-@g.commander_command('leo-plugins-leo')
-def openLeoPlugins(self, event=None):
-    """Open leoPlugins.leo in a new Leo window."""
-    c = self
-    names = ('leoPlugins.leo', 'leoPluginsRef.leo',) # Used in error message.
-    for name in names:
-        fileName = g.os_path_finalize_join(g.app.loadDir, "..", "plugins", name)
-        # Bug fix: 2012/04/09: only call g.openWithFileName if the file exists.
-        if g.os_path_exists(fileName):
-            c2 = g.openWithFileName(fileName, old_c=c)
-            if c2: return
-    g.es('not found:', ', '.join(names))
 #@+node:ekr.20151225193723.1: *3* c_help.openLeoPy
 @g.commander_command('open-leo-py-leo')
 @g.commander_command('leo-py-leo')
 def openLeoPy(self, event=None):
-    """Open leoPy.leo in a new Leo window."""
+    """Open leoPy.leo or LeoPyRef.leo in a new Leo window."""
     c = self
-    names = ('leoPy.leo', 'LeoPyRef.leo',) # Used in error message.
+    names = ('leoPy.leo', 'LeoPyRef.leo',)  # Used in error message.
     for name in names:
         fileName = g.os_path_finalize_join(g.app.loadDir, "..", "core", name)
         # Only call g.openWithFileName if the file exists.
@@ -150,6 +137,19 @@ def openLeoPy(self, event=None):
             c2 = g.openWithFileName(fileName, old_c=c)
             if c2: return
     g.es('not found:', ', '.join(names))
+#@+node:ekr.20201013105418.1: *3* c_help.openLeoPyRef
+@g.commander_command('open-leo-py-ref-leo')
+@g.commander_command('leo-py-ref-leo')
+def openLeoPyRef(self, event=None):
+    """Open leoPyRef.leo in a new Leo window."""
+    c = self
+    path = g.os_path_finalize_join(g.app.loadDir, "..", "core", "LeoPyRef.leo")
+    # Only call g.openWithFileName if the file exists.
+    if g.os_path_exists(path):
+        c2 = g.openWithFileName(path, old_c=c)
+        if c2:
+            return
+    g.es('LeoPyRef.leo not found')
 #@+node:ekr.20061018094539: *3* c_help.openLeoScripts
 @g.commander_command('open-scripts-leo')
 @g.commander_command('leo-scripts-leo')
@@ -164,7 +164,7 @@ def openLeoScripts(self, event=None):
     g.es('not found:', fileName)
 #@+node:ekr.20031218072017.2943: *3* c_help.openLeoSettings & openMyLeoSettings & helper
 @g.commander_command('open-leo-settings')
-@g.commander_command('open-leo-settings-leo') # #1343.
+@g.commander_command('open-leo-settings-leo')  # #1343.
 @g.commander_command('leo-settings')
 def openLeoSettings(self, event=None):
     """Open leoSettings.leo in a new Leo window."""
@@ -176,7 +176,7 @@ def openLeoSettings(self, event=None):
     return None
 
 @g.commander_command('open-my-leo-settings')
-@g.commander_command('open-my-leo-settings-leo') # #1343.
+@g.commander_command('open-my-leo-settings-leo')  # #1343.
 @g.commander_command('my-leo-settings')
 def openMyLeoSettings(self, event=None):
     """Open myLeoSettings.leo in a new Leo window."""
@@ -186,7 +186,7 @@ def openMyLeoSettings(self, event=None):
         return g.openWithFileName(path, old_c=c)
     g.es('not found: myLeoSettings.leo')
     return createMyLeoSettings(c)
-#@+node:ekr.20141119161908.2: *4* def c_help.createMyLeoSettings
+#@+node:ekr.20141119161908.2: *4* function: c_help.createMyLeoSettings
 def createMyLeoSettings(c):
     """createMyLeoSettings - Return true if myLeoSettings.leo created ok
     """
@@ -314,9 +314,9 @@ def openPythonWindow(self, event=None):
     idle_path = os.path.dirname(m.__file__)
     idle = g.os_path_join(idle_path, 'idle.py')
     args = [sys.executable, idle]
-    if 1: # Use present environment.
+    if 1:  # Use present environment.
         os.spawnv(os.P_NOWAIT, sys.executable, args)
-    else: # Use a pristine environment.
+    else:  # Use a pristine environment.
         os.spawnve(os.P_NOWAIT, sys.executable, args, os.environ)
 #@+node:ekr.20131213072223.19532: ** c_help.selectAtSettingsNode
 @g.commander_command('open-local-settings')

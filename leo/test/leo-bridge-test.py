@@ -4,6 +4,13 @@
 # pylint: disable=invalid-name
 import os
 import sys
+# Adjust the path before importing
+# pylint: disable=wrong-import-order,wrong-import-position
+dir_ = os.path.abspath('.')
+if dir_ not in sys.path:
+    # print(f"appending {dir_} to sys.path")
+    sys.path.append(dir_)
+from leo.core import leoBridge
 
 # Leo files.
 files = [
@@ -13,44 +20,26 @@ files = [
 ]
 
 # Switches...
-gui = 'nullGui'         # 'nullGui', 'qt',
 kill_leo_output = True  # True: kill all output produced by g.es_print.
-loadPlugins = False     # True: attempt to load plugins.
-readSettings = True     # True: read standard settings files.
-silent = True           # True: don't print signon messages.
-trace_sys_path = False  # True: trace imports here.
-verbose = True          # True: verbose output.
-
-# Import stuff...
-dir_ = os.path.abspath('.')
-if dir_ not in sys.path:
-    if trace_sys_path: print('appending %s to sys.path' % dir_)
-    sys.path.append(dir_)
-if trace_sys_path:
-    print('sys.path:...\n%s' % '\n'.join(sorted(sys.path)))
-    print('sys.argv: %s %s' % (len(sys.argv), '\n'.join(sys.argv)))
-if gui == 'qt':
-    # Do this here to bypass leoQt g.in_bridge logic.
-    import leo.core.leoQt as leoQt
-    assert leoQt
-import leo.core.leoBridge as leoBridge
+silent = True
 
 controller = leoBridge.controller(
-    gui=gui,
-    loadPlugins=loadPlugins,
-    readSettings=readSettings,
-    silent=silent,
-    verbose=verbose)
+    gui='nullGui',  # 'nullGui', 'qt'
+    loadPlugins=False,  # True: attempt to load plugins.,
+    readSettings=True,  # True: read standard settings files.
+    silent=silent,  # True: don't print signon messages.
+    verbose=True,
+)
 g = controller.globals()
 
 # This kills all output from commanders.
 if kill_leo_output:
-    
+
     def do_nothing(*args, **keys):
         pass
-        
+
     g.es_print = do_nothing
-    
+
 for path in files:
     if os.path.exists(path):
         c = controller.openLeoFile(path)
@@ -59,12 +48,12 @@ for path in files:
             for p in c.all_positions():
                 n += 1
             if not silent:
-                print('%s has %s nodes' % (c.shortFileName(), n))
+                print(f"{c.shortFileName()} has {n} nodes")
         else:
-            assert False, path # For unit testing
+            assert False, path  # For unit testing
     elif not silent:
         if path.endswith('xyzzy.xxx'):
-            print('file not found: %s' % path)
+            print(f"file not found: {path}")
         else:
-            assert False, path # For unit testing
+            assert False, path  # For unit testing
 #@-leo

@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20070322113635: * @file bookmarks.py
+#@+node:tbrown.20070322113635: * @file ../plugins/bookmarks.py
 #@+<< docstring >>
 #@+node:tbrown.20070322113635.1: ** << docstring >>
 ''' Manage bookmarks in a list, and show bookmarks in a pane.
@@ -215,17 +215,16 @@ it to edit the bookmark node itself, and delete the body text (UNL) there.
 #@+<< imports >>
 #@+node:tbrown.20070322113635.3: ** << imports >>
 from collections import namedtuple
-import leo.core.leoGlobals as g
-
+import hashlib
+from leo.core import leoGlobals as g
+from leo.core.leoQt import QtCore, QtWidgets
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')
-from leo.core.leoQt import QtCore, QtWidgets
 
-import hashlib
 
 #@-<< imports >>
 #@+others
-#@+node:ekr.20100128073941.5371: ** init
+#@+node:ekr.20100128073941.5371: ** init (bookmarks.py)
 def init():
     '''Return True if the plugin has loaded successfully.'''
     if g.unitTesting:
@@ -244,11 +243,6 @@ def onCreate(tag, keys):
     if not c:
         return
     BookMarkDisplayProvider(c)
-    if not g.app.dock:
-        return
-    # #1214: Create a dock or an area in the Log pane.
-    bmd = BookMarkDisplay(c)
-    c.frame.log.createTab("Bookmarks", widget=bmd.w)
 #@+node:tbrown.20120319161800.21489: ** bookmarks-open-*
 @g.command('bookmarks-open-bookmark')
 def cmd_open_bookmark(event):
@@ -278,13 +272,9 @@ def cmd_open_node(event):
 #@+node:tbrown.20110712100955.39215: ** bookmarks-show
 @g.command('bookmarks-show')
 def cmd_show(event):
-    
-    if g.app.dock:
-       return
+
     c = event.get('c')
     bmd = BookMarkDisplay(c)
-    if g.app.dock:
-       return
     # Careful: we could be unit testing.
     splitter = bmd.c.free_layout.get_top_splitter()
     if splitter:
@@ -480,8 +470,6 @@ def cmd_use_other_outline(event):
         g.es("Use bookmarks-mark-as-target first")
         return
     c.db['_leo_bookmarks_show'] = g._bookmarks_target
-    if g.app.dock:
-       return
     bmd = BookMarkDisplay(c, g._bookmarks_target_v)
     splitter = c.free_layout.get_top_splitter()
     if splitter:
@@ -497,14 +485,13 @@ class FlowLayout(QtWidgets.QLayout):
     #@+node:ekr.20140917180536.17897: *3* __init__
     def __init__(self, parent=None, margin=0, spacing=-1):
         '''Ctor for FlowLayout class.'''
-        super(FlowLayout, self).__init__(parent)
+        super().__init__(parent)
         if parent is not None:
             self.setMargin(margin)
         else:
             self.setMargin(0)
         self.setSpacing(spacing)
         self.itemList = []
-
     #@+node:ekr.20140917180536.17898: *3* __del__
     def __del__(self):
         item = self.takeAt(0)
@@ -552,7 +539,7 @@ class FlowLayout(QtWidgets.QLayout):
 
     #@+node:ekr.20140917180536.17907: *3* setGeometry
     def setGeometry(self, rect):
-        super(FlowLayout, self).setGeometry(rect)
+        super().setGeometry(rect)
         self.doLayout(rect, False)
 
     #@+node:ekr.20140917180536.17908: *3* sizeHint
@@ -832,7 +819,7 @@ class BookMarkDisplay:
         text = g.toEncodedString(text,'utf-8')
         x = hashlib.md5(text).hexdigest()[-6:]
         add = int('bb',16) if not dark else int('33',16)
-        x = tuple([int(x[2*i:2*i+2], 16)//4+add for i in range(3)])
+        x = tuple(int(x[2*i:2*i+2], 16)//4+add for i in range(3))
         x = '%02x%02x%02x' % x
         return x
     #@+node:tbrown.20131227100801.23856: *3* find_node

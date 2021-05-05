@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20130930160706.23451: * @file markup_inline.py
+#@+node:tbrown.20130930160706.23451: * @file ../plugins/markup_inline.py
 #@@language python
 """
 Commands to go with keybindings in @settings-->@keys-->@shortcuts
@@ -14,7 +14,7 @@ Key bindings would be something like::
 
 """
 
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 def init():
     g.plugin_signon(__name__)

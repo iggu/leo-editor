@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:tbrown.20080613095157.2: * @file active_path.py
+#@+node:tbrown.20080613095157.2: * @file ../plugins/active_path.py
 #@+<< docstring >>
 #@+node:tbrown.20080613095157.3: ** << docstring >> (active_path)
 r'''Synchronizes \@path nodes with folders.
@@ -102,21 +102,15 @@ sub-folders more automatically.
 #@-<< docstring >>
 #@+<< imports >>
 #@+node:ekr.20140612210500.17669: ** << imports >>
-import leo.core.leoGlobals as g
-
-import leo.core.leoPlugins as leoPlugins
-    # uses leoPlugins.TryNext
-
 import ast # for docstring loading
 import os
 import re
 import shutil
 import time # for recursion bailout
+from leo.core import leoGlobals as g
+from leo.core import leoPlugins
+    # uses leoPlugins.TryNext
 
-# from leo.plugins.plugins_menu import PlugIn
-
-# if g.app.gui.guiName() == "qt":
-#    from leo.core.leoQt import isQt5,QtCore
 #@-<< imports >>
 testing = False
 #@+others
@@ -272,25 +266,6 @@ def getPath(c, p):
         else:
             path = os.path.join(path, p.h.strip())
     return path
-#@+node:tbrown.20090219133655.230: ** getPathOld
-def getPathOld(p):
-    # NOT USED, my version which does its own @path scanning
-    p = p.copy()
-    path = []
-    while p:
-        h = p.h
-        if g.match_word(h,0,"@path"):  # top of the tree
-            path.insert(0,os.path.expanduser(h[6:].strip()))
-            d = os.path.join(*path)
-            return d
-        if h.startswith('@'):  # some other directive, run away
-            break
-        elif isDirNode(p):  # a directory
-            path.insert(0,h.strip('/*'))
-        elif not p.hasChildren():  # a leaf node, assume a file
-            path.insert(0,h.strip('*'))
-        p = p.parent()
-    return None
 #@+node:tbrown.20080613095157.5: ** flattenOrganizers
 def flattenOrganizers(p):
     """Children of p, some of which may be in organizer nodes
@@ -373,7 +348,7 @@ def createFile(c,parent,d):
         'Create file @'+atType+' '+d+'?')
     if ok == 'no':
         return False
-    c.setHeadString(parent, '@'+atType+' '+d)
+    parent.h = '@'+atType+' '+d
     c.bodyWantsFocus()
     return True
 #@+node:tbrown.20080613095157.9: ** openFile
@@ -392,11 +367,14 @@ def openFile(c,parent,d, autoload=False):
             c.config.getData('active_path_bin_open') or '')
 
         if not binary_open:
-            start = open(path).read(100)
-            for i in start:
-                if ord(i) == 0:
-                    binary_open = True
-                    break
+            try:
+                start = open(path).read(100)
+                for i in start:
+                    if ord(i) == 0:
+                        binary_open = True
+                        break
+            except Exception:
+                binary_open = True
 
         if binary_open:
             g.es('Treating file as binary')
@@ -518,10 +496,10 @@ def openDir(c,parent,d):
 
         p = parent.insertAsNthChild(0)
         c.setChanged()
-        c.setHeadString(p,name)
+        p.h = name
         if name.startswith('/'):
             # sufficient test of dirness as we created newlist
-            c.setBodyString(p, '@path '+name.strip('/'))
+            p.b = '@path '+name.strip('/')
         elif (c.__active_path['do_autoload'] and
               inReList(name, c.__active_path['autoload'])):
             openFile(c, p, os.path.join(d, p.h), autoload=True)
@@ -551,7 +529,7 @@ def openDir(c,parent,d):
                 for orphan in p.subtree():
                     c.setHeadString(orphan, '*'+orphan.h.strip('*')+'*')
         if p.h != nh:  # don't dirty node unless we must
-            c.setHeadString(p,nh)
+            p.h = nh
 
     c.selectPosition(parent)
 #@+node:tbrown.20100304090709.31081: ** loadDocstring

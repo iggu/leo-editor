@@ -2,11 +2,9 @@
 #@+node:tbrown.20171028115144.4: * @file ../plugins/editpane/markdownview.py
 #@+<< markdownview.py imports >>
 #@+node:tbrown.20171028115507.1: ** << markdownview.py imports >>
-import leo.core.leoGlobals as g
-assert g
-# from leo.core.leoQt import QtCore, QtGui, QtWidgets, QtConst
-
 import markdown
+from leo.core import leoGlobals as g
+assert g
 
 # FIXME: for now, prefer the older WebKit over WebEngine.  WebEngine is
 # probably superior, but needs --disable-web-security passed to the
@@ -37,7 +35,6 @@ def to_html(text):
             'markdown.extensions.codehilite',
         ]
     )
-
 #@+node:tbrown.20171028115507.3: ** class LEP_MarkdownView
 class LEP_MarkdownView(HtmlView):
     """LEP_MarkdownView -
@@ -48,10 +45,9 @@ class LEP_MarkdownView(HtmlView):
     #@+node:tbrown.20171028115507.4: *3* __init__
     def __init__(self, c=None, lep=None, *args, **kwargs):
         """set up"""
-        super(LEP_MarkdownView, self).__init__(c=c, lep=lep, *args, **kwargs)
+        super().__init__(c=c, lep=lep, *args, **kwargs)
         self.c = c
         self.lep = lep
-
     #@+node:tbrown.20171028115507.5: *3* new_text
     def new_text(self, text):
         """new_text - update for new text
@@ -60,7 +56,6 @@ class LEP_MarkdownView(HtmlView):
             text (str): new text
         """
         self.setHtml(to_html(text))
-
     #@+node:tbrown.20171028115507.6: *3* update_text
     def update_text(self, text):
         """update_text - update for current text
@@ -73,8 +68,6 @@ class LEP_MarkdownView(HtmlView):
         self.new_text(text)
         # self.horizontalScrollBar().setValue(h)
         # self.verticalScrollBar().setValue(v)
-
-
     #@-others
 #@+node:tbrown.20171028115507.7: ** class LEP_MarkdownHtmlView
 class LEP_MarkdownHtmlView(TextView):
@@ -86,10 +79,9 @@ class LEP_MarkdownHtmlView(TextView):
     #@+node:tbrown.20171028115507.8: *3* __init__
     def __init__(self, c=None, lep=None, *args, **kwargs):
         """set up"""
-        super(LEP_MarkdownHtmlView, self).__init__(c=c, lep=lep, *args, **kwargs)
+        super().__init__(c=c, lep=lep, *args, **kwargs)
         self.c = c
         self.lep = lep
-
     #@+node:tbrown.20171028115507.9: *3* new_text
     def new_text(self, text):
         """new_text - update for new text
@@ -98,9 +90,6 @@ class LEP_MarkdownHtmlView(TextView):
             text (str): new text
         """
         self.setPlainText(to_html(text))
-
-
-
     #@-others
 #@-others
 #@@language python

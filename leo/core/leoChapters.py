@@ -3,8 +3,12 @@
 """Classes that manage chapters in Leo's core."""
 import re
 import string
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 #@+others
+#@+node:ekr.20150509030349.1: ** cc.cmd (decorator)
+def cmd(name):
+    """Command decorator for the ChapterController class."""
+    return g.new_cmd_decorator(name, ['c', 'chapterController',])
 #@+node:ekr.20070317085437: ** class ChapterController
 class ChapterController:
     """A per-commander controller that manages chapters and related nodes."""
@@ -27,9 +31,9 @@ class ChapterController:
         self.selectChapterLockout = False
             # True: cc.selectChapterForPosition does nothing.
             # Note: Used in qt_frame.py.
-        self.tt = None # May be set in finishCreate.
+        self.tt = None  # May be set in finishCreate.
         self.reloadSettings()
-        
+
     def reloadSettings(self):
         c = self.c
         self.use_tabs = c.config.getBool('use-chapter-tabs')
@@ -67,29 +71,25 @@ class ChapterController:
         if commandName in c.commandsDict:
             return
 
-        def select_chapter_callback(event,cc=cc,name=chapterName):
+        def select_chapter_callback(event, cc=cc, name=chapterName):
             chapter = cc.chaptersDict.get(name)
             if chapter:
                 try:
                     cc.selectChapterLockout = True
-                    cc.selectChapterByNameHelper(chapter,collapse=True)
-                    c.redraw(chapter.p) # 2016/04/20.
+                    cc.selectChapterByNameHelper(chapter, collapse=True)
+                    c.redraw(chapter.p)  # 2016/04/20.
                 finally:
                     cc.selectChapterLockout = False
             else:
                 # Possible, but not likely.
-                cc.note('no such chapter: %s' % name)
+                cc.note(f"no such chapter: {name}")
 
         # Always bind the command without a shortcut.
         # This will create the command bound to any existing settings.
+
         bindings = (None, binding) if binding else (None,)
         for shortcut in bindings:
             c.k.registerCommand(commandName, select_chapter_callback, shortcut=shortcut)
-    #@+node:ekr.20150509030349.1: *3* cc.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the ChapterController class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'chapterController',])
     #@+node:ekr.20070604165126: *3* cc.selectChapter
     @cmd('chapter-select')
     def selectChapter(self, event=None):
@@ -113,7 +113,7 @@ class ChapterController:
         names = sorted(cc.setAllChapterNames())
         sel_name = cc.selectedChapter.name if cc.selectedChapter else 'main'
         i = names.index(sel_name)
-        new_name = names[i-1 if i > 0 else len(names)-1]
+        new_name = names[i - 1 if i > 0 else len(names) - 1]
         cc.selectChapterByName(new_name)
 
     @cmd('chapter-next')
@@ -122,7 +122,7 @@ class ChapterController:
         names = sorted(cc.setAllChapterNames())
         sel_name = cc.selectedChapter.name if cc.selectedChapter else 'main'
         i = names.index(sel_name)
-        new_name = names[i+1 if i+1 < len(names) else 0]
+        new_name = names[i + 1 if i + 1 < len(names) else 0]
         cc.selectChapterByName(new_name)
     #@+node:ekr.20070317130250: *3* cc.selectChapterByName & helper
     def selectChapterByName(self, name, collapse=True):
@@ -161,7 +161,7 @@ class ChapterController:
         if chapter.p and c.positionExists(chapter.p):
             p = chapter.p
         elif chapter.name == 'main':
-            p = chapter.p # Do *not* use c.p here!
+            p = chapter.p  # Do *not* use c.p here!
         else:
             p = chapter.p = chapter.findRootNode()
             if not p:
@@ -184,8 +184,8 @@ class ChapterController:
 
     def note(self, s, killUnitTest=False):
         if g.unitTesting:
-            if 0: # To trace cause of failed unit test.
-                g.trace('=====',s, g.callers())
+            if 0:  # To trace cause of failed unit test.
+                g.trace('=====', s, g.callers())
             if killUnitTest:
                 assert False, s
         else:
@@ -228,7 +228,7 @@ class ChapterController:
             chapterName, binding = self.parseHeadline(p)
             if chapterName == name:
                 return p
-        return None # Not an error.
+        return None  # Not an error.
     #@+node:ekr.20070318124004: *4* cc.getChapter
     def getChapter(self, name):
         cc = self
@@ -270,8 +270,8 @@ class ChapterController:
             elif ch in ' \t':
                 result.append('-')
         s = ''.join(result)
-        s = s.replace('--','-')
-        return s[: 128]
+        s = s.replace('--', '-')
+        return s[:128]
     #@+node:ekr.20070615075643: *4* cc.selectChapterForPosition
     def selectChapterForPosition(self, p, chapter=None):
         """
@@ -344,7 +344,7 @@ class Chapter:
         self.c = c
         self.cc = cc = chapterController
         self.name = g.checkUnicode(name)
-        self.selectLockout = False # True: in chapter.select logic.
+        self.selectLockout = False  # True: in chapter.select logic.
         # State variables: saved/restored when the chapter is unselected/selected.
         self.p = c.p
         self.root = self.findRootNode()
@@ -382,7 +382,7 @@ class Chapter:
         c, cc = self.c, self.cc
         cc.selectedChapter = self
         if self.name == 'main':
-            return # 2016/04/20
+            return  # 2016/04/20
         # Remember the root (it may have changed) for dehoist.
         self.root = root = self.findRootNode()
         if not root:
@@ -401,8 +401,8 @@ class Chapter:
             if selectEditor:
                 # Careful: c.selectPosition would pop the hoist stack.
                 w = self.findEditorInChapter(p)
-                c.frame.body.selectEditor(w) # Switches text.
-                self.p = p # 2016/04/20: Apparently essential.
+                c.frame.body.selectEditor(w)  # Switches text.
+                self.p = p  # 2016/04/20: Apparently essential.
         if g.match_word(p.h, 0, '@chapter'):
             if p.hasChildren():
                 self.p = p = p.firstChild()

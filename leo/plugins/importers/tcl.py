@@ -1,14 +1,14 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20170615153639.2: * @file importers/tcl.py
+#@+node:ekr.20170615153639.2: * @file ../plugins/importers/tcl.py
 '''
 The @auto importer for the tcl language.
 
 Created 2017/06/15 by the `importer;;` abbreviation.
 '''
 import re
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 assert g
-import leo.plugins.importers.linescanner as linescanner
 Importer = linescanner.Importer
 Target = linescanner.Target
 #@+others

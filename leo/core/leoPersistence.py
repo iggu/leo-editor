@@ -3,11 +3,10 @@
 #@+node:ekr.20140821055201.18331: * @file leoPersistence.py
 #@@first
 """Support for persistent clones, gnx's and uA's using @persistence trees."""
-from __future__ import print_function
-import leo.core.leoGlobals as g
+### from __future__ import print_function
 import binascii
 import pickle
-# import time
+from leo.core import leoGlobals as g
 #@+others
 #@+node:ekr.20140711111623.17886: ** Commands (leoPersistence.py)
 @g.command('at-file-to-at-auto')
@@ -47,7 +46,6 @@ class PersistenceDataController:
         self.c = c
         self.at_persistence = None
             # The position of the @position node.
-
     #@+node:ekr.20140711111623.17793: *3* pd.Entry points
     #@+node:ekr.20140718153519.17731: *4* pd.clean
     def clean(self):
@@ -63,7 +61,7 @@ class PersistenceDataController:
         tag = '@data:'
         for child in at_persistence.children():
             if child.h.startswith(tag):
-                name = child.h[len(tag):].strip()
+                name = child.h[len(tag) :].strip()
                 if name not in foreign_list:
                     delete_list.append(child.copy())
         if delete_list:
@@ -97,7 +95,7 @@ class PersistenceDataController:
         # Create the @gnxs node
         at_gnxs = self.find_at_gnxs_node(root)
         at_gnxs.b = ''.join(
-            ['gnx: %s\nunl: %s\n' % (p.v.gnx, self.relative_unl(p, root))
+            [f"gnx: {p.v.gnx}\nunl: {self.relative_unl(p, root)}\n"
                 for p in aList])
         # Create the @uas tree.
         uas = [p for p in aList if p.v.u]
@@ -108,13 +106,11 @@ class PersistenceDataController:
             for p in uas:
                 p2 = at_uas.insertAsLastChild()
                 p2.h = '@ua:' + p.v.gnx
-                p2.b = 'unl:%s\nua:%s' % (
-                    self.relative_unl(p, root), self.pickle(p))
+                p2.b = f"unl:{self.relative_unl(p, root)}\nua:{self.pickle(p)}"
         # This is no longer necessary because of at.saveOutlineIfPossible.
-        if False and not g.app.initing and not g.unitTesting:
             # Explain why the .leo file has become dirty.
-            g.es_print('updated: @data:%s ' % (root.h))
-        return at_data # For at-file-to-at-auto command.
+            # g.es_print(f"updated: @data:{root.h} ")
+        return at_data  # For at-file-to-at-auto command.
     #@+node:ekr.20140716021139.17773: *5* pd.delete_at_data_children
     def delete_at_data_children(self, at_data, root):
         """Delete all children of the @data node"""
@@ -125,6 +121,8 @@ class PersistenceDataController:
         """Restore gnx's, uAs and clone links using @gnxs nodes and @uas trees."""
         self.at_persistence = self.find_at_persistence_node()
         if not self.at_persistence:
+            return
+        if not root:
             return
         if not self.is_foreign_file(root):
             return
@@ -222,7 +220,7 @@ class PersistenceDataController:
                         p.v.u = ua
                     else:
                         g.trace('Can not unpickle uA in',
-                            p.h, repr(unl), type(ua), ua[: 40])
+                            p.h, repr(unl), type(ua), ua[:40])
     #@+node:ekr.20140712105818.16750: *3* pd.Helpers
     #@+node:ekr.20140711111623.17845: *4* pd.at_data_body
     # Note: the unl of p relative to p is simply p.h,
@@ -230,7 +228,7 @@ class PersistenceDataController:
 
     def at_data_body(self, p):
         """Return the body text for p's @data node."""
-        return 'gnx: %s\n' % p.v.gnx
+        return f"gnx: {p.v.gnx}\n"
     #@+node:ekr.20140712105644.16744: *4* pd.expected_headline
     def expected_headline(self, p):
         """Return the expected imported headline for p."""
@@ -317,7 +315,7 @@ class PersistenceDataController:
         tail = unl_list[-1]
         matches = []
         for p in root.self_and_subtree(copy=False):
-            if p.h == tail: # A match
+            if p.h == tail:  # A match
                 # Compute the partial unl.
                 parents = 0
                 for parent2 in p.parents():
@@ -395,7 +393,7 @@ class PersistenceDataController:
         """Return the file name for p, a foreign file node."""
         for tag in ('@auto', '@org-mode', '@vim-outline'):
             if g.match_word(p.h, 0, tag):
-                return p.h[len(tag):].strip()
+                return p.h[len(tag) :].strip()
         return None
     #@+node:ekr.20140711111623.17864: *4* pd.has...
     # The has commands return None if the node does not exist.
@@ -496,11 +494,11 @@ class PersistenceDataController:
     def drop_unl_parent(self, unl):
         """Drop the penultimate part of the unl."""
         aList = unl.split('-->')
-        return '-->'.join(aList[: -2] + aList[-1:])
+        return '-->'.join(aList[:-2] + aList[-1:])
 
     def drop_unl_tail(self, unl):
         """Drop the last part of the unl."""
-        return '-->'.join(unl.split('-->')[: -1])
+        return '-->'.join(unl.split('-->')[:-1])
     #@+node:ekr.20140711111623.17883: *5* pd.relative_unl
     def relative_unl(self, p, root):
         """Return the unl of p relative to the root position."""
@@ -519,7 +517,7 @@ class PersistenceDataController:
     #@+node:ekr.20140711111623.17885: *5* pd.unl_tail
     def unl_tail(self, unl):
         """Return the last part of a unl."""
-        return unl.split('-->')[: -1][0]
+        return unl.split('-->')[:-1][0]
     #@-others
 #@-others
 #@@language python

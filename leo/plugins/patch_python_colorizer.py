@@ -1,11 +1,11 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20180119164431.1: * @file patch_python_colorizer.py
+#@+node:ekr.20180119164431.1: * @file ../plugins/patch_python_colorizer.py
 '''
 Shows how to patch python colorizer.
 '''
-import leo.core.leoGlobals as g
-assert g
 import re
+from leo.core import leoGlobals as g
+assert g
 #@+others
 #@+node:ekr.20180119164528.6: ** init
 def init ():

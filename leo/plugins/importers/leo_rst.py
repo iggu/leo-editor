@@ -1,12 +1,12 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20140723122936.18151: * @file importers/leo_rst.py
+#@+node:ekr.20140723122936.18151: * @file ../plugins/importers/leo_rst.py
 '''
 The @auto importer for restructured text.
 
 This module must **not** be named rst, so as not to conflict with docutils.
 '''
-import leo.core.leoGlobals as g
-import leo.plugins.importers.linescanner as linescanner
+from leo.core import leoGlobals as g
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 # Used by writers.leo_rst as well as in this file.
 underlines = '*=-^~"\'+!$%&(),./:;<>?@[\\]_`{|}#'

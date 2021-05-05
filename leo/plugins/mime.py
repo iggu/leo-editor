@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:dan.20090217132953.1: * @file mime.py
+#@+node:dan.20090217132953.1: * @file ../plugins/mime.py
 #@+<< docstring >>
 #@+node:dan.20090203174248.27: ** << docstring >> (mime.py)
 r''' Opens files with their default platform program.
@@ -40,12 +40,12 @@ filename string as its only argument and set as open_func.
 
 # By Dan White <etihwnad _at_ gmail _dot_ com>.
 
-import leo.core.leoGlobals as g
 import mailcap
 import mimetypes
 import os
 import subprocess
 import sys
+from leo.core import leoGlobals as g
 
 #@+others
 #@+node:dan.20090210183435.1: ** exec_full_cmd
@@ -156,7 +156,7 @@ def open_mimetype(tag, keywords, val=None):
 #@+node:dan.20090203174248.35: ** << guess file association handler >>
 #@+at Search for the best method of opening files.  If running a desktop manager,
 # do the action corresponding to a double-click in the file manager.
-# 
+#
 # Helper functions return a function f(fpath) which takes the full file path,
 # launches the viewer and returns immediately.
 #@@c

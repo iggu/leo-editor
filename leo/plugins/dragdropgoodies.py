@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20110115234843.8742: * @file dragdropgoodies.py
+#@+node:ville.20110115234843.8742: * @file ../plugins/dragdropgoodies.py
 #@+<< docstring >>
 #@+node:ville.20110115234843.8743: ** << docstring >>
 '''Adds "Back" and "Forward" buttons (Qt only).
@@ -18,13 +18,13 @@ __version__ = '0.2'
 #@+node:ville.20110115234843.8744: ** << version history >>
 #@@killcolor
 #@+at
-# 
+#
 # 0.1 Functionally complete version
 #@-<< version history >>
 
 #@+<< imports >>
 #@+node:ville.20110115234843.8745: ** << imports >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 
 g.assertUi('qt')
 

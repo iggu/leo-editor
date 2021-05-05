@@ -1,21 +1,17 @@
-Leo 6.1, http://leoeditor.com, is now available on
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fleo-editor%2Fleo-editor&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=PAGE+VIEWS&edge_flat=false)](https://hits.seeyoufarm.com)
+
+Leo 6.3, http://leoeditor.com, is now available on
 [GitHub](https://github.com/leo-editor/leo-editor).
 
-Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
+Leo is an [IDE, outliner and PIM](http://leoeditor.com/preface.html).
 
-**The highlights of Leo 6.1**
+**The highlights of Leo 6.3**
 
-- Pyzo in Leo: Pyzo can optionally run *within* Leo.
-- Added support for asciidoc and asciidoctor.
-- Added support for pandoc and sphinx.
-- Added support for black.
-- The history_tracer plugin animates git commits.
-- Integration of Leo with VS code.
-- New command-line arguments: --global-docks and --window-spot.
-- New cursor-movement commands.
-
-Special thanks to Vitalije Milosevic, Brian Theado, and Matt Wilkie for
-their contributions to Leo 6.1.
+- leoAst.py: The unification of Python's token and ast worlds.
+- Retired all Qt Dock code.
+- Improved viewrendered and viewrendered3 plugins.
+- Improved several importer plugins.
+- Refactored Leo's key handling code.
 
 **Links**
 

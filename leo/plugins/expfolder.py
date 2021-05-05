@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ajones.20070122153625: * @file expfolder.py
+#@+node:ajones.20070122153625: * @file ../plugins/expfolder.py
 #@+<< docstring >>
 #@+node:ajones.20070122153625.1: ** << docstring >> (expfolder.py)
 ''' Adds @expfolder nodes that represent folders in the file system.
@@ -27,10 +27,10 @@ Manager's Plugin Load Order pane.
 #@@language python
 #@@tabwidth -4
 
-import leo.core.leoGlobals as g
 import os
 import os.path
 import configparser as ConfigParser
+from leo.core import leoGlobals as g
 from leo.plugins.textnode import savetextnode
 
 __version__ = "1.0"
@@ -100,7 +100,7 @@ def on_icondclick(tag, keywords):
                 c.setHeadString(pn, "@text "+f)
                 pn.clearDirty()
             else:
-                c.setHeadString(pn, f)
+                pn.h = f
         for d in dirs:
             pn = p.insertAsNthChild(0)
             c.setHeadString(pn, "@expfolder "+d)

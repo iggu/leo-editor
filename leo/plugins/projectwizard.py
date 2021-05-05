@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20090622063842.5264: * @file projectwizard.py
+#@+node:ekr.20090622063842.5264: * @file ../plugins/projectwizard.py
 ''' Creates a wizard that creates @auto nodes.
 
 Opens a file dialog and recursively creates @auto & @path nodes from the path
@@ -8,11 +8,9 @@ where the selected file is (the selected file itself doesn't matter.)
 '''
 # Written by VMV.
 
-import leo.core.leoGlobals as g
-
+from leo.core import leoGlobals as g
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')
-# from leo.core.leoQt import QtCore
 
 #@+others
 #@+node:ville.20090614224528.8139: ** init
@@ -46,10 +44,8 @@ def auto_walk(c, directory, parent=None, isroot=True):
 
     if not RELATIVE_PATHS: directory = abspath(directory)
     if isroot:
-        body = "@path %s" % normpath(directory)
-        c.setHeadString(p, body)
+        p.h = "@path %s" % normpath(directory)
     for name in listdir(directory):
-
 
         if is_ignorable(name):
             continue

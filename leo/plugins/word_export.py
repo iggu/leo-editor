@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:EKR.20040517075715.14: * @file word_export.py
+#@+node:EKR.20040517075715.14: * @file ../plugins/word_export.py
 r'''
 Adds the Plugins\:Word Export\:Export menu item to format and export
 the selected outline to a Word document, starting Word if necessary.
@@ -12,7 +12,7 @@ __version__ = "0.8"
 #@+node:ekr.20040909110753: ** << version history >>
 #@@killcolor
 #@+at
-# 
+#
 # 0.3 EKR:
 #     - Changed os.path.x to g.os_path_x for better handling of unicode filenames.
 #     - Better error messages.
@@ -28,8 +28,9 @@ __version__ = "0.8"
 #@-<< version history >>
 #@+<< imports >>
 #@+node:ekr.20040909105522: ** << imports >>
-import leo.core.leoGlobals as g
-
+import configparser as ConfigParser
+import sys
+from leo.core import leoGlobals as g
 try:
     # From win32 extensions: http://www.python.org/windows/win32/
     import win32com.client
@@ -37,9 +38,6 @@ try:
 except ImportError:
     g.cantImport('win32com.client')
     client = None
-
-import configparser as ConfigParser
-import sys
 #@-<< imports >>
 
 #@+others

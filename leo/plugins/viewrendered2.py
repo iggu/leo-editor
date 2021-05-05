@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20140225222704.16748: * @file viewrendered2.py
+#@+node:ekr.20140225222704.16748: * @file ../plugins/viewrendered2.py
 #@@language python
 #@+<< docstring >>
 #@+node:ekr.20140226074510.4187: ** << docstring >> (VR2)
@@ -210,13 +210,18 @@ __version__ = '1.2' # tbp: added "Code Only" option to emit only code.
 
 #@+<< imports >>
 #@+node:ekr.20140226074510.4188: ** << imports >> (VR2)
-import leo.core.leoGlobals as g
-import leo.plugins.qt_text as qt_text
-import leo.plugins.free_layout as free_layout
+import os
+import sys
+from io import StringIO
+
+from leo.core import leoGlobals as g
+from leo.plugins import qt_text
+from leo.plugins import free_layout
 from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets
 from leo.core.leoQt import phonon, QtMultimedia, QtSvg, QtWebKitWidgets, QUrl
-import_ok = not isQt5
-    # for now, no commands should work when Qt5 is enabled.
+
+# pylint: disable=import-error
+# Third-party tools.
 try:
     import docutils
     import docutils.core
@@ -246,16 +251,14 @@ try:
     import pygments
 except ImportError:
     pygments = None
-import os
-from io import StringIO
-import sys
-# import traceback
 
+# for now, no commands should work when Qt5 is enabled.
+import_ok = not isQt5
 #@-<< imports >>
 # pylint: disable=fixme
 #@+at
 # To do:
-# 
+#
 # - Use the free_layout rotate-all command in Leo's toggle-split-direction command.
 # - Add dict to allow customize must_update.
 # - Lock movies automatically until they are finished?
@@ -468,7 +471,7 @@ class WebViewPlus(QtWidgets.QWidget):
     #@+others
     #@+node:ekr.20140226075611.16793: *3* vr2.ctor (WebViewPlus) & helpers
     def __init__(self, pc):
-        super(WebViewPlus, self).__init__()
+        super().__init__()
         self.app = QtCore.QCoreApplication.instance()
         self.c = c = pc.c
         self.docutils_settings = None # Set below.
@@ -777,7 +780,7 @@ class WebViewPlus(QtWidgets.QWidget):
             mdext = [x.strip() for x in mdext.split(',')]
             if pygments:
                 mdext.append('codehilite')
-            html = markdown(s, mdext)
+            html = markdown(s, extensions=mdext)
             html = g.toUnicode(html)
             self.html = html
             self.path = c.getNodePath(c.rootPosition())
@@ -1040,7 +1043,7 @@ class WebViewPlus(QtWidgets.QWidget):
                     else:
                         result.append('\n\n')
                     continue
-                elif word in g.globalDirectiveList:
+                if word in g.globalDirectiveList:
                     continue
             if codeflag:
                 emit_line = not (s.startswith('@') or s.startswith('<<')) if self.code_only else True
@@ -1168,7 +1171,7 @@ class WebViewPlus(QtWidgets.QWidget):
             mdext = [x.strip() for x in mdext.split(',')]
             if pygments:
                 mdext.append('codehilite')
-            html = markdown(html, mdext)
+            html = markdown(html, extensions=mdext)
             
             # tbp: this is a kludge to change the background color of the rendering pane.  
             # Markdown does not emit a css style sheet, but the browser will apply
@@ -1294,7 +1297,7 @@ class WebViewPlus(QtWidgets.QWidget):
                     else:
                         result.append('\n\n')
                     continue
-                elif word in g.globalDirectiveList:
+                if word in g.globalDirectiveList:
                     continue
             if codeflag:
                 emit_line = not (s.startswith('@') or s.startswith('<<')) if self.code_only else True
@@ -1681,64 +1684,6 @@ class ViewRenderedController(QtWidgets.QWidget):
         #        if sb and pos:
         #            # Restore the scrollbars
         #            sb.setSliderPosition(pos)
-    #@+at
-    # def update_md (self,s,keywords):
-    # 
-    #     trace = False and not g.unitTesting
-    #     pc = self ; c = pc.c ;  p = c.p
-    #     s = s.strip().strip('"""').strip("'''").strip()
-    #     isHtml = s.startswith('<') and not s.startswith('<<')
-    # 
-    #     # Do this regardless of whether we show the widget or not.
-    #     w = pc.ensure_text_widget()
-    #     assert pc.w
-    #     if s:
-    #         pc.show()
-    #     if not got_markdown:
-    #         isHtml = True
-    #         s = '<pre>\n%s</pre>' % s
-    #     if not isHtml:
-    #         # Not html: convert to html.
-    #         path = g.scanAllAtPathDirectives(c,p) or c.getNodePath(p)
-    #         if not os.path.isdir(path):
-    #             path = os.path.dirname(path)
-    #         if os.path.isdir(path):
-    #             os.chdir(path)
-    #         try:
-    #             msg = '' # The error message from docutils.
-    #             if pc.title:
-    #                 s = pc.underline(pc.title) + s
-    #                 pc.title = None
-    #             mdext = c.config.getString('view-rendered-md-extensions') or 'extra'
-    #             mdext = [x.strip() for x in mdext.split(',')]
-    #             s = markdown(s, mdext)
-    #             s = g.toUnicode(s) # 2011/03/15
-    #             #show = True
-    #         except SystemMessage as sm:
-    #             # g.trace(sm,sm.args)
-    #             msg = sm.args[0]
-    #             if 'SEVERE' in msg or 'FATAL' in msg:
-    #                 s = 'MD error:\n%s\n\n%s' % (msg,s)
-    # 
-    #     sb = w.verticalScrollBar()
-    #     if sb:
-    #         d = pc.scrollbar_pos_dict
-    #         if pc.node_changed:
-    #             # Set the scrollbar.
-    #             pos = d.get(p.v,sb.sliderPosition())
-    #             sb.setSliderPosition(pos)
-    #         else:
-    #             # Save the scrollbars
-    #             d[p.v] = pos = sb.sliderPosition()
-    #     if pc.default_kind in ('big','rst','html', 'md'):
-    #         w.setHtml(s)
-    #         if pc.default_kind == 'big':
-    #             w.zoomIn(4) # Doesn't work.
-    #     else:
-    #         w.setPlainText(s)
-    #     if sb and pos:
-    #         # Restore the scrollbars
-    #         sb.setSliderPosition(pos)
     #@+node:ekr.20140226074510.4228: *4* vr2.update_movie
     def update_movie(self, s, keywords):
         # pylint: disable=maybe-no-member
@@ -1907,11 +1852,11 @@ class ViewRenderedController(QtWidgets.QWidget):
             # Expand '~' and handle Leo expressions.
             fn = fn[1:]
             fn = g.os_path_expanduser(fn)
-            fn = g.os_path_expandExpression(fn, c=c)
+            fn = c.expand_path_expression(fn)
             fn = g.os_path_finalize(fn)
         else:
             # Handle Leo expressions.
-            fn = g.os_path_expandExpression(fn, c=c)
+            fn = c.expand_path_expression(fn)
             # Handle ancestor @path directives.
             if c and c.openDirectory:
                 base = c.getNodePath(c.p)

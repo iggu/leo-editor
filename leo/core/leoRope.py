@@ -4,10 +4,12 @@
 #@@first
 #@+<< leoRope imports >>
 #@+node:ekr.20140525065558.15807: ** << leoRope imports >>
-import leo.core.leoGlobals as g
 import time
 import importlib
+from leo.core import leoGlobals as g
+# Third-party imports.
 try:
+    # pylint: disable=import-error
     import rope.base.project as project
     import rope.base.simplify as simplify
     import rope.refactor as refactor
@@ -30,7 +32,6 @@ class RopeController:
             self.proj = project.Project(g.app.loadDir)
         else:
             self.proj = None
-
     #@+node:ekr.20140525065558.15806: *3* modules (RopeController)
     def modules(self):
         """Return full path names of all Leo modules."""
@@ -75,7 +76,7 @@ def test(c):
     g.cls()
     t1 = time.time()
     RopeController(c).run()
-    print('done: %s sec.' % g.timeSince(t1))
+    print(f"done: {g.timeSince(t1)} sec.")
 #@-others
 #@@language python
 #@@tabwidth -4

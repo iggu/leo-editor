@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:edream.110203113231.925: * @file script_io_to_body.py
+#@+node:edream.110203113231.925: * @file ../plugins/script_io_to_body.py
 """Sends output from the Execute Script command to the end of the body pane."""
 
 #@@language python
@@ -9,13 +9,13 @@ __version__ = "1.5"
 
 #@+<< imports >>
 #@+node:ekr.20050101090207.4: ** << imports >>
-import leo.core.leoGlobals as g
+from leo.core import leoGlobals as g
 #@-<< imports >>
 #@+<< version history >>
 #@+node:ekr.20071212114235: ** << version history >>
 #@@nocolor
 #@+at
-# 
+#
 # 1.5 EKR: A complete rewrite. Now works with Leo 4.4.5 code base.
 # 2.0 EKR: Gui independent.
 #@-<< version history >>
@@ -44,7 +44,7 @@ def onCreate (tag, keys):
         # Override c.executeScript.
         g.funcToMethod(newExecuteScript,c.__class__,'executeScript')
         c.k.overrideCommand('execute-script',c.executeScript)
-#@+node:edream.110203113231.928: ** newPut and newPutNl
+#@+node:edream.110203113231.928: ** newPut and newPutNl (script_io_to_body.py)
 # Same as frame.put except sends output to the end of the body text.
 def newPut (self,s,*args,**keys):
 
@@ -52,7 +52,7 @@ def newPut (self,s,*args,**keys):
     w = body.wrapper
     if w:
         w.insert("end",s)
-        body.onBodyChanged("Typing")
+        body.onBodyChanged('put-to-body-text')
     # else: g.pr(s,newline=False)
 
 # Same as frame.putnl except sends output to the end of the body text.

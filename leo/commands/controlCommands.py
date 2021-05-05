@@ -5,10 +5,10 @@
 """Leo's control commands."""
 #@+<< imports >>
 #@+node:ekr.20150514050127.1: ** << imports >> (controlCommands.py)
-import leo.core.leoGlobals as g
-from leo.commands.baseCommands import BaseEditCommandsClass as BaseEditCommandsClass
 import shlex
 import subprocess
+from leo.core import leoGlobals as g
+from leo.commands.baseCommands import BaseEditCommandsClass
 #@-<< imports >>
 
 def cmd(name):
@@ -23,7 +23,6 @@ class ControlCommandsClass(BaseEditCommandsClass):
         """Ctor for ControlCommandsClass."""
         # pylint: disable=super-init-not-called
         self.c = c
-
     #@+others
     #@+node:ekr.20150514063305.91: *3* executeSubprocess
     def executeSubprocess(self, event, command):
@@ -35,8 +34,7 @@ class ControlCommandsClass(BaseEditCommandsClass):
             p = subprocess.Popen(
                 shlex.split(command),
                 stdout=subprocess.PIPE,
-                stderr=None if trace else subprocess.PIPE,
-                    # subprocess.DEVNULL is Python 3 only.
+                stderr=subprocess.DEVNULL if trace else subprocess.PIPE,
                 shell=sys.platform.startswith('win'),
             )
             out, err = p.communicate()
@@ -46,7 +44,7 @@ class ControlCommandsClass(BaseEditCommandsClass):
             g.es_exception()
         k.keyboardQuit()
             # Inits vim mode too.
-        g.es('Done: %s' % command)
+        g.es(f"Done: {command}")
     #@+node:ekr.20150514063305.92: *3* print plugins info...
     @cmd('show-plugin-handlers')
     def printPluginHandlers(self, event=None):
@@ -93,8 +91,6 @@ class ControlCommandsClass(BaseEditCommandsClass):
         k = self.c.k
         command = g.toUnicode(k.arg)
         if command:
-            # k.commandName = 'shell-command: %s' % command
-            # k.clearState()
             self.executeSubprocess(event, command)
     #@+node:ekr.20150514063305.95: *3* shellCommandOnRegion
     @cmd('shell-command-on-region')
@@ -105,10 +101,8 @@ class ControlCommandsClass(BaseEditCommandsClass):
         if w:
             if w.hasSelection():
                 command = w.getSelectedText()
-                # k.commandName = 'shell-command: %s' % command
                 self.executeSubprocess(event, command)
             else:
-                # k.clearState()
                 g.es('No text selected')
         k.keyboardQuit()
     #@+node:ekr.20150514063305.96: *3* actOnNode

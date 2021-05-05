@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20060328125248: * @file mod_scripting.py
+#@+node:ekr.20060328125248: * @file ../plugins/mod_scripting.py
 #@+<< mod_scripting docstring >>
 #@+node:ekr.20060328125248.1: ** << mod_scripting docstring >>
 r"""This plugin script buttons and eval* commands.
@@ -78,7 +78,7 @@ You can specify the following options in myLeoSettings.leo.  See the node:
     True: define a minibuffer command for every @command node.
 
     @bool scripting-at-plugin-nodes = False
-    True: dynamically loads plugins in @plugins nodes when a window is created.
+    True: dynamically loads plugins in @plugin nodes when a window is created.
 
     @bool scripting-at-script-nodes = False
     True: dynamically executes script in @script nodes when a window is created.
@@ -221,18 +221,21 @@ most brilliant idea in Leo's history.
 #@-<< mod_scripting docstring >>
 #@+<< imports >>
 #@+node:ekr.20060328125248.2: ** << imports >>
-import leo.core.leoGlobals as g
-import leo.core.leoColor as leoColor
-import leo.core.leoGui as leoGui
 import pprint
 import re
-# import string
 import sys
 import textwrap
+from leo.core import leoGlobals as g
+from leo.core import leoColor
+from leo.core import leoGui
 #@-<< imports >>
 __version__ = '3.0' # Added EvalController class.
 
 #@+others
+#@+node:ekr.20210228135810.1: ** cmd decorator
+def eval_cmd(name):
+    '''Command decorator for the EvalController class.'''
+    return g.new_cmd_decorator(name, ['c', 'evalController',])
 #@+node:ekr.20180328085010.1: ** Top level (mod_scripting)
 #@+node:tbrown.20140819100840.37719: *3* build_rclick_tree (mod_scripting.py)
 def build_rclick_tree(command_p, rclicks=None, top_level=False):
@@ -406,7 +409,7 @@ class ScriptingController:
         self.atRclickNodes = getBool('scripting-at-rclick-nodes')
             # True: define a minibuffer command for every @rclick node.
         self.atPluginNodes = getBool('scripting-at-plugin-nodes')
-            # True: dynamically loads plugins in @plugins nodes when a window is created.
+            # True: dynamically loads plugins in @plugin nodes when a window is created.
         self.atScriptNodes = getBool('scripting-at-script-nodes')
             # True: dynamically executes script in @script nodes when a window is created.
             # DANGEROUS!
@@ -485,7 +488,7 @@ class ScriptingController:
                         f.write('  rpdb2.start_embedded_debugger(pwd="",fAllowUnencrypted=True) # Hard breakpoint.\n')
                     # f.write('# Remove all previous variables.\n')
                     f.write('# Predefine c, g and p.\n')
-                    f.write('import leo.core.leoGlobals as g\n')
+                    f.write('from leo.core import leoGlobals as g\n')
                     f.write('c = g.app.scriptDict.get("c")\n')
                     f.write('script_gnx = g.app.scriptDict.get("script_gnx")\n')
                     f.write('p = c.p\n')
@@ -501,7 +504,7 @@ class ScriptingController:
                     del sys.modules['leoScriptModule'] # Essential.
                 # pylint: disable=import-error
                     # This *will* exist.
-                import leo.core.leoScriptModule as leoScriptModule
+                from leo.core import leoScriptModule
                 assert leoScriptModule # for pyflakes.
             else:
                 g.error('No debugger active')
@@ -882,26 +885,19 @@ class ScriptingController:
         g.app.config.atLocalCommandsList.append(p.copy())
     #@+node:ekr.20060328125248.13: *4* sc.handleAtPluginNode @plugin
     def handleAtPluginNode(self, p):
-        '''Handle @plugin nodes.'''
+        """Handle @plugin nodes."""
         tag = "@plugin"
         h = p.h
         assert(g.match(h, 0, tag))
         # Get the name of the module.
-        theFile = h[len(tag):].strip()
-        # The following two lines break g.loadOnePlugin
-        #if theFile[-3:] == ".py":
-        #    theFile = theFile[:-3]
-        # in fact, I believe the opposite behavior is intended: add .py if it doesn't exist
-        if theFile[-3:] != ".py":
-            theFile = theFile + ".py"
-        theFile = g.toUnicode(theFile)
+        moduleOrFileName = h[len(tag):].strip()
         if not self.atPluginNodes:
-            g.warning("disabled @plugin: %s" % (theFile))
+            g.warning("disabled @plugin: %s" % (moduleOrFileName))
         # elif theFile in g.app.loadedPlugins:
-        elif g.pluginIsLoaded(theFile):
-            g.warning("plugin already loaded: %s" % (theFile))
+        elif g.pluginIsLoaded(moduleOrFileName):
+            g.warning("plugin already loaded: %s" % (moduleOrFileName))
         else:
-            g.loadOnePlugin(theFile)
+            g.loadOnePlugin(moduleOrFileName)
     #@+node:peckj.20131113130420.6851: *4* sc.handleAtRclickNode @rclick
     def handleAtRclickNode(self, p):
         '''Handle @rclick name [@key[=]shortcut].'''
@@ -1194,14 +1190,9 @@ class EvalController:
         self.last_result = None
         self.old_stderr = None
         self.old_stdout = None
-
-    def cmd(name):
-        '''Command decorator for the EvalController class.'''
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'evalController',])
     #@+node:ekr.20180328092221.1: *3* eval.Commands
     #@+node:ekr.20180328085426.2: *4* eval
-    @cmd("eval")
+    @eval_cmd("eval")
     def eval_command(self, event):
         #@+<< eval docstring >>
         #@+node:ekr.20180328100519.1: *5* << eval docstring >>
@@ -1237,7 +1228,7 @@ class EvalController:
             self.eval_text(s)
                 # Updates self.last_answer if there is exactly one answer.
     #@+node:ekr.20180328085426.3: *4* eval-block
-    @cmd("eval-block")
+    @eval_cmd("eval-block")
     def eval_block(self, event):
         #@+<< eval-block docstring >>
         #@+node:ekr.20180328100415.1: *5* << eval-block docstring >>
@@ -1292,7 +1283,7 @@ class EvalController:
         c.redraw()
         c.bodyWantsFocusNow()
     #@+node:ekr.20180328085426.5: *4* eval-last
-    @cmd("eval-last")
+    @eval_cmd("eval-last")
     def eval_last(self, event, text=None):
         """
         Insert the last result from ``eval``.
@@ -1316,7 +1307,7 @@ class EvalController:
         w.setInsertPoint(i+len(text)+1)
         c.setChanged()
     #@+node:ekr.20180328085426.6: *4* eval-last-pretty
-    @cmd("eval-last-pretty")
+    @eval_cmd("eval-last-pretty")
     def vs_last_pretty(self, event):
         """
         Insert the last result from ``eval``.
@@ -1335,7 +1326,7 @@ class EvalController:
             text=pprint.pformat(text)
             self.eval_last(event, text=text)
     #@+node:ekr.20180328085426.4: *4* eval-replace
-    @cmd("eval-replace")
+    @eval_cmd("eval-replace")
     def eval_replace(self, event):
         """
         Execute the selected text, if any.

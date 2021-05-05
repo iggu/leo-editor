@@ -1,7 +1,7 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20090701111504.5294: * @file contextmenu.py
+#@+node:ekr.20090701111504.5294: * @file ../plugins/contextmenu.py
 #@+<< docstring >>
-#@+node:ville.20090630210947.5460: ** << docstring >>
+#@+node:ville.20090630210947.5460: ** << docstring >> (contextmenu.py)
 ''' Defines various useful actions for context menus (Qt only).
 
 Examples are:
@@ -42,11 +42,11 @@ And call this in your plugin *once*::
 #@-<< docstring >>
 # Original version by Ville M. Vainio.
 
-# Imports.
-import leo.core.leoGlobals as g
 import os
 import subprocess
+from leo.core import leoGlobals as g
 from leo.core.leoQt import QtCore
+from leo.core.leoGui import LeoKeyEvent
 
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')
@@ -55,11 +55,29 @@ g.assertUi('qt')
 inited = False
 
 #@+others
-#@+node:ville.20090630210947.5463: **  init & helper
+#@+node:ekr.20200304124610.1: ** Commands
+#@+node:ville.20090701224704.9805: *3* 'cm-external-editor'
+# cm is 'contextmenu' prefix
+@g.command('cm-external-editor')
+def cm_external_editor(event):
+    """ Open node in external editor
+
+    Set LEO_EDITOR/EDITOR environment variable to get the editor you want.
+    """
+    c = event['c']
+    editor = g.guessExternalEditor()
+    d = {'kind':'subprocess.Popen','args':[editor],'ext':None}
+    c.openWith(d=d)
+#@+node:tbrown.20121123075838.19937: *3* 'context_menu_open'
+@g.command('context-menu-open')
+def context_menu_open(event):
+    """Provide a command for key binding to open the context menu"""
+    event.c.frame.tree.onContextMenu(QtCore.QPoint(0,0))
+#@+node:ekr.20200304124723.1: ** startup
+#@+node:ville.20090630210947.5463: *3*  init (contextmenu.py)
 def init ():
     '''Return True if the plugin has loaded successfully.'''
     global inited
-    # print "contextmenu init()"
     if g.app.gui.guiName() != "qt":
         return False
     g.plugin_signon(__name__)
@@ -71,57 +89,50 @@ def init ():
 #@+node:ville.20090630210947.10189: *3* install_handlers (contextmenu.py)
 def install_handlers():
     """ Install all the wanted handlers (menu creators) """
-    hnd = [
-        openwith_rclick, refresh_rclick, editnode_rclick,
-        nextclone_rclick, marknodes_rclick,
-        configuredcommands_rclick, deletenodes_rclick,
-        openurl_rclick,pylint_rclick]
-    g.tree_popup_handlers.extend(hnd)
-    # just for kicks, the @commands
-    #@+<< Add commands >>
-    #@+node:ville.20090701224704.9805: *4* << Add commands >>
-    # cm is 'contextmenu' prefix
-    @g.command('cm-external-editor')
-    def cm_external_editor_f(event):
-        """ Open node in external editor
-
-        Set LEO_EDITOR/EDITOR environment variable to get the editor you want.
-        """
-        c = event['c']
-        editor = g.guessExternalEditor()
-        d = {'kind':'subprocess.Popen','args':[editor],'ext':None}
-        c.openWith(d=d)
-    #@-<< Add commands >>
-
-#@+node:ekr.20140724211116.19257: ** Commands
-#@+node:tbrown.20121123075838.19937: *3* context_menu_open
-@g.command('context-menu-open')
-def context_menu_open(event):
-    """Provide a command for key binding to open the context menu"""
-    event.c.frame.tree.onContextMenu(QtCore.QPoint(0,0))
+    handlers = [
+        # Add user-specified items first.
+        configuredcommands_rclick,
+        # Add the rest...
+        openwith_rclick,
+        refresh_rclick,
+        editnode_rclick,
+        nextclone_rclick,
+        marknodes_rclick,
+        # deletenodes_rclick,
+        openurl_rclick,
+        pylint_rclick,
+    ]
+    g.tree_popup_handlers.extend(handlers)
 #@+node:ekr.20140724211116.19255: ** Handlers
 #@+node:ville.20091008192104.7691: *3* configuredcommands_rclick
-def configuredcommands_rclick(c,p,menu):
-    """ Provide "edit in EDITOR" context menu item """
+def configuredcommands_rclick(c, p, menu):
+    """Add all items given by @data contextmenu-commands"""
     config = c.config.getData('contextmenu_commands')
-    if config:
-        cmds = [el.split(None,1) for el in config]
-        for data in cmds:
-            # Fix #1084
-            try:
-                cmd, desc = data
-            except ValueError:
-                g.es_print('Invalid @data contextmenu_commands')
-                continue
-            desc = desc.strip()
-            action = menu.addAction(desc)
-            # action.setToolTip(cmd)
+    if not config:
+        return
+    cmds = [z.split(None,1) for z in config]
+    for data in cmds:
+        # Leo 6.2: Allows separator.
+        if data == ["-"]:
+            menu.addSeparator()
+            continue
+        # Fix #1084
+        try:
+            command_name, desc = data
+        except ValueError:
+            g.es_print(f"Bad @data contextmenu_commands entry: {data!r}")
+            continue
+        desc = desc.strip()
+        action = menu.addAction(desc)
 
-            def create_callback(cm):
-                return lambda: c.k.simulateCommand(cm)
-        
-            configcmd_rclick_cb = create_callback(cmd)
-            action.triggered.connect(configcmd_rclick_cb)
+        def create_callback(command_name):
+            w = g.app.gui.get_focus(c)
+            wrapper = getattr(w, 'wrapper', None)
+            key_event = LeoKeyEvent(c, char=None, event=None, binding=None, w=wrapper)
+            return lambda: c.k.simulateCommand(command_name, event=key_event)
+    
+        configcmd_rclick_cb = create_callback(command_name)
+        action.triggered.connect(configcmd_rclick_cb)
 
 #@+node:tbrown.20091203121808.15818: *3* deletenodes_rclick
 def deletenodes_rclick(c,p,menu):
@@ -175,7 +186,7 @@ def deletenodes_rclick(c,p,menu):
             c.selectPosition(c.rootPosition())
         c.redraw()
     #@-<< define deletenodes_rclick_cb >>
-    action = menu.addAction("Delete")
+    action = menu.addAction("Delete Node")
     action.triggered.connect(deletenodes_rclick_cb)
 #@+node:ville.20090701110830.10215: *3* editnode_rclick
 def editnode_rclick(c,p,menu):
@@ -198,6 +209,7 @@ def marknodes_rclick(c,p,menu):
         def marknodes_rclick_cb():
             for p in pl:
                 p.v.setMarked()
+                p.v.setDirty()  # 2020/04/29.
             c.redraw_after_icons_changed()
         action = menu.addAction("Mark")
         action.triggered.connect(marknodes_rclick_cb)
@@ -205,6 +217,7 @@ def marknodes_rclick(c,p,menu):
         def unmarknodes_rclick_cb():
             for p in pl:
                 p.v.clearMarked()
+                p.v.setDirty()  # 2020/04/29.
             c.redraw_after_icons_changed()
         action = menu.addAction("Unmark")
         action.triggered.connect(unmarknodes_rclick_cb)
@@ -245,7 +258,6 @@ def openwith_rclick(c,p,menu):
     #@+node:ekr.20140613141207.17666: *4* openwith_rclick_cb
     def openwith_rclick_cb():
 
-        #print "Editing", path, fname
         if editor:
             cmd = '%s "%s"' % (editor, absp)
             g.es('Edit: %s' % cmd)
@@ -315,13 +327,9 @@ def openwith_rclick(c,p,menu):
 #@+node:ville.20090630221949.5462: *3* refresh_rclick
 def refresh_rclick(c,p,menu):
 
-    # define callback.
-    #@+others
-    #@+node:ekr.20140613141207.17671: *4* refresh_rclick_cb
     def refresh_rclick_cb():
-
         c.refreshFromDisk()
-    #@-others
+
     split = p.h.split(None,1)
     if len(split) >= 2 and p.anyAtFileNodeName():
         action = menu.addAction("Refresh from disk")
@@ -330,8 +338,10 @@ def refresh_rclick(c,p,menu):
 def pylint_rclick(c,p,menu):
     '''Run pylint on the selected node.'''
     action = menu.addAction("Run Pylint")
+    
     def pylint_rclick_cb(aBool):
-        c.executeMinibufferCommand('pylint')
+        c.k.simulateCommand('pylint')
+    
     action.triggered.connect(pylint_rclick_cb)
 #@+node:ekr.20140724211116.19256: ** Helpers
 #@+node:ville.20110428163751.7685: *3* guess_file_type

@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ville.20090310191936.10: * @file colorize_headlines.py
+#@+node:ville.20090310191936.10: * @file ../plugins/colorize_headlines.py
 ''' Manipulates appearance of individual tree widget items. (Qt only).
 
 This plugin is mostly an example of how to change the appearance of headlines. As
@@ -10,8 +10,8 @@ nodes in bold.
 # By VMV.
 #@+<< imports >>
 #@+node:ville.20090310191936.13: ** << imports >>
-import leo.core.leoGlobals as g
-import leo.core.leoPlugins as leoPlugins
+from leo.core import leoGlobals as g
+from leo.core import leoPlugins
     # Uses leoPlugins.TryNext.
 #@-<< imports >>
 #@+others

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #@+leo-ver=5-thin
-#@+node:ekr.20170128213103.1: * @file demo.py
+#@+node:ekr.20170128213103.1: * @file ../plugins/demo.py
 #@@first
 '''
 A plugin that makes making Leo demos easy. See:
@@ -13,10 +13,11 @@ Revised by EKR February 6-7, 2017.
 #@+<< demo.py imports >>
 #@+node:ekr.20170128213103.3: **  << demo.py imports >>
 import random
-import leo.core.leoGlobals as g
-import leo.plugins.qt_events as qt_events
+from leo.core import leoGlobals as g
+from leo.plugins import qt_events
 from leo.core.leoQt import QtCore, QtGui, QtWidgets
 #@-<< demo.py imports >>
+# pylint: disable=no-member,not-callable
 #@@language python
 #@@tabwidth -4
 #@+others
@@ -63,7 +64,7 @@ class Demo:
         '''Ctor for the Demo class.'''
         self.c = c
         # pylint: disable=import-self
-        import leo.plugins.demo as module
+        from leo.plugins import demo as module
         #
         self.auto_run = False
             # True: start calls next until finished.
@@ -250,7 +251,7 @@ class Demo:
     #@+node:ekr.20170128213103.33: *4* demo.start & helpers
     def start(self, script_tree, auto_run=False, delim='###', root=None):
         '''Start a demo. script_tree contains the demo scripts.'''
-        import leo.core.leoNodes as leoNodes
+        from leo.core import leoNodes
         p = script_tree
         self.root = root and root.copy()
         self.script_root = script_tree and script_tree.copy()
@@ -400,7 +401,7 @@ class Demo:
         g.trace('does not exist: %s' % (path))
         return None
     #@+node:ekr.20170211045726.1: *3* demo.Keys
-    #@+node:ekr.20170128213103.11: *4* demo.body_keys
+    #@+node:ekr.20170128213103.11: *4* demo.body_keys (demo.py)
     def body_keys(self, s, speed=None, undo=False):
         '''Undoably simulate typing in the body pane.'''
         c = self.c
@@ -408,8 +409,9 @@ class Demo:
         p = c.p
         w = c.frame.body.wrapper.widget
         if undo:
-            c.undoer.setUndoTypingParams(p, 'typing', oldText=p.b, newText=p.b + s)
-                # oldSel=None, newSel=None, oldYview=None)
+            bunch = c.undoer.beforeChangeBody(p)
+            p.b = p.b + s
+            c.undoer.afterChangeBody(p, 'simulate-keys', bunch)
         for ch in s:
             p.b = p.b + ch
             w.repaint()
@@ -419,13 +421,12 @@ class Demo:
         '''Undoably simulates typing in the headline.'''
         c, p = self.c, self.c.p
         undoType = 'Typing'
-        oldHead = p.h
         tree = c.frame.tree
         p.h = ''
         c.editHeadline()
         w = tree.edit_widget(p)
         if undo:
-            undoData = c.undoer.beforeChangeNodeContents(p, oldHead=oldHead)
+            undoData = c.undoer.beforeChangeNodeContents(p)
             p.setDirty()
             c.undoer.afterChangeNodeContents(p, undoType, undoData)
         for ch in s:
@@ -445,15 +446,17 @@ class Demo:
         event = self.new_key_event(ch, w)
         k.masterKeyHandler(event)
         w.repaint() # Make the character visible immediately.
-    #@+node:ekr.20170128213103.23: *4* demo.keys
+    #@+node:ekr.20170128213103.23: *4* demo.keys (demo.py)
     def keys(self, s, undo=False):
         '''
         Simulate typing a string of *plain* keys.
         Use demo.key(ch) to type any other characters.
         '''
-        c, p = self.c, self.c.p
+        p, u = self.c.p, self.c.undoer
         if undo:
-            c.undoer.setUndoTypingParams(p, 'typing', oldText=p.b, newText=p.b + s)
+            bunch = u.beforeChangeBody(p)
+            p.b = p.b + s
+            u.afterChangeBody(p, 'Typing', bunch)
         for ch in s:
             self.key(ch)
     #@+node:ekr.20170128213103.39: *4* demo.new_key_event
@@ -710,15 +713,6 @@ class Demo:
         w.move(200, 200) # Arbitrary.
     #@-others
 #@+node:ekr.20170208045907.1: ** Graphics classes & helpers
-# When using reload, the correct code is *usually*:
-#
-#   super(self.__class__, self).__init__(...)
-#
-# This code works with both Python 2 and 3.
-#
-# http://stackoverflow.com/questions/9722343/python-super-behavior-not-dependable
-#
-# However, super doesn't work AT ALL in the Label class.
 #@+node:ekr.20170206203005.1: *3*  class Label (QLabel)
 class Label (QtWidgets.QLabel):
     '''A class for user-defined callouts in demo.py.'''

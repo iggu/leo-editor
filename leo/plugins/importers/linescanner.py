@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20161108125620.1: * @file importers/linescanner.py
+#@+node:ekr.20161108125620.1: * @file ../plugins/importers/linescanner.py
 #@+<< linescanner docstring >>
 #@+node:ekr.20161108125805.1: ** << linescanner docstring >>
 '''
@@ -75,11 +75,10 @@ need to do so.
 #@-<< linescanner docstring >>
 #@+<< linescanner imports >>
 #@+node:ekr.20161108130715.1: ** << linescanner imports >>
-# pylint: disable=wrong-import-order
-import leo.core.leoGlobals as g
 import io
-StringIO = io.StringIO
 import re
+from leo.core import leoGlobals as g
+StringIO = io.StringIO
 #@-<< linescanner imports >>
 #@+others
 #@+node:ekr.20161108155730.1: ** class Importer
@@ -101,11 +100,13 @@ class Importer:
         strict=False,
         **kwargs
     ):
-        '''Importer.__init__.'''
+        '''
+        Importer.__init__: New in Leo 6.1.1: ic and c may be None for unit tests.
+        '''
         # Copies of args...
         self.importCommands = ic = importCommands
-        self.c = c = ic.c
-        self.encoding = ic.encoding
+        self.c = c = ic and ic.c
+        self.encoding = ic and ic.encoding or 'utf-8'
         self.gen_refs = gen_refs
         self.language = language or name
             # For the @language directive.
@@ -121,15 +122,19 @@ class Importer:
         # Set from ivars...
         self.has_decls = name not in ('xml', 'org-mode', 'vimoutliner')
         self.is_rst = name in ('rst',)
-        self.tree_type = ic.treeType # '@root', '@file', etc.
+        self.tree_type = ic.treeType if c else None # '@root', '@file', etc.
         #
         # Constants...
-        data = g.set_delims_from_language(self.name)
-        self.single_comment, self.block1, self.block2 = data
-        self.escape = c.atFileCommands.underindentEscapeString
-        self.escape_string = r'%s([0-9]+)\.' % re.escape(self.escape)
+        if ic:
+            data = g.set_delims_from_language(self.name)
+            self.single_comment, self.block1, self.block2 = data
+        else:
+            self.single_comment, self.block1, self.block2 = '//', '/*', '*/' # Javascript.
+        if ic:
+            self.escape = c.atFileCommands.underindentEscapeString
+            self.escape_string = r'%s([0-9]+)\.' % re.escape(self.escape)
             # m.group(1) is the unindent value.
-        self.escape_pattern = re.compile(self.escape_string)
+            self.escape_pattern = re.compile(self.escape_string)
         self.ScanState = ScanState
             # Must be set by subclasses that use general_scan_line.
         self.tab_width = 0 # Must be set in run, using self.root.
@@ -140,7 +145,8 @@ class Importer:
         #
         # State vars.
         self.errors = 0
-        ic.errors = 0 # Required.
+        if ic:
+            ic.errors = 0 # Required.
         self.parse_body = False
         self.refs_dict = {}
             # Keys are headlines. Values are disambiguating number.
@@ -150,11 +156,16 @@ class Importer:
 
     def reloadSettings(self):
         c = self.c
+        if not c:
+            return
+        getBool = c.config.getBool
         c.registerReloadSettings(self)
         # self.at_auto_separate_non_def_nodes = False
-        self.at_auto_warns_about_leading_whitespace = \
-            c.config.getBool('at_auto_warns_about_leading_whitespace')
+        self.add_context = getBool("add-context-to-headlines")
+        self.add_file_context = getBool("add-file-context-to-headlines")
+        self.at_auto_warns_about_leading_whitespace = getBool('at_auto_warns_about_leading_whitespace')
         self.warn_about_underindented_lines = True
+       
     #@+node:ekr.20161110042512.1: *3* i.API for setting body text
     # All code in passes 1 and 2 *must* use this API to change body text.
 
@@ -232,14 +243,13 @@ class Importer:
 
         if context:
             d = {
-                # key    kind   pattern  ends?
-                '\\':   [('len+1', '\\', None),],
-                '"':    [('len', '"',    context == '"'),],
-                "'":    [('len', "'",    context == "'"),],
+                # key    kind      pattern  ends?
+                '\\':   [('len+1', '\\',    None),],
+                '"':    [('len',   '"',     context == '"'),],
+                "'":    [('len',   "'",     context == "'"),],
             }
             if block1 and block2:
                 add_key(d, block2, ('len', block2, True))
-                    # Bug fix: 2016/12/04: the tuple contained block1, not block2.
         else:
             # Not in any context.
             d = {
@@ -513,7 +523,7 @@ class Importer:
             ok = blanks == 0
             message = 'blanks found with @tabwidth %s in %s' % (w, fn)
         if ok:
-            ok = blanks == 0 or tabs == 0
+            ok = (blanks == 0 or tabs == 0)
             message = 'intermixed blanks and tabs in: %s' % (fn)
         if not ok:
             if g.unitTesting:
@@ -527,6 +537,7 @@ class Importer:
         Non-recursively parse all lines of s into parent, creating descendant
         nodes as needed.
         '''
+        trace = 'importers' in g.app.debug
         tail_p = None
         prev_state = self.state_class()
         target = Target(parent, prev_state)
@@ -537,6 +548,12 @@ class Importer:
         for i, line in enumerate(lines):
             new_state = self.scan_line(line, prev_state)
             top = stack[-1]
+            # g.trace(new_state.level(), f"{new_state.level() < top.state.level():1}", repr(line))
+            if trace:
+                g.trace('%d %d %s' % (
+                    self.starts_block(i, lines, new_state, prev_state),
+                    self.ends_block(line, new_state, prev_state, stack),
+                    line.rstrip()))
             if self.skip > 0:
                 self.skip -= 1
             elif self.is_ws_line(line):
@@ -679,7 +696,7 @@ class Importer:
         cause asserts to fail later in i.finish().
         '''
         self.clean_all_headlines(parent)
-        if self.c.config.getBool("add-context-to-headlines"):
+        if self.add_context:
             self.add_class_names(parent)
         self.clean_all_nodes(parent)
         self.unindent_all_nodes(parent)
@@ -695,7 +712,11 @@ class Importer:
         # Note: this method is never called for @clean trees.
 
     def add_class_names(self, p):
-        '''Add class names to headlines for all descendant nodes.'''
+        '''
+        Add class names to headlines for all descendant nodes.
+
+        Called only when @bool add-context-to-headlines is True.
+        '''
         if g.app.unitTesting:
             return # Don't changes the expected headlines.
         after, fn, class_name = None, None, None
@@ -707,7 +728,7 @@ class Importer:
                 fn = g.shortFileName(p.h[len(prefix):].strip())
                 after, class_name = None, None
                 continue
-            elif p.h.startswith('@path '):
+            if p.h.startswith('@path '):
                 after, fn, class_name = None, None, None
             elif p.h.startswith('class '):
                 class_name = p.h[5:].strip()
@@ -720,7 +741,7 @@ class Importer:
             if class_name:
                 if not p.h.startswith(class_name):
                     p.h = '%s.%s' % (class_name, p.h)
-            elif fn:
+            elif fn and self.add_file_context:
                 tag = ' (%s)' % fn
                 if not p.h.endswith(tag):
                     p.h += tag
@@ -757,7 +778,7 @@ class Importer:
             if back and back.v != parent.v and back.v != self.root.v and not p.isCloned():
                 lines = self.get_lines(p)
                 # Move the whitespace from p to back.
-                if all([z.isspace() for z in lines]):
+                if all(z.isspace() for z in lines):
                     self.extend_lines(back, lines)
                     # New in Leo 5.7: empty nodes may have children.
                     if p.hasChildren():
@@ -817,7 +838,7 @@ class Importer:
         '''Unindent all nodes in parent's tree.'''
         for p in parent.subtree():
             lines = self.get_lines(p)
-            if all([z.isspace() for z in lines]):
+            if all(z.isspace() for z in lines):
                 # Somewhat dubious, but i.check covers for us.
                 self.clear_lines(p)
             else:

@@ -1,8 +1,8 @@
 #@+leo-ver=5-thin
-#@+node:ekr.20141116100154.1: * @file importers/dart.py
+#@+node:ekr.20141116100154.1: * @file ../plugins/importers/dart.py
 '''The @auto importer for the dart language.'''
 import re
-import leo.plugins.importers.linescanner as linescanner
+from leo.plugins.importers import linescanner
 Importer = linescanner.Importer
 #@+others
 #@+node:ekr.20161123120245.2: ** class Dart_Importer
@@ -20,7 +20,7 @@ class Dart_Importer(Importer):
 
     #@+others
     #@+node:ekr.20161123121021.1: *3* dart_i.clean_headline
-    dart_pattern = re.compile(r'^\s*([\w_]+\s*)+\(')
+    dart_pattern = re.compile(r'^\s*([\w_][\w_\s]*)\(')
 
     def clean_headline(self, s, p=None):
 
