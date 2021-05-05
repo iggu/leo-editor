@@ -243,7 +243,7 @@ class OrderedDefaultDict(OrderedDict):
                 raise TypeError('first argument must be callable or None')
             self.default_factory = args[0]
             args = args[1:]
-        super(OrderedDefaultDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __missing__ (self, key):
         if self.default_factory is None:
@@ -357,7 +357,7 @@ class LeoQuickSearchWidget(QtWidgets.QWidget):
     def selectAndDismiss(self):
         self.hide()
     #@-others
-#@+node:ville.20090314215508.12: ** class QuickSearchController (Object)
+#@+node:ville.20090314215508.12: ** class QuickSearchController
 class QuickSearchController:
 
     #@+others

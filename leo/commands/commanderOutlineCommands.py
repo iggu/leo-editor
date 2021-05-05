@@ -16,7 +16,7 @@ def copyOutline(self, event=None):
     # Copying an outline has no undo consequences.
     c = self
     c.endEditing()
-    s = c.fileCommands.putLeoOutline()
+    s = c.fileCommands.outline_to_clipboard_string()
     g.app.paste_c = c
     g.app.gui.replaceClipboardWith(s)
 #@+node:ekr.20031218072017.1549: *3* c_oc.cutOutline
@@ -240,7 +240,7 @@ def pasteAsTemplate(self, event=None):
         vpar.children.insert(index, v)
         v.parents.append(vpar)
 
-        pasted = v # remember the first node as a return value
+        pasted = v  # remember the first node as a return value
 
         # now we iterate the rest of tuples
         for pgnx, gnx, h, b in rows:
@@ -278,21 +278,21 @@ def pasteAsTemplate(self, event=None):
 
     bodies, uas = leoFileCommands.FastRead(c, {}).scanTnodes(xtnodes)
 
-    root_gnx = xvnodes[0].attrib.get('t') # the gnx of copied node
-    outside = { x.gnx for x in skip_root(c.hiddenRootNode) }
+    root_gnx = xvnodes[0].attrib.get('t')  # the gnx of copied node
+    outside = {x.gnx for x in skip_root(c.hiddenRootNode)}
         # outside will contain gnxes of nodes that are outside the copied tree
 
-    translation = { x: translate_gnx(x) for x in bodies }
+    translation = {x: translate_gnx(x) for x in bodies}
         # we generate new gnx for each node in the copied tree
 
-    seen = set(outside) # required for the treatment of local clones inside the copied tree
+    seen = set(outside)  # required for the treatment of local clones inside the copied tree
 
     heads = {}
 
     bunch = c.undoer.createCommonBunch(p)
     #@+<< prepare destination data >>
     #@+node:vitalije.20200529111500.1: *4* << prepare destination data >>
-    # destination data consists of 
+    # destination data consists of
     #    1. vpar --- parent v node that should receive pasted child
     #    2. index --- at which pasted child will be
     #    3. parStack --- a stack for creating new position of the pasted node
@@ -1302,7 +1302,8 @@ def markChangedRoots(self, event=None):
         g.blue('done')
     c.redraw_after_icons_changed()
 #@+node:ekr.20031218072017.2928: *3* c_oc.markHeadline
-@g.commander_command('mark')
+@g.commander_command('mark')  # Compatibility
+@g.commander_command('toggle-mark')
 def markHeadline(self, event=None):
     """Toggle the mark of the selected node."""
     c = self; u = c.undoer; p = c.p

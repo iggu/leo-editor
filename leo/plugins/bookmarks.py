@@ -485,14 +485,13 @@ class FlowLayout(QtWidgets.QLayout):
     #@+node:ekr.20140917180536.17897: *3* __init__
     def __init__(self, parent=None, margin=0, spacing=-1):
         '''Ctor for FlowLayout class.'''
-        super(FlowLayout, self).__init__(parent)
+        super().__init__(parent)
         if parent is not None:
             self.setMargin(margin)
         else:
             self.setMargin(0)
         self.setSpacing(spacing)
         self.itemList = []
-
     #@+node:ekr.20140917180536.17898: *3* __del__
     def __del__(self):
         item = self.takeAt(0)
@@ -540,7 +539,7 @@ class FlowLayout(QtWidgets.QLayout):
 
     #@+node:ekr.20140917180536.17907: *3* setGeometry
     def setGeometry(self, rect):
-        super(FlowLayout, self).setGeometry(rect)
+        super().setGeometry(rect)
         self.doLayout(rect, False)
 
     #@+node:ekr.20140917180536.17908: *3* sizeHint
@@ -820,7 +819,7 @@ class BookMarkDisplay:
         text = g.toEncodedString(text,'utf-8')
         x = hashlib.md5(text).hexdigest()[-6:]
         add = int('bb',16) if not dark else int('33',16)
-        x = tuple([int(x[2*i:2*i+2], 16)//4+add for i in range(3)])
+        x = tuple(int(x[2*i:2*i+2], 16)//4+add for i in range(3))
         x = '%02x%02x%02x' % x
         return x
     #@+node:tbrown.20131227100801.23856: *3* find_node

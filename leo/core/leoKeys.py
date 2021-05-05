@@ -133,6 +133,14 @@ from leo.external import codewise
 # (8) Keys are command names, values are lists of BindingInfo objects.
 #@-<< about key dicts >>
 #@+others
+#@+node:ekr.20150509035140.1: ** ac_cmd (decorator)
+def ac_cmd(name):
+    """Command decorator for the AutoCompleter class."""
+    return g.new_cmd_decorator(name, ['c', 'k', 'autoCompleter'])
+#@+node:ekr.20150509035028.1: ** cmd (decorator)
+def cmd(name):
+    """Command decorator for the leoKeys class."""
+    return g.new_cmd_decorator(name, ['c', 'k',])
 #@+node:ekr.20061031131434.4: ** class AutoCompleterClass
 class AutoCompleterClass:
     """A class that inserts autocompleted and calltip text in text widgets.
@@ -143,11 +151,6 @@ class AutoCompleterClass:
     invoke-calltips-character (default binding is '(')
     """
     #@+others
-    #@+node:ekr.20150509035140.1: *3* ac.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the AutoCompleter class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'k', 'autoCompleter'])
     #@+node:ekr.20061031131434.5: *3* ac.ctor & reloadSettings
     def __init__(self, k):
         """Ctor for AutoCompleterClass class."""
@@ -186,7 +189,7 @@ class AutoCompleterClass:
             # False: show results in a QCompleter widget.
     #@+node:ekr.20061031131434.8: *3* ac.Top level
     #@+node:ekr.20061031131434.9: *4* ac.autoComplete
-    @cmd('auto-complete')
+    @ac_cmd('auto-complete')
     def autoComplete(self, event=None, force=False):
         """An event handler for autocompletion."""
         c, k = self.c, self.k
@@ -209,48 +212,48 @@ class AutoCompleterClass:
             self.w = w
             self.start(event)
     #@+node:ekr.20061031131434.10: *4* ac.autoCompleteForce
-    @cmd('auto-complete-force')
+    @ac_cmd('auto-complete-force')
     def autoCompleteForce(self, event=None):
         """Show autocompletion, even if autocompletion is not presently enabled."""
         return self.autoComplete(event, force=True)
     #@+node:ekr.20061031131434.12: *4* ac.enable/disable/toggleAutocompleter/Calltips
-    @cmd('disable-autocompleter')
+    @ac_cmd('disable-autocompleter')
     def disableAutocompleter(self, event=None):
         """Disable the autocompleter."""
         self.k.enable_autocompleter = False
         self.showAutocompleterStatus()
 
-    @cmd('disable-calltips')
+    @ac_cmd('disable-calltips')
     def disableCalltips(self, event=None):
         """Disable calltips."""
         self.k.enable_calltips = False
         self.showCalltipsStatus()
 
-    @cmd('enable-autocompleter')
+    @ac_cmd('enable-autocompleter')
     def enableAutocompleter(self, event=None):
         """Enable the autocompleter."""
         self.k.enable_autocompleter = True
         self.showAutocompleterStatus()
 
-    @cmd('enable-calltips')
+    @ac_cmd('enable-calltips')
     def enableCalltips(self, event=None):
         """Enable calltips."""
         self.k.enable_calltips = True
         self.showCalltipsStatus()
 
-    @cmd('toggle-autocompleter')
+    @ac_cmd('toggle-autocompleter')
     def toggleAutocompleter(self, event=None):
         """Toggle whether the autocompleter is enabled."""
         self.k.enable_autocompleter = not self.k.enable_autocompleter
         self.showAutocompleterStatus()
 
-    @cmd('toggle-calltips')
+    @ac_cmd('toggle-calltips')
     def toggleCalltips(self, event=None):
         """Toggle whether calltips are enabled."""
         self.k.enable_calltips = not self.k.enable_calltips
         self.showCalltipsStatus()
     #@+node:ekr.20061031131434.13: *4* ac.showCalltips
-    @cmd('show-calltips')
+    @ac_cmd('show-calltips')
     def showCalltips(self, event=None, force=False):
         """Show the calltips at the cursor."""
         c, k = self.c, self.c.k
@@ -265,7 +268,7 @@ class AutoCompleterClass:
         else:
             c.insertCharFromEvent(event)
     #@+node:ekr.20061031131434.14: *4* ac.showCalltipsForce
-    @cmd('show-calltips-force')
+    @ac_cmd('show-calltips-force')
     def showCalltipsForce(self, event=None):
         """Show the calltips at the cursor, even if calltips are not presently enabled."""
         return self.showCalltips(event, force=True)
@@ -696,24 +699,22 @@ class AutoCompleterClass:
         else:
             completions = None
             jedi_line, indent1, indent2 = None, None, None
-            g.printObj(source_lines[n0 - 1 : n0 + 30])
-            print(f"can not happen: not found: {line!r}")
+            if 0:  # This *can* happen.
+                g.printObj(source_lines[n0 - 1 : n0 + 30])
+                print(f"can not happen: not found: {line!r}")
         #
         # Get the jedi completions.
         if jedi_line is not None:
             import jedi
             try:
-                script = jedi.Script(
-                    source=source,
+                # https://jedi.readthedocs.io/en/latest/docs/api.html#script
+                script = jedi.Script(source, path=g.shortFileName(fileName))
+                completions = script.complete(
                     line=1 + n0 + jedi_line,
                     column=column,
-                    path=g.shortFileName(fileName),
-                    # encoding='utf-8',
-                    # sys_path=None):
                 )
-                completions = script.completions()
                 t3 = time.process_time()
-            except ValueError:
+            except Exception:
                 t3 = time.process_time()
                 completions = None
                 g.printObj(source_lines[n0 - 1 : n0 + 30])
@@ -905,7 +906,7 @@ class AutoCompleterClass:
                     # oldSel=oldSel,
                     # oldText=oldText,
                     # newText=w.getAllText(),
-                    # newInsert=w.getInsertPoint(), 
+                    # newInsert=w.getInsertPoint(),
                     # newSel=w.getSelectionRange())
             # else:
                 # u.afterChangeBody(p, 'auto-complete', bunch)
@@ -1671,7 +1672,7 @@ class KeyHandlerClass:
         self.inputModeName = ''  # The name of the input mode, or None.
         self.modePrompt = ''  # The mode promopt.
         self.state = g.bunch(kind=None, n=None, handler=None)
-        
+
         # Remove ???
         self.givenArgs = []  # Args specified after the command name in k.simulateCommand.
         self.functionTail = None  # For commands that take minibuffer arguments.
@@ -1903,11 +1904,6 @@ class KeyHandlerClass:
             'toggle-find-word-option',
             'toggle-find-wrap-around-option',
         ]
-    #@+node:ekr.20150509035028.1: *4* k.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the leoKeys class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'k',])
     #@+node:ekr.20061031131434.80: *4* k.finishCreate & helpers
     def finishCreate(self):
         """
@@ -2037,7 +2033,7 @@ class KeyHandlerClass:
         except Exception:  # Could be a user error.
             if g.unitTesting or not g.app.menuWarningsGiven:
                 g.es_print('exception binding', shortcut, 'to', commandName)
-                g.es_print_exception()
+                g.print_exception()
                 g.app.menuWarningsGiven = True
             return False
 
@@ -2503,7 +2499,7 @@ class KeyHandlerClass:
                 s3 = bi.commandName
                 s4 = bi.kind or '<no hash>'
                 data.append((s1, s2, s3, s4),)
-        # Print keys by type:
+        # Print keys by type.
         result = []
         result.append('\n' + legend)
         for prefix in (
@@ -2683,7 +2679,6 @@ class KeyHandlerClass:
     # New in Leo 5.4
 
     def get1Arg(self, event, handler,
-        # returnKind=None, returnState=None,
         prefix=None, tabList=None, completion=True, oneCharacter=False,
         stroke=None, useMinibuffer=True
     ):
@@ -3024,22 +3019,17 @@ class KeyHandlerClass:
     def traceVars(self, event):
 
         trace = False and not g.unitTesting
-        traceGC = False
-        verbose = False
-        k = self
         if not trace:
             return
-        if traceGC:
-            g.printNewObjects('masterKey 1')
-        if verbose:
-            char = event.char
-            state = k.state.kind
-            stroke = event.stroke
-            g.trace(
-                f"stroke: {stroke!r}, "
-                f"char: {char!r}, "
-                f"state: {state}, "
-                f"state2: {k.unboundKeyAction}")
+        k = self
+        char = event.char
+        state = k.state.kind
+        stroke = event.stroke
+        g.trace(
+            f"stroke: {stroke!r}, "
+            f"char: {char!r}, "
+            f"state: {state}, "
+            f"state2: {k.unboundKeyAction}")
     #@+node:ekr.20180418031118.1: *5* 1. k.isSpecialKey
     def isSpecialKey(self, event):
         """Return True if char is a special key."""
@@ -3387,7 +3377,7 @@ class KeyHandlerClass:
         #
         # #327: Ignore killed bindings.
         if bi and bi.commandName in k.killedBindings:
-            return False  
+            return False
         #
         # Execute the command if the binding exists.
         if bi:

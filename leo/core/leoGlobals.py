@@ -9,52 +9,41 @@ Important: This module imports no other Leo module.
 """
 #@+<< imports >>
 #@+node:ekr.20050208101229: ** << imports >> (leoGlobals)
-#
 # Don't import leoTest here: it messes up Leo's startup code.
     # from leo.core import leoTest
-
-import inspect
-import re
-import sys
-import time
-
-# Transcrypt does not support these modules
-# __pragma__ ('skip')
-
 import binascii
 import codecs
+import fnmatch
 from functools import reduce
+import gc
+import gettext
 import glob
-import io
 import importlib
+import inspect
+import io
 import operator
 import os
-#
-# Do NOT import pdb here!  We shall define pdb as a _function_ below.
-    # import pdb
+from pathlib import Path
+# import pdb  # Do NOT import pdb here!
+              # We shall define pdb as a _function_ below.
+import re
 import shlex
 import shutil
 import string
+import sys
 import subprocess
 import tempfile
+import time
 import traceback
 import types
+from typing import Any, Callable, Dict, List, Optional, Set
 import unittest
 import urllib
 import urllib.parse as urlparse
-
-try:
-    import gc
-except ImportError:
-    gc = None
-try:
-    import gettext
-except ImportError:  # does not exist in jython.
-    gettext = None
-
+import webbrowser
+#
+# Abbreviations...
 StringIO = io.StringIO
-
-# __pragma__ ('noskip')
 #@-<< imports >>
 in_bridge = False
     # Set to True in leoBridge.py just before importing leo.core.leoApp.
@@ -157,6 +146,7 @@ def callback(func):
             return func(*args, **keys)
         except Exception:
             g.es_exception()
+            return None
 
     return callback_wrapper
 #@+node:ekr.20150510104148.1: *3* g.check_cmd_instance_dict
@@ -201,7 +191,7 @@ class Command:
             for c in app.commanders():
                 c.k.registerCommand(self.name, func)
         # Inject ivars for plugins_menu.py.
-        func.__func_name__ = func.__name__ # For leoInteg.
+        func.__func_name__ = func.__name__  # For leoInteg.
         func.is_command = True
         func.command_name = self.name
         return func
@@ -244,7 +234,7 @@ class CommanderCommand:
             method(event=event)
 
         # Inject ivars for plugins_menu.py.
-        commander_command_wrapper.__func_name__ = func.__name__ # For leoInteg.
+        commander_command_wrapper.__func_name__ = func.__name__  # For leoInteg.
         commander_command_wrapper.__name__ = self.name
         commander_command_wrapper.__doc__ = func.__doc__
         global_commands_dict[self.name] = commander_command_wrapper
@@ -302,7 +292,7 @@ def new_cmd_decorator(name, ivars):
             except Exception:
                 g.es_exception()
 
-        new_cmd_wrapper.__func_name__ = func.__name__ # For leoInteg.
+        new_cmd_wrapper.__func_name__ = func.__name__  # For leoInteg.
         new_cmd_wrapper.__name__ = name
         new_cmd_wrapper.__doc__ = func.__doc__
         global_commands_dict[name] = new_cmd_wrapper
@@ -326,11 +316,10 @@ g_noweb_root = re.compile('<' + '<' + '*' + '>' + '>' + '=', re.MULTILINE)
 g_pos_pattern = re.compile(r':(\d+),?(\d+)?,?([-\d]+)?,?(\d+)?$')
 g_tabwidth_pat = re.compile(r'(^@tabwidth)', re.MULTILINE)
 #@-<< define regex's >>
-tree_popup_handlers = []  # Set later.
-user_dict = {}
+tree_popup_handlers: List[Callable] = []  # Set later.
+user_dict: Dict[Any, Any] = {}
     # Non-persistent dictionary for free use by scripts and plugins.
-# g = None
-app = None  # The singleton app object. Set by runLeo.py.
+app: Any = None  # The singleton app object. Set by runLeo.py.
 # Global status vars.
 inScript = False  # A synonym for app.inScript
 unitTesting = False  # A synonym for app.unitTesting.
@@ -350,10 +339,6 @@ def get_backup_path(sub_directory):
     1. os.environ['LEO_BACKUP']
     2. ~/Backup
     """
-    # Transcrypt does not support Python's pathlib module.
-    # __pragma__ ('skip')
-
-    from pathlib import Path
     # Compute the main backup directory.
     # First, try the LEO_BACKUP directory.
     backup = None
@@ -428,7 +413,7 @@ class BindingInfo:
                     s = f"{ivar}: {val!r}"
                     result.append(s)
         # Clearer w/o f-string.
-        return f"[%s]" % ' '.join(result).strip()
+        return "[%s]" % ' '.join(result).strip()
     #@+node:ekr.20120129040823.10226: *4* bi.isModeBinding
     def isModeBinding(self):
         return self.kind.startswith('*mode')
@@ -436,27 +421,20 @@ class BindingInfo:
 def isBindingInfo(obj):
     return isinstance(obj, BindingInfo)
 #@+node:ekr.20031218072017.3098: *3* class g.Bunch (Python Cookbook)
-#@@language rest
-#@+at
-# From The Python Cookbook:
-#
-# Create a Bunch whenever you want to group a few variables:
-#
-#     point = Bunch(datum=y, squared=y*y, coord=x)
-#
-# You can read/write the named attributes you just created, add others,
-# del some of them, etc::
-#
-#     if point.squared > threshold:
-#         point.isok = True
-#@@c
-#@@language python
-
-
 class Bunch:
-    """A class that represents a colection of things.
+    """
+    From The Python Cookbook:
 
-    Especially useful for representing a collection of related variables."""
+        Create a Bunch whenever you want to group a few variables:
+        
+            point = Bunch(datum=y, squared=y*y, coord=x)
+        
+        You can read/write the named attributes you just created, add others,
+        del some of them, etc::
+        
+            if point.squared > threshold:
+                point.isok = True
+    """
 
     def __init__(self, **keywords):
         self.__dict__.update(keywords)
@@ -503,10 +481,6 @@ bunch = Bunch
 #@+node:ekr.20120219154958.10492: *3* class g.EmergencyDialog
 class EmergencyDialog:
     """A class that creates an tkinter dialog with a single OK button."""
-    
-    # Transcrypt does not support Python's tkinter module.
-    # __pragma__ ('skip')
-    
     #@+others
     #@+node:ekr.20120219154958.10493: *4* emergencyDialog.__init__
     def __init__(self, title, message):
@@ -581,21 +555,20 @@ class EmergencyDialog:
     def run(self):
         """Run the modal emergency dialog."""
         # Suppress f-stringify.
-        self.top.geometry(f"%dx%d%+d%+d" % (300, 200, 50, 50))
+        self.top.geometry("%dx%d%+d%+d" % (300, 200, 50, 50))
         self.top.lift()
         self.top.grab_set()  # Make the dialog a modal dialog.
         self.root.wait_window(self.top)
     #@-others
-
-    # __pragma__ ('noskip')
-#@+node:ekr.20040331083824.1: *3* class g.FileLikeObject
-# Note: we could use StringIo for this.
-
-
+#@+node:ekr.20040331083824.1: *3* class g.FileLikeObject (Deprecated)
 class FileLikeObject:
-    """Define a file-like object for redirecting writes to a string.
+    """
+    This class is deprecated: use io.StringIO(initial_value='', newline='\n')
 
-    The caller is responsible for handling newlines correctly."""
+    Define a file-like object for redirecting writes to a string.
+
+    The caller is responsible for handling newlines correctly.
+    """
     #@+others
     #@+node:ekr.20050404151753: *4*  ctor (g.FileLikeObject)
     def __init__(self, encoding='utf-8', fromString=None):
@@ -639,6 +612,7 @@ class FileLikeObject:
                 s = g.toUnicode(s, self.encoding)
             self.list.append(s)
     #@-others
+
 fileLikeObject = FileLikeObject
     # For compatibility.
 #@+node:ekr.20120123143207.10223: *3* class g.GeneralSetting
@@ -1707,9 +1681,6 @@ class SherlockTracer:
         
     g.SherlockTracer(patterns).run()
     """
-    # Transcrypt does not support Python's os module.
-    # __pragma__ ('skip')
-
     #@+others
     #@+node:ekr.20121128031949.12602: *4* __init__
     def __init__(
@@ -1767,7 +1738,7 @@ class SherlockTracer:
             self.do_call(frame, arg)
         elif event == 'return' and self.show_return:
             self.do_return(frame, arg)
-        elif True and event == 'line' and self.trace_lines:
+        elif event == 'line' and self.trace_lines:
             self.do_line(frame, arg)
         # Queue the SherlockTracer instance again.
         return self
@@ -1793,7 +1764,7 @@ class SherlockTracer:
         dots = '.' * max(0, n - self.n) if self.dots else ''
         path = f"{os.path.basename(file_name):>20}" if self.verbose else ''
         leadin = '+' if self.show_return else ''
-        args = f"(%s)" % self.get_args(frame1) if self.show_args else ''
+        args = "(%s)" % self.get_args(frame1) if self.show_args else ''
         print(f"{path}:{dots}{leadin}{full_name}{args}")
         # Always update stats.
         d = self.stats.get(file_name, {})
@@ -1816,7 +1787,7 @@ class SherlockTracer:
                 if arg:
                     if isinstance(arg, (list, tuple)):
                         # Clearer w/o f-string
-                        val = f"[%s]" % ','.join(
+                        val = "[%s]" % ','.join(
                             [self.show(z) for z in arg if self.show(z)])
                     else:
                         val = self.show(arg)
@@ -1824,7 +1795,7 @@ class SherlockTracer:
                         result.append(f"{name}={val}")
         return ','.join(result)
     #@+node:ekr.20140402060647.16845: *4* sherlock.do_line (not used)
-    bad_fns = []
+    bad_fns: List[str] = []
 
     def do_line(self, frame, arg):
         """print each line of enabled functions."""
@@ -1889,10 +1860,10 @@ class SherlockTracer:
                 ret = '<generator>'
             elif isinstance(arg, (tuple, list)):
                 # Clearer w/o f-string.
-                ret = f"[%s]" % ','.join([self.show(z) for z in arg])
+                ret = "[%s]" % ','.join([self.show(z) for z in arg])
                 if len(ret) > 40:
                     # Clearer w/o f-string.
-                    ret = f"[\n%s]" % ('\n,'.join([self.show(z) for z in arg]))
+                    ret = "[\n%s]" % ('\n,'.join([self.show(z) for z in arg]))
             elif arg:
                 ret = self.show(arg)
                 if len(ret) > 40:
@@ -1902,15 +1873,14 @@ class SherlockTracer:
         except Exception:
             exctype, value = sys.exc_info()[:2]
             s = f"<**exception: {exctype.__name__}, {value} arg: {arg !r}**>"
-            # Clearer w/o f-string.
-            ret = f" ->\n    %s" % s if len(s) > 40 else f" -> {s}"
+            ret = f" ->\n    {s}" if len(s) > 40 else f" -> {s}"
         return f" -> {ret}"
     #@+node:ekr.20121128111829.12185: *4* sherlock.fn_is_enabled (not used)
     def fn_is_enabled(self, func, patterns):
         """Return True if tracing for the given function is enabled."""
         if func in self.ignored_functions:
             return False
-            
+
         def ignore_function():
             if func not in self.ignored_functions:
                 self.ignored_functions.append(func)
@@ -1925,9 +1895,9 @@ class SherlockTracer:
             '.*__next\b',
             '<frozen>', '<genexpr>', '<listcomp>',
             # '<decorator-gen-.*>',
-            'get\b', 
+            'get\b',
             # String primitives.
-            'append\b', 'split\b', 'join\b', 
+            'append\b', 'split\b', 'join\b',
             # File primitives...
             'access_check\b', 'expanduser\b', 'exists\b', 'find_spec\b',
             'abspath\b', 'normcase\b', 'normpath\b', 'splitdrive\b',
@@ -1938,7 +1908,7 @@ class SherlockTracer:
                 ignore_function()
                 return False
         #
-        # Legacy code.  
+        # Legacy code.
         try:
             enabled, pattern = False, None
             for pattern in patterns:
@@ -1964,8 +1934,8 @@ class SherlockTracer:
             pass
         return full_name
     #@+node:ekr.20121128111829.12183: *4* sherlock.is_enabled
-    ignored_files = []
-    ignored_functions = []
+    ignored_files: List[str] = []  # List of files.
+    ignored_functions: List[str] = []  # List of files.
 
     def is_enabled(self, file_name, function_name, patterns=None):
         """Return True if tracing for function_name in the given file is enabled."""
@@ -1981,12 +1951,12 @@ class SherlockTracer:
             if not base_name in self.ignored_files:
                 self.ignored_files.append(base_name)
                 # print(f"Ignore file: {base_name}")
-                
+
         def ignore_function():
             if function_name not in self.ignored_functions:
                 self.ignored_functions.append(function_name)
                 # print(f"Ignore function: {function_name}")
-                
+
         if f"{os.sep}lib{os.sep}" in file_name:
             ignore_file()
             return False
@@ -2003,9 +1973,9 @@ class SherlockTracer:
             '.*__next\b',
             '<frozen>', '<genexpr>', '<listcomp>',
             # '<decorator-gen-.*>',
-            'get\b', 
+            'get\b',
             # String primitives.
-            'append\b', 'split\b', 'join\b', 
+            'append\b', 'split\b', 'join\b',
             # File primitives...
             'access_check\b', 'expanduser\b', 'exists\b', 'find_spec\b',
             'abspath\b', 'normcase\b', 'normpath\b', 'splitdrive\b',
@@ -2061,7 +2031,7 @@ class SherlockTracer:
 
     def run(self, frame=None):
         """Trace from the given frame or the caller's frame."""
-        print(f"SherlockTracer.run:patterns:\n%s" % '\n'.join(self.patterns))
+        print("SherlockTracer.run:patterns:\n%s" % '\n'.join(self.patterns))
         if frame is None:
             frame = sys._getframe().f_back
         # Compute self.n, the number of frames to ignore.
@@ -2107,8 +2077,6 @@ class SherlockTracer:
         """Stop all tracing."""
         sys.settrace(None)
     #@-others
-
-    # __pragma__ ('noskip')
 #@+node:ekr.20191013145307.1: *3* class g.TkIDDialog (EmergencyDialog)
 class TkIDDialog(EmergencyDialog):
     """A class that creates an tkinter dialog to get the Leo ID."""
@@ -2126,9 +2094,6 @@ class TkIDDialog(EmergencyDialog):
     def __init__(self):
         super().__init__(self.title, self.message)
         self.val = ''
-        
-    # Transcrypt does not support Python's tkinter module.
-    # __pragma__ ('skip')
 
     #@+others
     #@+node:ekr.20191013145710.1: *4* leo_id_dialog.onKey
@@ -2159,8 +2124,6 @@ class TkIDDialog(EmergencyDialog):
         self.top.destroy()
         self.top = None
     #@-others
-
-    # __pragma__ ('noskip')
 #@+node:ekr.20080531075119.1: *3* class g.Tracer
 class Tracer:
     """A "debugger" that computes a call graph.
@@ -2335,7 +2298,7 @@ class TracingNullObject:
             suppress = ('PyQt5.QtGui.QIcon', 'LeoQtTree.onItemCollapsed',)
             for z in suppress:
                 if z not in repr(args):
-                    print(f"%30s"  % 'NullObject.__call__:', args, kwargs)
+                    print("%30s"  % 'NullObject.__call__:', args, kwargs)
         return self
     def __repr__(self):
         return f'TracingNullObject: {tracing_tags.get(id(self), "<NO TAG>")}'
@@ -2425,7 +2388,7 @@ def null_object_print_attr(id_, attr):
     tag = tracing_tags.get(id_, "<NO TAG>")
     callers = g.callers(3).split(',')
     callers = ','.join(callers[:-1])
-    in_callers = any([z in callers for z in suppress_callers])
+    in_callers = any(z in callers for z in suppress_callers)
     s = f"{tag}.{attr}"
     if suppress:
         # Filter traces.
@@ -2540,9 +2503,6 @@ class TypedDict:
     #@+node:ekr.20120223062418.10422: *4* td.copy
     def copy(self, name=None):
         """Return a new dict with the same contents."""
-        # Transcrypt does not support Python's copy module.
-        # __pragma__ ('skip')
-
         import copy
         return copy.deepcopy(self)
     #@+node:ekr.20120205022040.17771: *4* td.get & keys & values
@@ -2588,7 +2548,7 @@ class UiTypeException(Exception):
 def assertUi(uitype):
     if not g.app.gui.guiName() == uitype:
         raise UiTypeException
-#@+node:ekr.20200219071828.1: *3* class TestLeoGlobals
+#@+node:ekr.20200219071828.1: *3* class TestLeoGlobals (leoGlobals.py)
 class TestLeoGlobals(unittest.TestCase):
     """Tests for leoGlobals.py."""
     #@+others
@@ -2826,9 +2786,6 @@ def pause(s):
 #@+node:ekr.20041105091148: *4* g.pdb
 def pdb(message=''):
     """Fall into pdb."""
-    # Transcrypt does not support Python's pdb or QtCore modules.
-    # __pragma__ ('skip')
-
     import pdb  # Required: we have just defined pdb as a function!
     if app and not app.useIpython:
         # from leo.core.leoQt import QtCore
@@ -2936,9 +2893,6 @@ def run_pylint(fn, rc,
 
     run() in pylint-leo.py and PylintCommand.run_pylint *optionally* call this function.
     """
-    #Transcrypt does not support Python's 'lint' module.
-    # __pragma__ ('skip')
-
     try:
         from pylint import lint
     except ImportError:
@@ -3007,27 +2961,14 @@ def tupleToString(obj, indent='', tag=None):
     s = ''.join(result)
     return f"{tag}...\n{s}\n" if tag else s
 #@+node:ekr.20031218072017.1588: *3* g.Garbage Collection
-lastObjectCount = 0
-lastObjectsDict = {}
-lastTypesDict = {}
-lastFunctionsDict = {}
 #@+node:ekr.20031218072017.1589: *4* g.clearAllIvars
 def clearAllIvars(o):
     """Clear all ivars of o, a member of some class."""
     if o:
         o.__dict__.clear()
-#@+node:ekr.20031218072017.1590: *4* g.collectGarbage
-def collectGarbage():
-    try:
-        gc.collect()
-    except Exception:
-        pass
 #@+node:ekr.20060127162818: *4* g.enable_gc_debug
-def enable_gc_debug(event=None):
-    # pylint: disable=no-member
-    if not gc:
-        g.error('can not import gc module')
-        return
+def enable_gc_debug():
+
     gc.set_debug(
         gc.DEBUG_STATS |  # prints statistics.
         gc.DEBUG_LEAK |  # Same as all below.
@@ -3036,184 +2977,57 @@ def enable_gc_debug(event=None):
         # gc.DEBUG_INSTANCES |
         # gc.DEBUG_OBJECTS |
         gc.DEBUG_SAVEALL)
-#@+node:ekr.20190609113810.1: *4* g.GetRepresentativeObjects
-def getRepresentativeLiveObjects():
-    """
-    Return a dict.
-    Keys classes.
-    Values are the first (representative) live object for each type.
-    """
-    d = {}  # Keys are types, values are the *first* instance.
-    for obj in gc.get_objects():
-        t = type(obj)
-        if t not in d and hasattr(obj, '__class__'):
-            d[t] = obj
-    return d
 #@+node:ekr.20031218072017.1592: *4* g.printGc
 # Formerly called from unit tests.
 
-def printGc(tag=None):
-    tag = tag or g._callerName(n=2)
-    printGcObjects(tag=tag)
-    printGcRefs(tag=tag)
-    printGcVerbose(tag=tag)
-#@+node:ekr.20031218072017.1593: *5* g.printGcRefs
-def printGcRefs(tag=''):
-    verbose = False
-    refs = gc.get_referrers(app.windowList[0])
-    g.pr('-' * 30, tag)
-    if verbose:
-        g.pr("refs of", app.windowList[0])
-        for ref in refs:
-            g.pr(type(ref))
-    else:
-        g.pr(f"{len(refs):d} referers")
-#@+node:ekr.20060202161935: *4* g.printGcAll
-def printGcAll(full=False, sort_by_n=True):
-    """Print a summary of all presently live objects."""
-    if g.unitTesting:
-        return
-    t1 = time.process_time()
-    objects = gc.get_objects()
-    d = {}  # Keys are types, values are ints (number of instances).
-    for obj in objects:
-        t = type(obj)
-        if hasattr(obj, '__class__'):
-            d[t] = d.get(t, 0) + 1
-    t2 = time.process_time()
-    if full:
-        if sort_by_n:  # Sort by n
-            items = list(d.items())
-            items.sort(key=lambda x: x[1])
-            for z in reversed(items):
-                print(f"{z[1]:8} {z[0]}")
-        else:  # Sort by type
-            g.printObj(d)
-    #
-    # Summarize
-    print(
-        f"\n"
-        f"printGcAll: {len(objects):d} objects "
-        f"in {t2-t1:5.2f} sec. ")
+def printGc():
+    """Called from trace_gc_plugin."""
+    g.printGcSummary()
+    g.printGcObjects()
+    g.printGcRefs()
 #@+node:ekr.20060127164729.1: *4* g.printGcObjects
-def printGcObjects(tag=''):
-    """Print newly allocated objects."""
-    tag = tag or g._callerName(n=2)
-    global lastObjectCount
-    try:
-        n = len(gc.garbage)
-        n2 = len(gc.get_objects())
-        delta = n2 - lastObjectCount
-        if delta == 0: return
-        lastObjectCount = n2
-        #@+<< print number of each type of object >>
-        #@+node:ekr.20040703054646: *5* << print number of each type of object >>
-        global lastTypesDict
-        typesDict = {}
-        for obj in gc.get_objects():
-            t = type(obj)
-            # pylint: disable=no-member
-            if t == 'instance' and t != types.UnicodeType:  # NOQA
-                try: t = obj.__class__
-                except Exception: pass
-            if t != types.FrameType:  # NOQA
-                r = repr(t)  # was type(obj) instead of repr(t)
-                n = typesDict.get(r, 0)
-                typesDict[r] = n + 1
-        # Create the union of all the keys.
-        keys = {}
-        for key in lastTypesDict:
-            if key not in typesDict:
-                keys[key] = None
-        empty = True
-        for key in keys:
-            n3 = lastTypesDict.get(key, 0)
-            n4 = typesDict.get(key, 0)
-            delta2 = n4 - n3
-            if delta2 != 0:
-                empty = False
-                break
-        if not empty:
-            g.pr('-' * 30)
-            g.pr(f"{tag}: garbage: {n}, objects: {n2}, delta: {delta}")
-            if 0:
-                for key in sorted(keys):
-                    n1 = lastTypesDict.get(key, 0)
-                    n2 = typesDict.get(key, 0)
-                    delta2 = n2 - n1
-                    if delta2 != 0:
-                        g.pr(f"{delta2:6d} ={n2:7d} {key}")
-        lastTypesDict = typesDict
-        typesDict = {}
-        #@-<< print number of each type of object >>
-        if 0:
-            #@+<< print added functions >>
-            #@+node:ekr.20040703065638: *5* << print added functions >>
-            global lastFunctionsDict
-            funcDict = {}
-            getspec = inspect.getfullargspec
-            n = 0  # Don't print more than 50 objects.
-            for obj in gc.get_objects():
-                if isinstance(obj, types.FunctionType):
-                    n += 1
-                    key = repr(obj)  # Don't create a pointer to the object!
-                    funcDict[key] = None
-                    if n < 50 and key not in lastFunctionsDict:
-                        g.pr(obj)
-                        data = getspec(obj)
-                        args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = data
-                        g.pr("args", args)
-                        if varargs: g.pr("varargs", varargs)
-                        if varkw: g.pr("varkw", varkw)
-                        if defaults:
-                            g.pr("defaults...")
-                            for s in defaults: g.pr(s)
-            lastFunctionsDict = funcDict
-            funcDict = {}
-            #@-<< print added functions >>
-    except Exception:
-        traceback.print_exc()
+lastObjectCount = 0
 
-printNewObjects = pno = printGcObjects
+def printGcObjects():
+    """Print a summary of GC statistics."""
+    global lastObjectCount
+    n = len(gc.garbage)
+    n2 = len(gc.get_objects())
+    delta = n2 - lastObjectCount
+    print('-' * 30)
+    print(f"garbage: {n}")
+    print(f"{delta:6d} = {n2:7d} totals")
+    # print number of each type of object.
+    count, d = 0, {}
+    for obj in gc.get_objects():
+        key = str(type(obj))
+        n = d.get(key, 0)
+        d[key] = n + 1
+        count += 1
+    print(f"{count:7} objects...")
+    # Invert the dict.
+    d2 = {v: k for k, v in d.items()}
+    for key in reversed(sorted(d2.keys())):
+        val = d2.get(key)
+        print(f"{key:7} {val}")
+    lastObjectCount = count
+    return delta
+#@+node:ekr.20031218072017.1593: *4* g.printGcRefs
+def printGcRefs():
+
+    refs = gc.get_referrers(app.windowList[0])
+    print(f"{len(refs):d} referers")
 #@+node:ekr.20060205043324.1: *4* g.printGcSummary
-def printGcSummary(tag=''):
-    tag = tag or g._callerName(n=2)
+def printGcSummary():
+
     g.enable_gc_debug()
     try:
         n = len(gc.garbage)
         n2 = len(gc.get_objects())
-        s = f"{tag}: printGCSummary: garbage: {n}, objects: {n2}"
-        g.pr(s)
+        s = f"printGCSummary: garbage: {n}, objects: {n2}"
+        print(s)
     except Exception:
         traceback.print_exc()
-#@+node:ekr.20060127165509: *4* g.printGcVerbose
-# WARNING: the id trick is not proper because newly allocated objects
-#          can have the same address as old objets.
-
-def printGcVerbose(tag=''):
-    tag = tag or g._callerName(n=2)
-    global lastObjectsDict
-    objects = gc.get_objects()
-    newObjects = [o for o in objects if id(o) not in lastObjectsDict]
-    lastObjectsDict = {}
-    for o in objects:
-        lastObjectsDict[id(o)] = o
-    dicts = 0; seqs = 0
-    i = 0; n = len(newObjects)
-    while i < 100 and i < n:
-        o = newObjects[i]
-        if isinstance(o, dict):
-            dicts += 1
-        elif isinstance(o, (list, tuple)):
-            #g.pr(id(o),repr(o))
-            seqs += 1
-        #else:
-        #    g.pr(o)
-        i += 1
-    g.pr('=' * 40)
-    g.pr(f"dicts: {dicts}, sequences: {seqs}")
-    g.pr(f"{tag}: {len(newObjects)} new, {len(objects)} total objects")
-    g.pr('-' * 40)
 #@+node:ekr.20180528151850.1: *3* g.printTimes
 def printTimes(times):
     """
@@ -3354,9 +3168,9 @@ def findLanguageDirectives(c, p):
     """Return the language in effect at position p."""
     if c is None or p is None:
         return None  # c may be None for testing.
-        
+
     v0 = p.v
-        
+
     def find_language(p_or_v):
         for s in p_or_v.h, p_or_v.b:
             for m in g_language_pat.finditer(s):
@@ -3371,8 +3185,8 @@ def findLanguageDirectives(c, p):
         if language:
             return language
     # #1625: Second, expand the search for cloned nodes.
-    seen = [] # vnodes that have already been searched.
-    parents = v0.parents[:] # vnodes whose ancestors are to be searched.
+    seen = []  # vnodes that have already been searched.
+    parents = v0.parents[:]  # vnodes whose ancestors are to be searched.
     while parents:
         parent_v = parents.pop()
         if parent_v in seen:
@@ -3476,7 +3290,7 @@ def getLanguageFromAncestorAtFileNode(p):
     2. The file extension of the @<file> node.
     """
     v0 = p.v
-        
+
     def find_language(p):
         # #1693: First, scan p.b for an *unambiguous* @language directive.
         if p.b.strip():
@@ -3501,8 +3315,8 @@ def getLanguageFromAncestorAtFileNode(p):
             return language
     #
     # #1625: Expand the search for cloned nodes.
-    seen = [] # vnodes that have already been searched.
-    parents = v0.parents[:] # vnodes whose ancestors are to be searched.
+    seen = []  # vnodes that have already been searched.
+    parents = v0.parents[:]  # vnodes whose ancestors are to be searched.
     while parents:
         parent_v = parents.pop()
         if parent_v in seen:
@@ -3909,7 +3723,7 @@ def update_directives_pat():
     aList = [
         fr"\b{z}\b" for z in globalDirectiveList if z != 'others'
     ]
-    pat = f"^@(%s)" % "|".join(aList)
+    pat = "^@(%s)" % "|".join(aList)
     directives_pat = re.compile(pat, re.MULTILINE)
 
 # #1688: Initialize g.directives_pat
@@ -3976,6 +3790,17 @@ def create_temp_file(textMode=False):
         g.es_exception()
         theFile, theFileName = None, ''
     return theFile, theFileName
+#@+node:ekr.20210307060731.1: *3* g.createHiddenCommander
+def createHiddenCommander(fn):
+    """Read the file into a hidden commander (Similar to g.openWithFileName)."""
+    from leo.core.leoCommands import Commands
+    c = Commands(fn, gui=g.app.nullGui)
+    theFile = g.app.loadManager.openAnyLeoFile(fn)
+    if theFile:
+        c.fileCommands.openLeoFile(
+            theFile, fn, readAtFileNodesFlag=True, silent=True)
+        return c
+    return None
 #@+node:vitalije.20170714085545.1: *3* g.defaultLeoFileExtension
 def defaultLeoFileExtension(c=None):
     conf = c.config if c else g.app.config
@@ -4006,6 +3831,7 @@ def fullPath(c, p, simulate=False):
         if fn:
             # Fix #102: expand path expressions.
             fn = c.expand_path_expression(fn)  # #1341.
+            fn = os.path.expanduser(fn)  # 1900.
             return g.os_path_finalize_join(path, fn)  # #1341.
     return ''
 #@+node:ekr.20190327192721.1: *3* g.get_files_in_directory
@@ -4025,18 +3851,10 @@ def get_files_in_directory(directory, kinds=None, recursive=True):
             kinds = ['*.py']
         if recursive:
             # Works for all versions of Python.
-            
-            # Transcrypt does not support Python's copy module.
-            # __pragma__ ('skip')
-        
-            import fnmatch
             for root, dirnames, filenames in os.walk(directory):
                 for kind in kinds:
                     for filename in fnmatch.filter(filenames, kind):
                         files.append(os.path.join(root, filename))
-
-            # __pragma__ ('noskip')
-
         else:
             for kind in kinds:
                 files.extend(glob.glob(directory + sep + kind))
@@ -4500,7 +4318,7 @@ def recursiveUNLSearch(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
         c.redraw()
         c.frame.bringToFront()
         c.bodyWantsFocusNow()
-    
+
     found, maxdepth, maxp = recursiveUNLFind(
         unlList, c, depth, p, maxdepth, maxp, soft_idx=soft_idx, hard_idx=hard_idx)
     if maxp:
@@ -4602,7 +4420,7 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
     if soft_idx and depth + 2 < len(unlList):
         aList = []
         for p in c.all_unique_positions():
-            if any([p.h.replace('--%3E', '-->') in unl for unl in unlList]):
+            if any(p.h.replace('--%3E', '-->') in unl for unl in unlList):
                 aList.append((p.copy(), p.get_UNL(False, False, True)))
         maxcount = 0
         singleMatch = True
@@ -5035,7 +4853,7 @@ def match_c_word(s, i, name):
 #@+node:ekr.20031218072017.3183: *4* match_ignoring_case
 def match_ignoring_case(s1, s2):
     return s1 and s2 and s1.lower() == s2.lower()
-#@+node:ekr.20031218072017.3184: *4* g.match_word
+#@+node:ekr.20031218072017.3184: *4* g.match_word & g.match_words
 def match_word(s, i, pattern):
 
     # Using a regex is surprisingly tricky.
@@ -5052,6 +4870,9 @@ def match_word(s, i, pattern):
         return True
     ch = s[i + j]
     return not g.isWordChar(ch)
+
+def match_words(s, i, patterns):
+    return any(g.match_word(s, i, pattern) for pattern in patterns)
 #@+node:ekr.20031218072017.3185: *4* skip_blank_lines
 # This routine differs from skip_ws_and_nl in that
 # it does not advance over whitespace at the start
@@ -5270,9 +5091,11 @@ class GitIssueController:
     #@+node:ekr.20180325024334.1: *5* git.get_all_issues
     def get_all_issues(self, label_list, root, state, limit=100):
         """Get all issues for the base url."""
-        # Transcrypt does not support Python's 'requests' module.
-        # __pragma__ ('skip')
-        import requests
+        try:
+            import requests
+        except Exception:
+            g.trace('requests not found: `pip install requests`')
+            return
         label = None
         assert state in ('open', 'closed')
         page_url = self.base_url + '?&state=%s&page=%s'
@@ -5307,7 +5130,11 @@ class GitIssueController:
     #@+node:ekr.20180126043719.3: *5* git.get_one_issue
     def get_one_issue(self, label, state, limit=20):
         """Create a list of issues with the given label."""
-        import requests
+        try:
+            import requests
+        except Exception:
+            g.trace('requests not found: `pip install requests`')
+            return
         root = self.root.insertAsLastChild()
         page, total = 1, 0
         page_url = self.base_url + '?labels=%s&state=%s&page=%s'
@@ -5461,9 +5288,6 @@ def gitHeadPath(path):
     """
     Compute the path to .git/HEAD given the path.
     """
-    #Transcrypt does not support Python's pathlib module.
-    # __pragma__ ('skip')
-    from pathlib import Path
     path = Path(path)
     # #1780: Look up the directory tree, looking the .git directory.
     while os.path.exists(path):
@@ -5473,8 +5297,6 @@ def gitHeadPath(path):
         if path == path.parent:
             break
         path = path.parent
-    # __pragma__ ('noskip')
-
     return None
 #@+node:ekr.20170414034616.3: *3* g.gitInfo
 def gitInfo(path=None):
@@ -5536,8 +5358,8 @@ def dummy_act_on_node(c, p, event):
 
 act_on_node = dummy_act_on_node
 #@+node:ville.20120502221057.7500: *3* g.childrenModifiedSet, g.contentModifiedSet
-childrenModifiedSet = set()
-contentModifiedSet = set()
+childrenModifiedSet: Set[bool] = set()
+contentModifiedSet: Set[bool] = set()
 #@+node:ekr.20031218072017.1596: *3* g.doHook
 def doHook(tag, *args, **keywords):
     """
@@ -5690,7 +5512,6 @@ def cantImport(moduleName, pluginName=None, verbose=True):
     if not g.app or not g.app.gui:
         print(s)
     elif g.unitTesting:
-        # print s
         return
     else:
         g.warning('', s)
@@ -6049,10 +5870,6 @@ def isValidEncoding(encoding):
         return False
     if sys.platform == 'cli':
         return True
-        
-    #Transcrypt does not support Python's codecs module.
-    # __pragma__ ('skip')
-
     try:
         codecs.lookup(encoding)
         return True
@@ -6065,8 +5882,6 @@ def isValidEncoding(encoding):
         g.es_print('Please report the following error')
         g.es_exception()
         return False
-
-    # __pragma__ ('noskip')
 #@+node:ekr.20061006152327: *4* g.isWordChar & g.isWordChar1
 def isWordChar(ch):
     """Return True if ch should be considered a letter."""
@@ -6117,9 +5932,9 @@ def toEncodedString(s, encoding='utf-8', reportErrors=False):
         # g.dump_encoded_string(encoding,s)
     return s
 #@+node:ekr.20050208093800.1: *4* g.toUnicode
-unicode_warnings = {}  # Keys are g.callers.
+unicode_warnings: Dict[str, bool] = {}  # Keys are g.callers.
 
-def toUnicode(s, encoding=None, reportErrors=False):
+def toUnicode(s: Any, encoding: Optional[str]=None, reportErrors: bool=False) -> str:
     """Convert bytes to unicode if necessary."""
     if isinstance(s, str):
         return s
@@ -6624,8 +6439,8 @@ def es_print(*args, **keys):
     g.pr(*args, **keys)
     if g.app and not g.app.unitTesting:
         g.es(*args, **keys)
-#@+node:ekr.20111107181638.9741: *3* g.es_print_exception
-def es_print_exception(full=True, c=None, color="red"):
+#@+node:ekr.20111107181638.9741: *3* g.print_exception
+def print_exception(full=True, c=None, flush=False, color="red"):
     """Print exception info about the last exception."""
     typ, val, tb = sys.exc_info()
         # val is the second argument to the raise statement.
@@ -6633,7 +6448,7 @@ def es_print_exception(full=True, c=None, color="red"):
         lines = traceback.format_exception(typ, val, tb)
     else:
         lines = traceback.format_exception_only(typ, val)
-    print(''.join(lines))
+    print(''.join(lines), flush=True)
     try:
         fileName, n = g.getLastTracebackFileAndLineNumber()
         return fileName, n
@@ -7006,8 +6821,8 @@ def funcToMethod(f, theClass, name=None):
     setattr(theClass, name or f.__name__, f)
 #@+node:ekr.20060913090832.1: *3* g.init_zodb
 init_zodb_import_failed = False
-init_zodb_failed = {}  # Keys are paths, values are True.
-init_zodb_db = {}  # Keys are paths, values are ZODB.DB instances.
+init_zodb_failed: Dict[str, bool] = {}  # Keys are paths, values are True.
+init_zodb_db: Dict[str, Any] = {}  # Keys are paths, values are ZODB.DB instances.
 
 def init_zodb(pathToZodbStorage, verbose=True):
     """
@@ -7017,12 +6832,11 @@ def init_zodb(pathToZodbStorage, verbose=True):
     global init_zodb_db, init_zodb_failed, init_zodb_import_failed
     db = init_zodb_db.get(pathToZodbStorage)
     if db: return db
-    if init_zodb_import_failed: return None
+    if init_zodb_import_failed:
+        return None
     failed = init_zodb_failed.get(pathToZodbStorage)
-    if failed: return None
-    
-    #Transcrypt does not support Python's ZODB module.
-    # __pragma__ ('skip')
+    if failed:
+        return None
     try:
         import ZODB
     except ImportError:
@@ -7031,8 +6845,6 @@ def init_zodb(pathToZodbStorage, verbose=True):
             g.es_exception()
         init_zodb_import_failed = True
         return None
-    # __pragma__ ('noskip')
-
     try:
         storage = ZODB.FileStorage.FileStorage(pathToZodbStorage)
         init_zodb_db[pathToZodbStorage] = db = ZODB.DB(storage)
@@ -7044,9 +6856,6 @@ def init_zodb(pathToZodbStorage, verbose=True):
         init_zodb_failed[pathToZodbStorage] = True
         return None
 #@+node:ekr.20170206080908.1: *3* g.input_
-# Transcrypt does not support Qt.
-# __pragma__ ('skip')
-
 def input_(message='', c=None):
     """
     Safely execute python's input statement.
@@ -7061,8 +6870,6 @@ def input_(message='', c=None):
     from leo.core.leoQt import QtCore
     QtCore.pyqtRemoveInputHook()
     return input(message)
-
-# __pragma__ ('noskip')
 #@+node:ekr.20110609125359.16493: *3* g.isMacOS
 def isMacOS():
     return sys.platform == 'darwin'
@@ -7126,42 +6933,51 @@ def windows():
 def glob_glob(pattern):
     """Return the regularized glob.glob(pattern)"""
     aList = glob.glob(pattern)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         aList = [z.replace('\\', '/') for z in aList]
     return aList
 #@+node:ekr.20031218072017.2146: *3* g.os_path_abspath
 def os_path_abspath(path):
     """Convert a path to an absolute path."""
-    path = g.toUnicodeFileEncoding(path)
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if not path:
+        return ''
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
     path = os.path.abspath(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2147: *3* g.os_path_basename
 def os_path_basename(path):
     """Return the second half of the pair returned by split(path)."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.basename(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2148: *3* g.os_path_dirname
 def os_path_dirname(path):
     """Return the first half of the pair returned by split(path)."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.dirname(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2149: *3* g.os_path_exists
 def os_path_exists(path):
     """Return True if path exists."""
-    path = g.toUnicodeFileEncoding(path)
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if not path:
+        return False
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
     return os.path.exists(path)
 #@+node:ekr.20080922124033.6: *3* g.os_path_expandExpression & helper (deprecated)
 deprecated_messages = []
@@ -7185,8 +7001,10 @@ def os_path_expandExpression(s, **keys):
 #@+node:ekr.20080921060401.13: *3* g.os_path_expanduser
 def os_path_expanduser(path):
     """wrap os.path.expanduser"""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     result = os.path.normpath(os.path.expanduser(path))
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return result
@@ -7196,10 +7014,13 @@ def os_path_finalize(path):
     Expand '~', then return os.path.normpath, os.path.abspath of the path.
     There is no corresponding os.path method
     """
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
     path = os.path.expanduser(path)  # #1383.
     path = os.path.abspath(path)
     path = os.path.normpath(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     # calling os.path.realpath here would cause problems in some situations.
@@ -7209,23 +7030,16 @@ def os_path_finalize_join(*args, **keys):
     """
     Join and finalize.
     
-    **keys may contain a 'c' kwarg, used by c.os_path_join.
+    **keys may contain a 'c' kwarg, used by g.os_path_join.
     """
-    # Old code
-        # path = os.path.normpath(os.path.abspath(g.os_path_join(*args, **keys)))
-        # if g.isWindows:
-            # path = path.replace('\\','/')
-    #
-    # #1383: Call both wrappers, to ensure ~ is always expanded.
-    #        This is significant change, to undo previous mistakes.
-    #        Revs cbbf5e8b and 6e461196 in devel were the likely culprits.
     path = g.os_path_join(*args, **keys)
     path = g.os_path_finalize(path)
     return path
 #@+node:ekr.20031218072017.2150: *3* g.os_path_getmtime
 def os_path_getmtime(path):
     """Return the modification time of path."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return 0
     try:
         return os.path.getmtime(path)
     except Exception:
@@ -7233,23 +7047,19 @@ def os_path_getmtime(path):
 #@+node:ekr.20080729142651.2: *3* g.os_path_getsize
 def os_path_getsize(path):
     """Return the size of path."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.getsize(path)
+    return os.path.getsize(path) if path else 0
 #@+node:ekr.20031218072017.2151: *3* g.os_path_isabs
 def os_path_isabs(path):
     """Return True if path is an absolute path."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.isabs(path)
+    return os.path.isabs(path) if path else False
 #@+node:ekr.20031218072017.2152: *3* g.os_path_isdir
 def os_path_isdir(path):
     """Return True if the path is a directory."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.isdir(path)
+    return os.path.isdir(path) if path else False
 #@+node:ekr.20031218072017.2153: *3* g.os_path_isfile
 def os_path_isfile(path):
     """Return True if path is a file."""
-    path = g.toUnicodeFileEncoding(path)
-    return os.path.isfile(path)
+    return os.path.isfile(path) if path else False
 #@+node:ekr.20031218072017.2154: *3* g.os_path_join
 def os_path_join(*args, **keys):
     """
@@ -7260,48 +7070,52 @@ def os_path_join(*args, **keys):
            provided there is a 'c' kwarg.
     """
     c = keys.get('c')
-    uargs = [g.toUnicodeFileEncoding(arg) for arg in args]
+    uargs = [z for z in args if z]
+    if not uargs:
+        return ''
     # Note:  This is exactly the same convention as used by getBaseDirectory.
-    if uargs and uargs[0] == '!!':
+    if uargs[0] == '!!':
         uargs[0] = g.app.loadDir
-    elif uargs and uargs[0] == '.':
+    elif uargs[0] == '.':
         c = keys.get('c')
         if c and c.openDirectory:
             uargs[0] = c.openDirectory
-    if uargs:
-        try:
-            path = os.path.join(*uargs)
-        except TypeError:
-            g.trace(uargs, args, keys, g.callers())
-            raise
-    else:
-        path = ''
+    try:
+        path = os.path.join(*uargs)
+    except TypeError:
+        g.trace(uargs, args, keys, g.callers())
+        raise
     # May not be needed on some Pythons.
-    path = g.toUnicodeFileEncoding(path)
-    path = path.replace('\x00', '')  # Fix Pytyon 3 bug on Windows 10.
+    if '\x00' in path:
+        g.trace('NULL in', repr(path), g.callers())
+        path = path.replace('\x00', '')  # Fix Python 3 bug on Windows 10.
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2156: *3* g.os_path_normcase
 def os_path_normcase(path):
     """Normalize the path's case."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.normcase(path)
-    path = g.toUnicodeFileEncoding(path)
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2157: *3* g.os_path_normpath
 def os_path_normpath(path):
     """Normalize the path."""
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.normpath(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20180314081254.1: *3* g.os_path_normslashes
 def os_path_normslashes(path):
+
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows and path:
         path = path.replace('\\', '/')
     return path
@@ -7311,25 +7125,25 @@ def os_path_realpath(path):
     symbolic links encountered in the path (if they are supported by the
     operating system).
     """
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return ''
     path = os.path.realpath(path)
-    path = g.toUnicodeFileEncoding(path)
+    # os.path.normpath does the *reverse* of what we want.
     if g.isWindows:
         path = path.replace('\\', '/')
     return path
 #@+node:ekr.20031218072017.2158: *3* g.os_path_split
 def os_path_split(path):
-    path = g.toUnicodeFileEncoding(path)
+    if not path:
+        return '', ''
     head, tail = os.path.split(path)
-    head = g.toUnicodeFileEncoding(head)
-    tail = g.toUnicodeFileEncoding(tail)
     return head, tail
 #@+node:ekr.20031218072017.2159: *3* g.os_path_splitext
 def os_path_splitext(path):
-    path = g.toUnicodeFileEncoding(path)
+
+    if not path:
+        return ''
     head, tail = os.path.splitext(path)
-    head = g.toUnicodeFileEncoding(head)
-    tail = g.toUnicodeFileEncoding(tail)
     return head, tail
 #@+node:ekr.20090829140232.6036: *3* g.os_startfile
 def os_startfile(fname):
@@ -7420,14 +7234,6 @@ def os_startfile(fname):
             # so that Leo-Editor is usable while the file is open.
         except Exception:
             g.es_exception(f"exception executing g.startfile for {fname!r}")
-#@+node:ekr.20031218072017.2160: *3* g.toUnicodeFileEncoding
-def toUnicodeFileEncoding(path):
-    # Fix bug 735938: file association crash
-    if path and isinstance(path, str):
-        path = path.replace('\\', os.sep)
-        # Yes, this is correct.  All os_path_x functions return Unicode strings.
-        return g.toUnicode(path)
-    return ''
 #@+node:ekr.20111115155710.9859: ** g.Parsing & Tokenizing
 #@+node:ekr.20031218072017.822: *3* g.createTopologyList
 def createTopologyList(c, root=None, useHeadlines=False):
@@ -7651,7 +7457,27 @@ def executeFile(filename, options=''):
     rc, so, se = subprocess_wrapper(f"{sys.executable} {fname} {options}")
     if rc: g.pr('return code', rc)
     g.pr(so, se)
-#@+node:ekr.20040321065415: *3* g.findNode... &,findTopLevelNode
+#@+node:ekr.20040321065415: *3* g.find*Node*
+#@+others
+#@+node:ekr.20210303123423.3: *4* findNodeAnywhere
+def findNodeAnywhere(c, headline, exact=True):
+    h = headline.strip()
+    for p in c.all_unique_positions(copy=False):
+        if p.h.strip() == h:
+            return p.copy()
+    if not exact:
+        for p in c.all_unique_positions(copy=False):
+            if p.h.strip().startswith(h):
+                return p.copy()
+    return None
+#@+node:ekr.20210303123525.1: *4* findNodeByPath
+def findNodeByPath(c, path):
+    """Return the first @<file> node in Cmdr c whose path is given."""
+    for p in c.all_positions():
+        if p.isAnyAtFileNode() and path == g.fullPath(c, p):
+            return p
+    return False
+#@+node:ekr.20210303123423.1: *4* findNodeInChildren
 def findNodeInChildren(c, p, headline, exact=True):
     """Search for a node in v's tree matching the given headline."""
     p1 = p.copy()
@@ -7664,7 +7490,7 @@ def findNodeInChildren(c, p, headline, exact=True):
             if p.h.strip().startswith(h):
                 return p.copy()
     return None
-
+#@+node:ekr.20210303123423.2: *4* findNodeInTree
 def findNodeInTree(c, p, headline, exact=True):
     """Search for a node in v's tree matching the given headline."""
     h = headline.strip()
@@ -7677,18 +7503,7 @@ def findNodeInTree(c, p, headline, exact=True):
             if p.h.strip().startswith(h):
                 return p.copy()
     return None
-
-def findNodeAnywhere(c, headline, exact=True):
-    h = headline.strip()
-    for p in c.all_unique_positions(copy=False):
-        if p.h.strip() == h:
-            return p.copy()
-    if not exact:
-        for p in c.all_unique_positions(copy=False):
-            if p.h.strip().startswith(h):
-                return p.copy()
-    return None
-
+#@+node:ekr.20210303123423.4: *4* findTopLevelNode
 def findTopLevelNode(c, headline, exact=True):
     h = headline.strip()
     for p in c.rootPosition().self_and_siblings(copy=False):
@@ -7699,6 +7514,7 @@ def findTopLevelNode(c, headline, exact=True):
             if p.h.strip().startswith(h):
                 return p.copy()
     return None
+#@-others
 #@+node:EKR.20040614071102.1: *3* g.getScript & helpers
 def getScript(c, p,
     useSelectedText=True,
@@ -7886,7 +7702,10 @@ def run_unit_test_in_separate_process(command):
     print(err.rstrip())
     # There may be skipped tests...
     err_lines = g.splitLines(err.rstrip())
-    assert err_lines[-1].startswith('OK')
+    if not err_lines[-1].startswith('OK'):
+        g.trace('Test failed')
+        g.printObj(err_lines, tag='err_lines')
+        assert False
 #@+node:ekr.20080919065433.2: *3* g.toEncodedStringWithErrorCode (for unit testing)
 def toEncodedStringWithErrorCode(s, encoding, reportErrors=False):
     """For unit testing: convert s to an encoded string and return (s,ok)."""
@@ -8044,10 +7863,6 @@ def handleUrlHelper(url, c, p):
         else:
             g.es(f"File '{leo_path}' does not exist")
     else:
-        #Transcrypt does not support Python's webbrowser module.
-        # __pragma__ ('skip')
-
-        import webbrowser
         if g.unitTesting:
             g.app.unitTestDict['browser'] = url
         else:
@@ -8056,8 +7871,6 @@ def handleUrlHelper(url, c, p):
                 webbrowser.open(url)
             except Exception:
                 pass
-
-        # __pragma__ ('noskip')
 #@+node:ekr.20170226060816.1: *4* g.traceUrl
 def traceUrl(c, path, parsed, url):
 
@@ -8230,15 +8043,15 @@ def openUrlHelper(event, url=None):
         c.editCommands.extendToWord(event, select=True)
     word = w.getSelectedText().strip()
     if word:
-        c.findCommands.findDef(event)
+        c.findCommands.find_def_strict(event)
     return None
 #@-others
 # set g when the import is about to complete.
-g = sys.modules.get('leo.core.leoGlobals')
+g: Any = sys.modules.get('leo.core.leoGlobals')
 assert g, sorted(sys.modules.keys())
-
 if __name__ == '__main__':
     unittest.main()
+
 #@@language python
 #@@tabwidth -4
 #@@pagewidth 70

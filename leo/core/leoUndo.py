@@ -43,6 +43,10 @@
 from leo.core import leoGlobals as g
 # pylint: disable=unpacking-non-sequence
 #@+others
+#@+node:ekr.20150509193222.1: ** u.cmd (decorator)
+def cmd(name):
+    """Command decorator for the Undoer class."""
+    return g.new_cmd_decorator(name, ['c', 'undoer',])
 #@+node:ekr.20031218072017.3605: ** class Undoer
 class Undoer:
     """A class that implements unlimited undo and redo."""
@@ -119,11 +123,6 @@ class Undoer:
             self.granularity = self.granularity.lower()
         if self.granularity not in ('node', 'line', 'word', 'char'):
             self.granularity = 'line'
-    #@+node:ekr.20150509193222.1: *4* u.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the Undoer class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'undoer',])
     #@+node:ekr.20050416092908.1: *3* u.Internal helpers
     #@+node:ekr.20031218072017.3607: *4* u.clearOptionalIvars
     def clearOptionalIvars(self):
@@ -434,7 +433,7 @@ class Undoer:
             bunch.newSel = 0, 0
         bunch.newYScroll = w.getYScrollPosition() if w else 0
         u.pushBead(bunch)
-        # 
+        #
         if g.unitTesting:
             assert command.lower() != 'typing', g.callers()
         elif command.lower() == 'typing':
@@ -1109,7 +1108,7 @@ class Undoer:
                 undoType=undo_type,  # capitalized.
                 undoHelper=u.undoTyping,
                 redoHelper=u.redoTyping,
-                oldMarked=old_p.isMarked() if old_p else p.isMarked(), # #1694
+                oldMarked=old_p.isMarked() if old_p else p.isMarked(),  # #1694
                 oldText=u.oldText,
                 oldSel=u.oldSel,
                 oldNewlines=u.oldNewlines,
@@ -1120,7 +1119,7 @@ class Undoer:
             bunch = old_d
         bunch.leading = u.leading
         bunch.trailing = u.trailing
-        bunch.newMarked = p.isMarked()  # #1694 
+        bunch.newMarked = p.isMarked()  # #1694
         bunch.newNewlines = u.newNewlines
         bunch.newMiddleLines = u.newMiddleLines
         bunch.newSel = u.newSel
@@ -1135,7 +1134,7 @@ class Undoer:
         # Finish updating the text.
         p.v.setBodyString(newText)
         u.updateAfterTyping(p, w)
-            
+
     # Compatibility
 
     setUndoTypingParams = doTyping
@@ -1212,9 +1211,11 @@ class Undoer:
             # An important, ever-present unit test.
             all = w.getAllText()
             if g.unitTesting:
-                assert p.b == all, g.callers()
+                assert p.b == all, (w, g.callers())
             elif p.b != all:
-                g.trace(f"\nError:p.b != w.getAllText() p:{p.h} {g.callers()}\n")
+                g.trace(
+                    f"\np.b != w.getAllText() p: {p.h} \n"
+                    f"w: {w!r} \n{g.callers()}\n")
                 # g.printObj(g.splitLines(p.b), tag='p.b')
                 # g.printObj(g.splitLines(all), tag='getAllText')
             p.v.insertSpot = ins = w.getInsertPoint()
@@ -1236,7 +1237,7 @@ class Undoer:
         if p.isDirty():
             redraw_flag = False
         else:
-            p.setDirty() # Do not call p.v.setDirty!
+            p.setDirty()  # Do not call p.v.setDirty!
             redraw_flag = True
         if not c.isChanged():
             c.setChanged()

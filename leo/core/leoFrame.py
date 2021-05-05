@@ -42,6 +42,20 @@ assert time
 #     Called by commands throughout Leo's core that change the body or headline.
 #     These are thin wrappers for updateBody and updateTree.
 #@-<< About handling events >>
+#@+<< command decorators >>
+#@+node:ekr.20150509054428.1: ** << command decorators >> (leoFrame.py)
+def log_cmd(name):  # Not used.
+    """Command decorator for the LeoLog class."""
+    return g.new_cmd_decorator(name, ['c', 'frame', 'log'])
+
+def body_cmd(name):
+    """Command decorator for the c.frame.body class."""
+    return g.new_cmd_decorator(name, ['c', 'frame', 'body'])
+
+def frame_cmd(name):
+    """Command decorator for the LeoFrame class."""
+    return g.new_cmd_decorator(name, ['c', 'frame',])
+#@-<< command decorators >>
 #@+others
 #@+node:ekr.20140907201613.18660: ** API classes
 # These classes are for documentation and unit testing.
@@ -226,11 +240,6 @@ class LeoBody:
         # Init user settings.
         self.use_chapters = False
             # May be overridden in subclasses.
-    #@+node:ekr.20150509034810.1: *3* LeoBody.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the c.frame.body class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'frame', 'body'])
     #@+node:ekr.20031218072017.3677: *3* LeoBody.Coloring
     def forceFullRecolor(self):
         pass
@@ -318,8 +327,8 @@ class LeoBody:
         self.updateInjectedIvars(w, p)
         self.selectLabel(w)
     #@+node:ekr.20200415041750.1: *5* LeoBody.cycleEditorFocus (restored)
-    @cmd('editor-cycle-focus')
-    @cmd('cycle-editor-focus')  # There is no LeoQtBody method
+    @body_cmd('editor-cycle-focus')
+    @body_cmd('cycle-editor-focus')  # There is no LeoQtBody method
     def cycleEditorFocus(self, event=None):
         """Cycle keyboard focus between the body text editors."""
         c = self.c
@@ -601,7 +610,7 @@ class LeoBody:
             i, j = g.getLine(s, i)
         else:
             # #1742: Move j back if it is at the start of a line.
-            if j > i and j > 0 and s[j-1] == '\n':
+            if j > i and j > 0 and s[j - 1] == '\n':
                 j -= 1
             i, junk = g.getLine(s, i)
             junk, j = g.getLine(s, j)
@@ -689,21 +698,23 @@ class LeoFrame:
         self.tab_width = 0  # The tab width in effect in this pane.
     #@+node:ekr.20051009045404: *4* frame.createFirstTreeNode
     def createFirstTreeNode(self):
-        c= self.c
-        v = leoNodes.VNode(context=c)
-        p = leoNodes.Position(v)
-        v.initHeadString("NewHeadline")
+        c = self.c
         #
         # #1631: Initialize here, not in p._linkAsRoot.
         c.hiddenRootNode.children = []
         #
-        # New in Leo 4.5: p.moveToRoot would be wrong: the node hasn't been linked yet.
+        # #1817: Clear the gnxDict.
+        c.fileCommands.gnxDict = {}
+        #
+        # Create the first node.
+        v = leoNodes.VNode(context=c)
+        p = leoNodes.Position(v)
+        v.initHeadString("NewHeadline")
+        #
+        # New in Leo 4.5: p.moveToRoot would be wrong:
+        #                 the node hasn't been linked yet.
         p._linkAsRoot()
-    #@+node:ekr.20150509194519.1: *3* LeoFrame.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the LeoFrame class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'frame',])
+        return v
     #@+node:ekr.20061109125528: *3* LeoFrame.May be defined in subclasses
     #@+node:ekr.20071027150501: *4* LeoFrame.event handlers
     def OnBodyClick(self, event=None):
@@ -892,7 +903,7 @@ class LeoFrame:
         if self.statusLine: self.statusLine.update()
     #@+node:ekr.20070130115927.4: *4* LeoFrame.Cut/Copy/Paste
     #@+node:ekr.20070130115927.5: *5* LeoFrame.copyText
-    @cmd('copy-text')
+    @frame_cmd('copy-text')
     def copyText(self, event=None):
         """Copy the selected text from the widget to the clipboard."""
         # f = self
@@ -913,7 +924,7 @@ class LeoFrame:
 
     OnCopyFromMenu = copyText
     #@+node:ekr.20070130115927.6: *5* LeoFrame.cutText
-    @cmd('cut-text')
+    @frame_cmd('cut-text')
     def cutText(self, event=None):
         """Invoked from the mini-buffer and from shortcuts."""
         f = self; c = f.c; w = event and event.widget
@@ -949,7 +960,7 @@ class LeoFrame:
 
     OnCutFromMenu = cutText
     #@+node:ekr.20070130115927.7: *5* LeoFrame.pasteText
-    @cmd('paste-text')
+    @frame_cmd('paste-text')
     def pasteText(self, event=None, middleButton=False):
         """
         Paste the clipboard into a widget.
@@ -1016,7 +1027,7 @@ class LeoFrame:
         return self.pasteText(event=event, middleButton=True)
     #@+node:ekr.20031218072017.3980: *4* LeoFrame.Edit Menu
     #@+node:ekr.20031218072017.3982: *5* LeoFrame.endEditLabelCommand
-    @cmd('end-edit-headline')
+    @frame_cmd('end-edit-headline')
     def endEditLabelCommand(self, event=None, p=None):
         """End editing of a headline and move focus to the body pane."""
         frame = self
@@ -1122,11 +1133,6 @@ class LeoLog:
         self.logNumber = 0  # To create unique name fields for text widgets.
         self.newTabCount = 0  # Number of new tabs created.
         self.textDict = {}  # Keys are page names. Values are logCtrl's (text widgets).
-    #@+node:ekr.20150509054428.1: *4* LeoLog.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the LeoLog class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'frame', 'log'])
     #@+node:ekr.20070302094848.1: *3* LeoLog.clearTab
     def clearTab(self, tabName, wrap='none'):
         self.selectTab(tabName, wrap=wrap)
@@ -1938,6 +1944,7 @@ class NullTree(LeoTree):
         self.font = None
         self.fontName = None
         self.canvas = None
+        self.treeWidget = g.NullObject()
         self.redrawCount = 0
         self.updateCount = 0
     #@+node:ekr.20070228163350.2: *3* NullTree.edit_widget
@@ -1996,8 +2003,11 @@ class NullTree(LeoTree):
 
     def scrollTo(self, p):
         pass
-        
-    def updateIcon(self, p, force=False):
+
+    def updateAllIcons(self, p):
+        pass
+
+    def updateIcon(self, p):
         pass
     #@+node:ekr.20070228160345: *3* NullTree.setHeadline
     def setHeadline(self, p, s):
@@ -2075,10 +2085,12 @@ class StringTextWrapper:
     def delete(self, i, j=None):
         """StringTextWrapper."""
         i = self.toPythonIndex(i)
-        if j is None: j = i + 1
+        if j is None:
+            j = i + 1
         j = self.toPythonIndex(j)
         # This allows subclasses to use this base class method.
-        if i > j: i, j = j, i
+        if i > j:
+            i, j = j, i
         s = self.getAllText()
         self.setAllText(s[:i] + s[j:])
         # Bug fix: 2011/11/13: Significant in external tests.
@@ -2092,7 +2104,8 @@ class StringTextWrapper:
     def get(self, i, j=None):
         """StringTextWrapper."""
         i = self.toPythonIndex(i)
-        if j is None: j = i + 1
+        if j is None:
+            j = i + 1
         j = self.toPythonIndex(j)
         s = self.s[i:j]
         return g.toUnicode(s)
@@ -2156,7 +2169,8 @@ class StringTextWrapper:
     #@+node:ekr.20140903172510.18587: *4* stw.setInsertPoint
     def setInsertPoint(self, pos, s=None):
         """StringTextWrapper."""
-        self.virtualInsertPoint = i = self.toPythonIndex(pos)
+        i = self.toPythonIndex(pos)
+        self.virtualInsertPoint = i
         self.ins = i
         self.sel = i, i
     #@+node:ekr.20070228111853: *4* stw.setSelectionRange
@@ -2167,7 +2181,13 @@ class StringTextWrapper:
         self.ins = j if insert is None else self.toPythonIndex(insert)
     #@+node:ekr.20140903172510.18581: *4* stw.toPythonIndex
     def toPythonIndex(self, index):
-        """StringTextWrapper."""
+        """
+        StringTextWrapper.toPythonIndex.
+        
+        Convert indices of the form 'end' or 'n1.n2' to integer indices into self.s.
+        
+        Unit tests *do* use non-integer indices, so removing this method would be tricky.
+        """
         return g.toPythonIndex(self.s, index)
     #@+node:ekr.20140903172510.18582: *4* stw.toPythonIndexRowCol
     def toPythonIndexRowCol(self, index):

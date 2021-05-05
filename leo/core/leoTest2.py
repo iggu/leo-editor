@@ -85,16 +85,15 @@ def create_app():
     
     Thereafter, recreating g.app, g.app.gui, and new commands is fast.
     """
-    # dump_leo_modules()
-    t1 = time.process_time()
+    # t1 = time.process_time()
     from leo.core import leoGlobals as g
     from leo.core import leoApp
+    g.app = leoApp.LeoApp()  # Do this first, to avoid circular dependencies.
     from leo.core import leoConfig
     from leo.core import leoNodes
     from leo.core import leoCommands
     from leo.core import leoGui
-    t2 = time.process_time()
-    g.app = leoApp.LeoApp()
+    # t2 = time.process_time()
     g.app.recentFilesManager = leoApp.RecentFilesManager()
     g.app.loadManager = leoApp.LoadManager()
     g.app.loadManager.computeStandardDirectories()
@@ -105,25 +104,26 @@ def create_app():
     g.app.db = g.TracingNullObject('g.app.db')
     g.app.pluginsController = g.NullObject('g.app.pluginsController')
     g.app.commander_cacher = g.NullObject('g.app.commander_cacher')
-    g.app.gui=leoGui.NullGui()
-    t3 = time.process_time()
+    g.app.gui = leoGui.NullGui()
+    # t3 = time.process_time()
+    #
     # Create a dummy commander, to do the imports in c.initObjects.
-    leoCommands.Commands(fileName=None, gui=g.app.gui)
-    # dump_leo_modules()
-    t4 = time.process_time()
-    if False and t4 - t3 > 0.1:
-        print('create_app\n'
-            f"  imports: {(t2-t1):.3f}\n"
-            f"      gui: {(t3-t2):.3f}\n"
-            f"commander: {(t4-t2):.3f}\n"
-            f"    total: {(t4-t1):.3f}\n")
+    c = leoCommands.Commands(fileName=None, gui=g.app.gui)
+    # t4 = time.process_time()
+    # if t4 - t3 > 0.1:
+        # print('create_app\n'
+            # f"  imports: {(t2-t1):.3f}\n"
+            # f"      gui: {(t3-t2):.3f}\n"
+            # f"commander: {(t4-t2):.3f}\n"
+            # f"    total: {(t4-t1):.3f}\n")
+    return c
 #@+node:ekr.20201201144934.1: *3* function: dump_leo_modules
 def dump_leo_modules():
-    
-    core     = [z for z in sys.modules if z.startswith('leo.core')]
+
+    core = [z for z in sys.modules if z.startswith('leo.core')]
     commands = [z for z in sys.modules if z.startswith('leo.commands')]
-    plugins  = [z for z in sys.modules if z.startswith('leo.plugins')]
-    
+    plugins = [z for z in sys.modules if z.startswith('leo.plugins')]
+
     print(f"{len(core)} leo.core modules...\n")
     for key in sorted(core):
         print(key)
@@ -223,7 +223,7 @@ class ConvertTests:
         result = []
         parts = command_name.split('-')
         for part in parts:
-            s = part.replace('(','').replace(')','')
+            s = part.replace('(', '').replace(')', '')
             inner_parts = s.split(' ')
             result.append(''.join([z.capitalize() for z in inner_parts]))
         return ''.join(result)
@@ -241,37 +241,37 @@ class ConvertTests:
         result = []
         parts = command_name.split('-')
         for part in parts:
-            s = part.replace('(','').replace(')','')
+            s = part.replace('(', '').replace(')', '')
             inner_parts = s.split(' ')
             result.append('_'.join(inner_parts))
         return '_'.join(result)
     #@-others
 #@+node:ekr.20201202083553.1: ** class ConvertEditCommandsTests (ConvertTests)
-class ConvertEditCommandsTests (ConvertTests):
-    
+class ConvertEditCommandsTests(ConvertTests):
+
     #@+others
-    #@+node:ekr.20201130075024.4: *3* ConvertTests.convert
+    #@+node:ekr.20201130075024.4: *3* ConvertEditCommandsTests.convert
     def convert(self, p, target):
         """Convert one @test node, creating a new node."""
         after_p, before_p = None, None
         after_sel, before_sel = None, None
         assert p.h.startswith('@test')
-        command_name = p.h[len('@test'):].strip()
+        command_name = p.h[len('@test') :].strip()
         for child in p.children():
             if child.h.startswith('after'):
                 after_p = child.copy()
-                after_sel= child.h[len('after'):].strip()
-                after_sel = after_sel.replace('sel=','').strip()
+                after_sel = child.h[len('after') :].strip()
+                after_sel = after_sel.replace('sel=', '').strip()
             elif child.h.startswith('before'):
                 before_p = child.copy()
-                before_sel = child.h[len('before'):].strip()
-                before_sel = before_sel.replace('sel=','').strip()
+                before_sel = child.h[len('before') :].strip()
+                before_sel = before_sel.replace('sel=', '').strip()
         assert before_p and after_p
         assert before_sel and after_sel
         new_child = target.insertAsLastChild()
         new_child.h = command_name
         new_child.b = self.body(after_p, after_sel, before_p, before_sel, command_name)
-            
+
     #@-others
 #@-others
 #@-leo

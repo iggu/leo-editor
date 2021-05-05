@@ -233,7 +233,7 @@ def convertTabs(self, event=None):
         return False
     #
     # Calculate the result.
-    changed,result = False, []
+    changed, result = False, []
     for line in lines:
         i, width = g.skip_leading_ws_with_indent(line, 0, tabWidth)
         s = g.computeLeadingWhitespace(width, -abs(tabWidth)) + line[i:]
@@ -285,7 +285,7 @@ def dedentBody(self, event=None):
     # Set p.b and w's text first.
     middle = ''.join(result)
     all = head + middle + tail
-    p.b = all # Sets dirty and changed bits.
+    p.b = all  # Sets dirty and changed bits.
     w.setAllText(all)
     #
     # Calculate the proper selection range (i, j, ins).
@@ -296,7 +296,7 @@ def dedentBody(self, event=None):
     else:
         i = len(head)
         j = len(head) + len(middle)
-        if middle.endswith('\n'): # #1742.
+        if middle.endswith('\n'):  # #1742.
             j -= 1
     #
     # Set the selection range and scroll position.
@@ -466,7 +466,7 @@ def extract(self, event=None):
     bunch = u.beforeChangeBody(c.p)  # Not p.
     #
     # Update the text and selection
-    c.p.v.b = head + middle + tail # Don't redraw.
+    c.p.v.b = head + middle + tail  # Don't redraw.
     w.setAllText(head + middle + tail)
     i = len(head)
     j = max(i, len(head) + len(middle) - 1)
@@ -642,7 +642,7 @@ def goToPrevHistory(self, event=None):
     """Go to the previous node in the history list."""
     c = self
     c.nodeHistory.goPrev()
-#@+node:ekr.20171123135625.30: ** c_ec.always/indentBody (indent-region & always-indent-region)
+#@+node:ekr.20171123135625.30: ** c_ec.alwaysIndentBody (always-indent-region)
 @g.commander_command('always-indent-region')
 def alwaysIndentBody(self, event=None):
     """
@@ -651,6 +651,12 @@ def alwaysIndentBody(self, event=None):
     indentation.
     """
     c, p, u, w = self, self.p, self.undoer, self.frame.body.wrapper
+    #
+    # #1801: Don't rely on bindings to ensure that we are editing the body.
+    event_w = event and event.w
+    if event_w != w:
+        c.insertCharFromEvent(event)
+        return
     #
     # "Before" snapshot.
     bunch = u.beforeChangeBody(p)
@@ -674,7 +680,7 @@ def alwaysIndentBody(self, event=None):
     # Set p.b and w's text first.
     middle = ''.join(result)
     all = head + middle + tail
-    p.b = all # Sets dirty and changed bits.
+    p.b = all  # Sets dirty and changed bits.
     w.setAllText(all)
     #
     # Calculate the proper selection range (i, j, ins).
@@ -695,6 +701,7 @@ def alwaysIndentBody(self, event=None):
     # "after" snapshot.
     u.afterChangeBody(p, 'Indent Region', bunch)
 
+#@+node:ekr.20210104123442.1: ** c_ec.indentBody (indent-region)
 @g.commander_command('indent-region')
 def indentBody(self, event=None):
     """
@@ -704,7 +711,11 @@ def indentBody(self, event=None):
     
     The @tabwidth directive in effect determines amount of indentation.
     """
-    c, w = self, self.frame.body.wrapper
+    c, event_w, w = self, event and event.w, self.frame.body.wrapper
+    # #1801: Don't rely on bindings to ensure that we are editing the body.
+    if event_w != w:
+        c.insertCharFromEvent(event)
+        return
     # # 1739. Special case for a *plain* tab bound to indent-region.
     sel_1, sel_2 = w.getSelectionRange()
     if sel_1 == sel_2:

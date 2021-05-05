@@ -42,6 +42,10 @@ def show_stroke(stroke):
         'space':        ' ',
     }
     return d.get(s, s)
+#@+node:ekr.20150509040011.1: **  vc.cmd (decorator)
+def cmd(name):
+    """Command decorator for the VimCommands class."""
+    return g.new_cmd_decorator(name, ['c', 'vimCommands',])
 #@+node:ekr.20140802183521.17996: ** class VimEvent
 class VimEvent:
     """A class to contain the components of the dot."""
@@ -476,11 +480,6 @@ class VimCommands:
         self.j_changed = True
             # False if the .leo file's change indicator should be
             # cleared after doing the j,j abbreviation.
-    #@+node:ekr.20150509040011.1: *3*  vc.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the VimCommands class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'vimCommands',])
     #@+node:ekr.20140802225657.18023: *3* vc.acceptance methods
     # All key handlers must end with a call to an acceptance method.
     #
@@ -781,7 +780,7 @@ class VimCommands:
     def update_selection_after_search(self):
         """
         Extend visual mode's selection after a search.
-        Called from leoFind.showSuccess.
+        Called from leoFind.show_success.
         """
         if self.state == 'visual':
             w = self.w
@@ -1017,7 +1016,7 @@ class VimCommands:
                 # #1757: Create a LeoKeyEvent.
                 event = LeoKeyEvent(
                     binding=g.KeyStroke(event.stroke),
-                    c = self.c,
+                    c=self.c,
                     char=event.char,
                     event=event,
                     w=self.w,
@@ -1301,7 +1300,7 @@ class VimCommands:
     def vim_n(self):
         """Repeat last search N times."""
         fc = self.c.findCommands
-        fc.setup_command()
+        fc.setup_ivars()
         old_node_only = fc.node_only
         fc.node_only = True
         for z in range(self.n1 * self.n):
@@ -1313,7 +1312,7 @@ class VimCommands:
     def vim_N(self):
         """Repeat last search N times (reversed)."""
         fc = self.c.findCommands
-        fc.setup_command()
+        fc.setup_ivars()
         old_node_only = fc.node_only
         old_reverse = fc.reverse
         fc.node_only = True
@@ -1421,9 +1420,9 @@ class VimCommands:
             fc.openFindTab(self.event)
             fc.ftm.clear_focus()
             old_node_only = fc.node_only
-            fc.searchWithPresentOptions(self.event)
+            fc.start_search1(self.event)
                 # This returns immediately, before the actual search.
-                # leoFind.showSuccess calls update_selection_after_search().
+                # leoFind.show_success calls update_selection_after_search().
             fc.node_only = old_node_only
             self.done(add_to_dot=False, set_dot=False)
         else:
@@ -1461,9 +1460,9 @@ class VimCommands:
             fc.openFindTab(self.event)
             fc.ftm.clear_focus()
             old_node_only = fc.node_only
-            fc.searchWithPresentOptions(self.event)
+            fc.start_search1(self.event)
                 # This returns immediately, before the actual search.
-                # leoFind.showSuccess calls update_selection_after_search().
+                # leoFind.show_success calls update_selection_after_search().
             fc.node_only = old_node_only
             fc.reverse = False
             self.done(add_to_dot=False, set_dot=False)
@@ -2008,9 +2007,9 @@ class VimCommands:
                 fc.ftm.clear_focus()
                 fc.node_only = True
                     # Doesn't work.
-                fc.searchWithPresentOptions(vc.event)
+                fc.start_search1(vc.event)
                     # This returns immediately, before the actual search.
-                    # leoFind.showSuccess calls vc.update_selection_after_search.
+                    # leoFind.show_success calls vc.update_selection_after_search.
                 if c.vim_mode:
                     vc.done(add_to_dot=False, set_dot=False)
             elif c.vim_mode:

@@ -479,7 +479,7 @@ def get_language (doctree):
         language = docutils.languages.get_language(doctree.settings.language_code)
 
     return language
-#@+node:ekr.20090704103932.5179: ** class Bunch (object)
+#@+node:ekr.20090704103932.5179: ** class Bunch
 #@+at
 #
 # From The Python Cookbook: Often we want to just collect a bunch of stuff
@@ -1014,7 +1014,7 @@ if docutils: # NOQA
                 self.story.append(s)
             except Exception:
                 g.es_print('\nreportlab error...\n',color='orange')
-                g.es_print_exception(full=False)
+                g.print_exception(full=False)
                 g.es_exception(full=False)
                 print(repr(text))
         #@+node:ekr.20090704103932.5217: *4* dumpContext

@@ -9,6 +9,7 @@ from collections import defaultdict
 import os
 import platform
 import sys
+from typing import Any, Dict
 
 from leo.core import leoGlobals as g
 from leo.core import leoColor
@@ -22,15 +23,7 @@ from leo.plugins import qt_events
 from leo.plugins import qt_text
 from leo.plugins import qt_tree
 from leo.plugins.mod_scripting import build_rclick_tree
-
-try:
-    from leo.plugins import nested_splitter
-    splitter_class = nested_splitter.NestedSplitter
-    nested_splitter.NestedSplitter.enabled = False
-        # Disable special behavior, turned back on by associated plugin.
-except ImportError:
-    print('Can not import nested_splitter')
-    splitter_class = QtWidgets.QSplitter
+from leo.plugins.nested_splitter import NestedSplitter
 #@-<< imports >>
 #@+others
 #@+node:ekr.20200303082457.1: ** top-level commands (qt_frame.py)
@@ -45,7 +38,7 @@ def contractBodyPane(event):
     f = c.frame
     r = min(1.0, f.ratio + 0.1)
     f.divideLeoSplitter1(r)
-    
+
 expandOutlinePane = contractBodyPane
 #@+node:ekr.20200303084048.1: *3* 'contract-log-pane'
 @g.command('contract-log-pane')
@@ -105,6 +98,18 @@ def hideOutlinePane(event):
         return
     c.frame.divideLeoSplitter1(0.0)
 
+#@+node:ekr.20210228142208.1: ** decorators (qt_frame.py)
+def body_cmd(name):
+    """Command decorator for the LeoQtBody class."""
+    return g.new_cmd_decorator(name, ['c', 'frame', 'body'])
+
+def frame_cmd(name):
+    """Command decorator for the LeoQtFrame class."""
+    return g.new_cmd_decorator(name, ['c', 'frame',])
+
+def log_cmd(name):
+    """Command decorator for the LeoQtLog class."""
+    return g.new_cmd_decorator(name, ['c', 'frame', 'log'])
 #@+node:ekr.20110605121601.18137: ** class  DynamicWindow (QMainWindow)
 class DynamicWindow(QtWidgets.QMainWindow):
     """
@@ -326,7 +331,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
         self.leo_body_frame = bodyFrame
         self.leo_body_inner_frame = innerFrame
         return bodyFrame
-     
+
     #@+node:ekr.20110605121601.18144: *5* dw.createCentralWidget
     def createCentralWidget(self):
         """Create the central widget."""
@@ -394,10 +399,10 @@ class DynamicWindow(QtWidgets.QMainWindow):
         """Create the layout for Leo's main window."""
         # c = self.leo_c
         vLayout = self.createVLayout(parent, 'mainVLayout', margin=3)
-        main_splitter = splitter_class(parent)
+        main_splitter = NestedSplitter(parent)
         main_splitter.setObjectName('main_splitter')
         main_splitter.setOrientation(QtCore.Qt.Vertical)
-        secondary_splitter = splitter_class(main_splitter)
+        secondary_splitter = NestedSplitter(main_splitter)
         secondary_splitter.setObjectName('secondary_splitter')
         secondary_splitter.setOrientation(QtCore.Qt.Horizontal)
         # Official ivar:
@@ -809,16 +814,16 @@ class DynamicWindow(QtWidgets.QMainWindow):
             ('box', '&Ignore case', 1, 0),
             ('rb', '&Suboutline only', 1, 1),
             # Third row.
-            ('box', 'wrap &Around', 2, 0),
+            ('box', 'rege&Xp', 2, 0),
             ('rb', '&Node only', 2, 1),
             # Fourth row.
-            ('box', 'rege&Xp', 3, 0),
+            ('box', 'mark &Finds', 3, 0),
             ('box', 'search &Headline', 3, 1),
             # Fifth row.
-            ('box', 'mark &Finds', 4, 0),
+            ('box', 'mark &Changes', 4, 0),
             ('box', 'search &Body', 4, 1),
             # Sixth row.
-            ('box', 'mark &Changes', 5, 0),
+            # ('box', 'wrap &Around', 5, 0),
             # a,b,c,e,f,h,i,n,rs,w
         )
         for kind, label, row2, col in table:
@@ -843,14 +848,14 @@ class DynamicWindow(QtWidgets.QMainWindow):
 
         # Create Buttons in column 2 (Leo 4.11.1.)
         table = (
-            (0, 2, 'findButton', 'find-next'),
-            (1, 2, 'findPreviousButton', 'find-prev'),
-            (2, 2, 'findAllButton', 'find-all'),
-            (3, 2, 'changeButton', 'replace'),
-            (4, 2, 'changeThenFindButton', 'replace-then-find'),
-            (5, 2, 'changeAllButton', 'replace-all'),
+            (0, 2, 'find-next'),  # 'findButton',
+            (1, 2, 'find-prev'),  # 'findPreviousButton',
+            (2, 2, 'find-all'),  # 'findAllButton',
+            (3, 2, 'replace'),  # 'changeButton',
+            (4, 2, 'replace-then-find'),  # 'changeThenFindButton',
+            (5, 2, 'replace-all'),  # 'changeAllButton',
         )
-        for row2, col, func_name, cmd_name in table:
+        for row2, col, cmd_name in table:
             stroke = k.getStrokeForCommandName(cmd_name)
             if stroke:
                 label = f"{cmd_name}:  {k.prettyPrintKey(stroke)}"
@@ -980,29 +985,9 @@ class DynamicWindow(QtWidgets.QMainWindow):
             #@-others
         #@-others
         EventWrapper(
-            c, w=ftm.find_findbox, next_w=ftm.find_replacebox, func=fc.findNextCommand)
+            c, w=ftm.find_findbox, next_w=ftm.find_replacebox, func=fc.find_next)
         EventWrapper(
-            c, w=ftm.find_replacebox, next_w=ftm.find_next_button, func=fc.findNextCommand)
-
-        if 0:  # #1342: These are no longer needed, because there are no buttons.
-            table = (
-                ('findNextCommand', 'find-next'),
-                ('findPrevCommand', 'find-prev'),
-                ('findAll', 'find-all'),
-                ('changeCommand', 'replace'),
-                ('changeThenFind', 'replace-then-find'),
-                ('changeAll', 'replace-all'),
-            )
-            for func_name, cmd_name in table:
-                ivar = f"{cmd_name}-{'button'}"
-                ivar = ivar.replace('-', '_')
-                w = getattr(ftm, ivar, None)
-                func = getattr(fc, func_name, None)
-                if w and func:
-                    next_w = ftm.check_box_whole_word if cmd_name == 'replace-all' else None
-                    EventWrapper(c, w=w, next_w=next_w, func=func)
-                else:
-                    g.trace('**oops**')
+            c, w=ftm.find_replacebox, next_w=ftm.find_next_button, func=fc.find_next)
         # Finally, checkBoxMarkChanges goes back to ftm.find_findBox.
         EventWrapper(c, w=ftm.check_box_mark_changes, next_w=ftm.find_findbox, func=None)
     #@+node:ekr.20110605121601.18168: *4* dw.utils
@@ -1073,7 +1058,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
             # Call the base class method.
             QtWidgets.QMainWindow.setWindowTitle(self, s)
     #@-others
-#@+node:ekr.20131117054619.16698: ** class FindTabManager
+#@+node:ekr.20131117054619.16698: ** class FindTabManager (qt_frame.py)
 class FindTabManager:
     """A helper class for the LeoFind class."""
     #@+others
@@ -1093,7 +1078,7 @@ class FindTabManager:
         self.check_box_search_body = None
         self.check_box_search_headline = None
         self.check_box_whole_word = None
-        self.check_box_wrap_around = None
+        # self.check_box_wrap_around = None
         # Radio buttons
         self.radio_button_entire_outline = None
         self.radio_button_node_only = None
@@ -1106,28 +1091,6 @@ class FindTabManager:
         self.replace_button = None
         self.replace_then_find_button = None
         self.replace_all_button = None
-    #@+node:ekr.20131117164142.16853: *3* ftm.text getters/setters
-    def getFindText(self):
-        return self.find_findbox.text()
-
-    def getReplaceText(self):
-        return self.find_replacebox.text()
-
-    getChangeText = getReplaceText
-
-    def setFindText(self, s):
-        w = self.find_findbox
-        s = g.checkUnicode(s)
-        w.clear()
-        w.insert(s)
-
-    def setReplaceText(self, s):
-        w = self.find_replacebox
-        s = g.checkUnicode(s)
-        w.clear()
-        w.insert(s)
-
-    setChangeText = setReplaceText
     #@+node:ekr.20131119185305.16478: *3* ftm.clear_focus & init_focus & set_entry_focus
     def clear_focus(self):
         self.entry_focus = None
@@ -1148,13 +1111,30 @@ class FindTabManager:
         if w != c.frame.body.wrapper.widget:
             w = c.frame.tree.treeWidget
         self.entry_focus = w
-    #@+node:ekr.20150619082825.1: *3* ftm.set_ignore_case
-    def set_ignore_case(self, aBool):
-        """Set the ignore-case checkbox to the given value."""
-        c = self.c
-        c.findCommands.ignore_case = aBool
-        w = self.check_box_ignore_case
-        w.setChecked(aBool)
+    #@+node:ekr.20210110143917.1: *3* ftm.get_settings
+    def get_settings(self):
+        """
+        Return a g.bunch representing all widget values.
+        
+        Similar to LeoFind.default_settings, but only for find-tab values.
+        """
+        return g.Bunch(
+            # Find/change strings...
+            find_text=self.find_findbox.text(),
+            change_text=self.find_replacebox.text(),
+            # Find options...
+            ignore_case=self.check_box_ignore_case.isChecked(),
+            mark_changes=self.check_box_mark_changes.isChecked(),
+            mark_finds=self.check_box_mark_finds.isChecked(),
+            node_only=self.radio_button_node_only.isChecked(),
+            pattern_match=self.check_box_regexp.isChecked(),
+            # reverse = False,
+            search_body=self.check_box_search_body.isChecked(),
+            search_headline=self.check_box_search_headline.isChecked(),
+            suboutline_only=self.radio_button_suboutline_only.isChecked(),
+            whole_word=self.check_box_whole_word.isChecked(),
+            # wrapping = self.check_box_wrap_around.isChecked(),
+        )
     #@+node:ekr.20131117120458.16789: *3* ftm.init_widgets (creates callbacks)
     def init_widgets(self):
         """
@@ -1185,7 +1165,7 @@ class FindTabManager:
             ('search_body', self.check_box_search_body),
             ('search_headline', self.check_box_search_headline),
             ('whole_word', self.check_box_whole_word),
-            ('wrap', self.check_box_wrap_around),
+            # ('wrap', self.check_box_wrap_around),
         )
         for setting_name, w in table:
             val = c.config.getBool(setting_name, default=False)
@@ -1223,7 +1203,6 @@ class FindTabManager:
 
             def radio_button_callback(n, ivar=ivar, setting_name=setting_name, w=w):
                 val = w.isChecked()
-                find.radioButtonsChanged = True
                 if ivar:
                     assert hasattr(find, ivar), ivar
                     setattr(find, ivar, val)
@@ -1233,6 +1212,31 @@ class FindTabManager:
         if not find.node_only and not find.suboutline_only:
             w = self.radio_button_entire_outline
             w.toggle()
+    #@+node:ekr.20210312120503.1: *3* ftm.set_body_and_headline_checkbox
+    def set_body_and_headline_checkbox(self):
+        """Return the search-body and search-headline checkboxes to their defaults."""
+        # #1840: headline-only one-shot
+        c = self.c
+        find = c.findCommands
+        if not find:
+            return
+        table = (
+            ('search_body', self.check_box_search_body),
+            ('search_headline', self.check_box_search_headline),
+        )
+        for setting_name, w in table:
+            val = c.config.getBool(setting_name, default=False)
+            if val != w.isChecked():
+                w.toggle()
+        if find.minibuffer_mode:
+            find.show_find_options_in_status_area()
+    #@+node:ekr.20150619082825.1: *3* ftm.set_ignore_case
+    def set_ignore_case(self, aBool):
+        """Set the ignore-case checkbox to the given value."""
+        c = self.c
+        c.findCommands.ignore_case = aBool
+        w = self.check_box_ignore_case
+        w.setChecked(aBool)
     #@+node:ekr.20131117120458.16792: *3* ftm.set_radio_button
     def set_radio_button(self, name):
         """Set the value of the radio buttons"""
@@ -1245,16 +1249,41 @@ class FindTabManager:
             'suboutline-only': self.radio_button_suboutline_only,
         }
         w = d.get(name)
-        assert w
         # Most of the work will be done in the radio button callback.
         if not w.isChecked():
             w.toggle()
         if find.minibuffer_mode:
-            find.showFindOptionsInStatusArea()
+            find.show_find_options_in_status_area()
+    #@+node:ekr.20131117164142.16853: *3* ftm.text getters/setters
+    def get_find_text(self):
+        s = self.find_findbox.text()
+        if s and s[-1] in ('\r', '\n'):
+            s = s[:-1]
+        return s
+
+    def get_change_text(self):
+        s = self.find_replacebox.text()
+        if s and s[-1] in ('\r', '\n'):
+            s = s[:-1]
+        return s
+
+    getChangeText = get_change_text
+
+    def set_find_text(self, s):
+        w = self.find_findbox
+        s = g.checkUnicode(s)
+        w.clear()
+        w.insert(s)
+
+    def set_change_text(self, s):
+        w = self.find_replacebox
+        s = g.checkUnicode(s)
+        w.clear()
+        w.insert(s)
     #@+node:ekr.20131117120458.16791: *3* ftm.toggle_checkbox
     #@@nobeautify
 
-    def toggle_checkbox(self,checkbox_name):
+    def toggle_checkbox(self, checkbox_name):
         """Toggle the value of the checkbox whose name is given."""
         c = self.c
         find = c.findCommands
@@ -1268,14 +1297,14 @@ class FindTabManager:
             'search_body':     self.check_box_search_body,
             'search_headline': self.check_box_search_headline,
             'whole_word':      self.check_box_whole_word,
-            'wrap':            self.check_box_wrap_around,
+            # 'wrap':            self.check_box_wrap_around,
         }
         w = d.get(checkbox_name)
         assert w
-        assert hasattr(find,checkbox_name),checkbox_name
+        assert hasattr(find, checkbox_name), checkbox_name
         w.toggle() # The checkbox callback toggles the ivar.
         if find.minibuffer_mode:
-            find.showFindOptionsInStatusArea()
+            find.show_find_options_in_status_area()
     #@-others
 #@+node:ekr.20131115120119.17376: ** class LeoBaseTabWidget(QTabWidget)
 class LeoBaseTabWidget(QtWidgets.QTabWidget):
@@ -1423,11 +1452,7 @@ class LeoBaseTabWidget(QtWidgets.QTabWidget):
 class LeoQtBody(leoFrame.LeoBody):
     """A class that represents the body pane of a Qt window."""
     #@+others
-    #@+node:ekr.20150521061618.1: *3* LeoQtBody.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the c.frame.body class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'frame', 'body'])
+    #@+node:ekr.20150521061618.1: *3* LeoQtBody.body_cmd (decorator)
     #@+node:ekr.20110605121601.18181: *3* LeoQtBody.Birth
     #@+node:ekr.20110605121601.18182: *4* LeoQtBody.ctor
     def __init__(self, frame, parentFrame):
@@ -1514,8 +1539,8 @@ class LeoQtBody(leoFrame.LeoBody):
     #@+node:ekr.20110605121601.18195: *5* LeoQtBody.add_editor_command
     # An override of leoFrame.addEditor.
 
-    @cmd('editor-add')
-    @cmd('add-editor')
+    @body_cmd('editor-add')
+    @body_cmd('add-editor')
     def add_editor_command(self, event=None):
         """Add another editor to the body pane."""
         c, p = self.c, self.c.p
@@ -1526,7 +1551,7 @@ class LeoQtBody(leoFrame.LeoBody):
         self.totalNumberOfEditors += 1
         self.numberOfEditors += 1
         if self.totalNumberOfEditors == 2:
-            d ['1'] = wrapper
+            d['1'] = wrapper
             # Pack the original body editor.
             # Fix #1021: Pack differently depending on whether the gutter exists.
             if self.use_gutter:
@@ -1570,8 +1595,8 @@ class LeoQtBody(leoFrame.LeoBody):
     #@+node:ekr.20110605121601.18198: *5* LeoQtBody.cycleEditorFocus
     # Use the base class method.
     #@+node:ekr.20110605121601.18199: *5* LeoQtBody.delete_editor_command
-    @cmd('delete-editor')
-    @cmd('editor-delete')
+    @body_cmd('delete-editor')
+    @body_cmd('editor-delete')
     def delete_editor_command(self, event=None):
         """Delete the presently selected body text editor."""
         c, d = self.c, self.editorWrappers
@@ -2065,11 +2090,6 @@ class LeoQtFrame(leoFrame.LeoFrame):
     #@+node:ekr.20110605121601.18249: *4* qtFrame.__repr__
     def __repr__(self):
         return f"<LeoQtFrame: {self.title}>"
-    #@+node:ekr.20150509040227.1: *4* qtFrame.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the LeoQtFrame class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'frame',])
     #@+node:ekr.20110605121601.18250: *4* qtFrame.finishCreate & helpers
     def finishCreate(self):
         """Finish creating the outline's frame."""
@@ -2244,7 +2264,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
         def put1(self, s, bg=None, fg=None):
             self.put_helper(s, self.textWidget1, bg, fg)
 
-        styleSheetCache = {}
+        styleSheetCache: Dict[Any, str] = {}
             # Keys are widgets, values are stylesheets.
 
         def put_helper(self, s, w, bg=None, fg=None):
@@ -2764,7 +2784,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
     #@+node:ekr.20110605121601.18293: *3* qtFrame.Gui-dependent commands
     #@+node:ekr.20110605121601.18301: *4* qtFrame.Window Menu...
     #@+node:ekr.20110605121601.18302: *5* qtFrame.toggleActivePane
-    @cmd('toggle-active-pane')
+    @frame_cmd('toggle-active-pane')
     def toggleActivePane(self, event=None):
         """Toggle the focus between the outline and body panes."""
         frame = self; c = frame.c
@@ -2776,7 +2796,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
         else:
             c.treeWantsFocus()
     #@+node:ekr.20110605121601.18303: *5* qtFrame.cascade
-    @cmd('cascade-windows')
+    @frame_cmd('cascade-windows')
     def cascade(self, event=None):
         """Cascade all Leo windows."""
         x, y, delta = 50, 50, 50
@@ -2792,7 +2812,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
                     x = 10 + delta; y = 40 + delta
                     delta += 10
     #@+node:ekr.20110605121601.18304: *5* qtFrame.equalSizedPanes
-    @cmd('equal-sized-panes')
+    @frame_cmd('equal-sized-panes')
     def equalSizedPanes(self, event=None):
         """Make the outline and body panes have the same size."""
         self.resizePanesToRatio(0.5, self.secondary_ratio)
@@ -2801,7 +2821,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
         """Hide the log pane."""
         self.divideLeoSplitter2(0.99)
     #@+node:ekr.20110605121601.18306: *5* qtFrame.minimizeAll
-    @cmd('minimize-all')
+    @frame_cmd('minimize-all')
     def minimizeAll(self, event=None):
         """Minimize all Leo's windows."""
         for frame in g.app.windowList:
@@ -2817,13 +2837,13 @@ class LeoQtFrame(leoFrame.LeoFrame):
             else:
                 w.setWindowState(QtCore.Qt.WindowMinimized)
     #@+node:ekr.20110605121601.18307: *5* qtFrame.toggleSplitDirection
-    @cmd('toggle-split-direction')
+    @frame_cmd('toggle-split-direction')
     def toggleSplitDirection(self, event=None):
         """Toggle the split direction in the present Leo window."""
         if hasattr(self.c, 'free_layout'):
             self.c.free_layout.get_top_splitter().rotate()
     #@+node:ekr.20110605121601.18308: *5* qtFrame.resizeToScreen
-    @cmd('resize-to-screen')
+    @frame_cmd('resize-to-screen')
     def resizeToScreen(self, event=None):
         """Resize the Leo window so it fill the entire screen."""
         frame = self
@@ -2839,7 +2859,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
                 w.setWindowState(QtCore.Qt.WindowMaximized)
     #@+node:ekr.20110605121601.18309: *4* qtFrame.Help Menu...
     #@+node:ekr.20110605121601.18310: *5* qtFrame.leoHelp
-    @cmd('open-offline-tutorial')
+    @frame_cmd('open-offline-tutorial')
     def leoHelp(self, event=None):
         """Open Leo's offline tutorial."""
         frame = self; c = frame.c
@@ -2964,9 +2984,9 @@ class LeoQtFrame(leoFrame.LeoFrame):
     #@+node:ekr.20190611053431.9: *4* qtFrame.setTopGeometry
     def setTopGeometry(self, w, h, x, y):
         # self.top is a DynamicWindow.
-        if 'size' in g.app.debug:
-            g.trace(bool(self.top), w, h, x, y)
         if self.top:
+            if 'size' in g.app.debug:
+                g.trace(w, h, x, y, self.c.shortFileName(), g.callers())
             self.top.setGeometry(QtCore.QRect(x, y, w, h))
     #@+node:ekr.20190611053431.10: *4* qtFrame.update
     def update(self, *args, **keys):
@@ -2978,11 +2998,6 @@ class LeoQtFrame(leoFrame.LeoFrame):
 class LeoQtLog(leoFrame.LeoLog):
     """A class that represents the log pane of a Qt window."""
     #@+others
-    #@+node:ekr.20150717102609.1: *3* LeoQtLog.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the c.frame.log class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'frame', 'log'])
     #@+node:ekr.20110605121601.18313: *3* LeoQtLog.Birth
     #@+node:ekr.20110605121601.18314: *4* LeoQtLog.__init__ & reloadSettings
     def __init__(self, frame, parentFrame):
@@ -3061,7 +3076,7 @@ class LeoQtLog(leoFrame.LeoLog):
     def getName(self):
         return 'log'  # Required for proper pane bindings.
     #@+node:ekr.20150717102728.1: *3* LeoQtLog.Commands
-    @cmd('clear-log')
+    @log_cmd('clear-log')
     def clearLog(self, event=None):
         """Clear the log pane."""
         w = self.logCtrl.widget  # w is a QTextBrowser
@@ -3675,7 +3690,7 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
     def setText(self, md):
         c = self.c
         fn = self.fileName()
-        s = c.fileCommands.putLeoOutline()
+        s = c.fileCommands.outline_to_clipboard_string()
         md.setText(f"{fn},{s}")
     #@+node:ekr.20110605121601.18365: *4* LeoQTreeWidget.dropEvent & helpers
     def dropEvent(self, ev):
@@ -3911,7 +3926,6 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
         path = g.scanAtPathDirectives(c, aList)
         if path:
             fn = os.path.relpath(fn, path)
-            fn = g.toUnicodeFileEncoding(fn)
         self.createAtFileNode(fn, p2, s)
         u.afterInsertNode(p2, undoType, undoData)
         c.selectPosition(p2)
@@ -3989,7 +4003,7 @@ class LeoQTreeWidget(QtWidgets.QTreeWidget):
         c2 = g.openWithFileName(fn, old_c=c, gui=g.app.nullGui)
         for p2 in c2.rootPosition().self_and_siblings():
             c2.selectPosition(p2)
-            s = c2.fileCommands.putLeoOutline()
+            s = c2.fileCommands.outline_to_clipboard_string()
             # Paste the outline after the selected node.
             c.fileCommands.getLeoOutlineFromClipboard(s)
         dummy_p.doDelete()

@@ -21,6 +21,10 @@ from leo.core import leoExternalFiles
 StringIO = io.StringIO
 #@-<< imports >>
 #@+others
+#@+node:ekr.20150509193629.1: ** cmd (decorator)
+def cmd(name):
+    """Command decorator for the LeoApp class."""
+    return g.new_cmd_decorator(name, ['g', 'app'])
 #@+node:ekr.20161026122804.1: ** class IdleTimeManager
 class IdleTimeManager:
     """
@@ -544,6 +548,7 @@ class LeoApp:
             # relax_ng_compact, rtf, svn_commit.
 
         # These have extensions which conflict with other languages.
+            # assembly_6502:    .asm or .a or .s
             # assembly_macro32: .asm or .a
             # assembly_mcs51:   .asm or .a
             # assembly_parrot:  .asm or .a
@@ -585,6 +590,7 @@ class LeoApp:
             "applescript"        : "-- (* *)",
             "asp"                : "<!-- -->",
             "aspect_j"           : "// /* */",
+            "assembly_6502"      : ";",
             "assembly_macro32"   : ";",
             "assembly_mcs51"     : ";",
             "assembly_parrot"    : "#",
@@ -912,6 +918,7 @@ class LeoApp:
             # relax_ng_compact, rtf, svn_commit.
 
         # These have extensions which conflict with other languages.
+            # assembly_6502:    .asm or .a or .s
             # assembly_macro32: .asm or .a
             # assembly_mcs51:   .asm or .a
             # assembly_parrot:  .asm or .a
@@ -936,11 +943,6 @@ class LeoApp:
             "@shadow",
             "@thin",
         ])
-    #@+node:ekr.20150509193629.1: *4* app.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the LeoApp class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['g', 'app'])
     #@+node:ekr.20090717112235.6007: *4* app.computeSignon & printSignon
     def computeSignon(self):
         from leo.core import leoVersion
@@ -1000,8 +1002,8 @@ class LeoApp:
             import curses
             assert curses
         except Exception:
-            g.es_exception()
-            print('can not import _curses.')
+            # g.es_exception()
+            print('can not import curses.')
             if g.isWindows:
                 print('Windows: pip install windows-curses')
             sys.exit()
@@ -1457,12 +1459,13 @@ class LeoApp:
         ):
             return
         # #1519: check os.path.exists.
-        aList = g.app.db.get(tag) or []
-        if [x for x in aList if os.path.exists(x) and os.path.samefile(x, fn)]:
+        aList = g.app.db.get(tag) or []  # A list of normalized file names.
+        if any(os.path.exists(z) and os.path.samefile(z, fn) for z in aList):
             # The file may be open in another copy of Leo, or not:
             # another Leo may have been killed prematurely.
             # Put the file on the global list.
             # A dialog will warn the user such files later.
+            fn = os.path.normpath(fn)
             if fn not in g.app.already_open_files:
                 g.es('may be open in another Leo:', color='red')
                 g.es(fn)
@@ -1481,6 +1484,7 @@ class LeoApp:
             d is None or g.app.unitTesting or g.app.batchMode or g.app.reverting):
             return
         aList = d.get(tag) or []
+        fn = os.path.normpath(fn)
         if fn in aList:
             aList.remove(fn)
             if trace:
@@ -1500,7 +1504,7 @@ class LeoApp:
         else:
             aList = d.get(tag) or []
             # It's proper to add duplicates to this list.
-            aList.append(fn)
+            aList.append(os.path.normpath(fn))
             d[tag] = aList
     #@+node:ekr.20150621062355.1: *4* app.runAlreadyOpenDialog
     def runAlreadyOpenDialog(self, c):
@@ -1710,7 +1714,7 @@ class LoadManager:
         machine_fn = lm.computeMachineName() + settings_fn
         # First, compute the directory of the first loaded file.
         # All entries in lm.files are full, absolute paths.
-        localDir = g.os_path_dirname(lm.files[0]) if lm.files else None
+        localDir = g.os_path_dirname(lm.files[0]) if lm.files else ''
         table = (
             # First, myLeoSettings.leo in the local directory
             join(localDir, settings_fn),
@@ -1901,7 +1905,7 @@ class LoadManager:
                     path = resolve(setting, tag=tag)
                     if path:
                         # Caller (LM.readGlobalSettingsFiles) sets lm.theme_path
-                        if trace: g.trace(f"First loaded file", theme_c.shortFileName(), path)
+                        if trace: g.trace("First loaded file", theme_c.shortFileName(), path)
                         return path
         #
         # Step 3: use the @string theme-name setting in myLeoSettings.leo.
@@ -1909,7 +1913,7 @@ class LoadManager:
         setting = lm.globalSettingsDict.get_string_setting('theme-name')
         tag = 'myLeoSettings.leo'
         path = resolve(setting, tag=tag)
-        if trace: g.trace(f"myLeoSettings.leo", path)
+        if trace: g.trace("myLeoSettings.leo", path)
         return path
     #@+node:ekr.20180321124503.1: *5* LM.resolve_theme_path
     def resolve_theme_path(self, fn, tag):
@@ -2187,7 +2191,7 @@ class LoadManager:
                 assert commandName
                 result.add_to_list(commandName, bi)
         return result
-    #@+node:ekr.20120222103014.10312: *4* LM.openSettingsFile (new trace)
+    #@+node:ekr.20120222103014.10312: *4* LM.openSettingsFile
     def openSettingsFile(self, fn):
         """
         Open a settings file with a null gui.  Return the commander.
@@ -2197,7 +2201,7 @@ class LoadManager:
         lm = self
         if not fn:
             return None
-        theFile = lm.openLeoOrZipFile(fn)
+        theFile = lm.openAnyLeoFile(fn)
         if not theFile:
             return None  # Fix #843.
         if not any([g.app.unitTesting, g.app.silentMode, g.app.batchMode]):
@@ -2350,7 +2354,7 @@ class LoadManager:
             print('')
         # #1128: support for restart-leo.
         if not g.app.start_minimized:
-            try: # Careful: we may be unit testing.
+            try:  # Careful: we may be unit testing.
                 g.app.log.c.frame.bringToFront()
             except Exception:
                 pass
@@ -3057,7 +3061,7 @@ class LoadManager:
     def loadLocalFile(self, fn, gui, old_c):
         """Completely read a file, creating the corresonding outline.
 
-        1. If fn is an existing .leo file (possibly zipped), read it twice:
+        1. If fn is an existing .leo, .db or .leojs file, read it twice:
         the first time with a NullGui to discover settings,
         the second time with the requested gui to create the outline.
 
@@ -3070,17 +3074,19 @@ class LoadManager:
         or open an empty outline.
         """
         lm = self
-        # Step 0: Return if the file is already open.
+        # Step 1: Return if the file is already open.
         fn = g.os_path_finalize(fn)
         if fn:
             c = lm.findOpenFile(fn)
             if c:
                 return c
-        # Step 1: get the previous settings.
+        #
+        # Step 2: get the previous settings.
         # For .leo files (and zipped .leo files) this pre-reads the file in a null gui.
         # Otherwise, get settings from leoSettings.leo, myLeoSettings.leo, or default settings.
         previousSettings = lm.getPreviousSettings(fn)
-        # Step 2: open the outline in the requested gui.
+        #
+        # Step 3: open the outline in the requested gui.
         # For .leo files (and zipped .leo file) this opens the file a second time.
         c = lm.openFileByName(fn, gui, old_c, previousSettings)
         return c
@@ -3106,7 +3112,7 @@ class LoadManager:
         c = g.app.newCommander(fileName=fn, gui=gui, previousSettings=previousSettings)
         # Open the file, if possible.
         g.doHook('open0')
-        theFile = lm.openLeoOrZipFile(fn)
+        theFile = lm.openAnyLeoFile(fn)
         if isinstance(theFile, sqlite3.Connection):
             # this commander is associated with sqlite db
             c.sqlite_connection = theFile
@@ -3235,19 +3241,20 @@ class LoadManager:
         return c
     #@+node:ekr.20120223062418.10419: *6* LM.isLeoFile & LM.isZippedFile
     def isLeoFile(self, fn):
-        return fn and (
-            zipfile.is_zipfile(fn) or fn.endswith('.leo') or fn.endswith('.db'))
+        if not fn:
+            return False
+        return zipfile.is_zipfile(fn) or fn.endswith(('.leo', 'db', '.leojs'))
 
     def isZippedFile(self, fn):
         return fn and zipfile.is_zipfile(fn)
-    #@+node:ekr.20120224161905.10030: *6* LM.openLeoOrZipFile
-    def openLeoOrZipFile(self, fn):
+    #@+node:ekr.20120224161905.10030: *6* LM.openAnyLeoFile
+    def openAnyLeoFile(self, fn):
+        """Open a .leo, .leojs or .db file."""
         lm = self
         if fn.endswith('.db'):
             return sqlite3.connect(fn)
-        zipped = lm.isZippedFile(fn)
         if lm.isLeoFile(fn) and g.os_path_exists(fn):
-            if zipped:
+            if lm.isZippedFile(fn):
                 theFile = lm.openZipFile(fn)
             else:
                 theFile = lm.openLeoFile(fn)
@@ -3305,7 +3312,7 @@ class LoadManager:
         lm = self
         fn = c.mFileName
         # Re-read the file.
-        theFile = lm.openLeoOrZipFile(fn)
+        theFile = lm.openAnyLeoFile(fn)
         if theFile:
             c.fileCommands.initIvars()
             c.fileCommands.getLeoFile(theFile, fn, checkOpenFiles=False)
@@ -3420,7 +3427,7 @@ class RecentFilesManager:
         rf = self
         menu = c.frame.menu
         recentFilesMenu = menu.getMenu(self.recentFilesMenuName)
-        if not recentFilesMenu and not g.unitTesting:
+        if not recentFilesMenu:
             return
         # Delete all previous entries.
         menu.deleteRecentFilesMenuItems(recentFilesMenu)

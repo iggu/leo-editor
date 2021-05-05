@@ -8,16 +8,14 @@ import itertools
 import os
 import re
 import sys
+import tabnanny  # for Check Python command # Does not exist in jython
 import time
 import tokenize  # for c.checkAllPythonCode
-try:
-    import tabnanny  # for Check Python command # Does not exist in jython
-except ImportError:
-    tabnanny = None
+from typing import List
 from leo.core import leoGlobals as g
 from leo.core import leoNodes
-    # The leoCommands ctor now does most leo.core.leo* imports.
-    # This breaks circular dependencies.
+    # The leoCommands ctor now does most leo.core.leo* imports,
+    # thereby breaking circular dependencies.
 #@-<< imports >>
 
 def cmd(name):
@@ -25,7 +23,7 @@ def cmd(name):
     return g.new_cmd_decorator(name, ['c',])
 
 #@+others
-#@+node:ekr.20160514120615.1: ** class Commands (object)
+#@+node:ekr.20160514120615.1: ** class Commands
 class Commands:
     """
     A per-outline class that implements most of Leo's commands. The
@@ -103,8 +101,6 @@ class Commands:
             # True: disable path changed message in at.WriteAllHelper.
         self.inCommand = False
             # Interlocks to prevent premature closing of a window.
-        self.isZipped = False
-            # Set by g.openWithFileName.
         self.outlineToNowebDefaultFileName = "noweb.nw"
             # For Outline To Noweb dialog.
         # For tangle/untangle
@@ -312,7 +308,6 @@ class Commands:
         from leo.core import leoPrinting
         from leo.core import leoRst
         from leo.core import leoShadow
-        from leo.core import leoTangle
         from leo.core import leoTest
         from leo.core import leoUndo
         from leo.core import leoVim
@@ -328,7 +323,6 @@ class Commands:
         self.persistenceController  = leoPersistence.PersistenceDataController(c)
         self.printingController     = leoPrinting.PrintingController(c)
         self.rstCommands            = leoRst.RstCommands(c)
-        self.tangleCommands         = leoTangle.TangleCommands(c)
         self.testManager            = leoTest.TestManager(c)
         self.vimCommands            = leoVim.VimCommands(c)
         # User commands
@@ -371,7 +365,6 @@ class Commands:
             self.rstCommands,
             self.shadowController,
             self.spellCommands,
-            self.tangleCommands,
             self.testManager,
             self.vimCommands,
             self.undoer,
@@ -1290,7 +1283,7 @@ class Commands:
         if current and p.v == current.v:
             w = c.frame.body.wrapper
             w.setAllText(s)
-            v.setSelection(0,0)
+            v.setSelection(0, 0)
             c.recolor()
         # Keep the body text in the VNode up-to-date.
         if v.b != s:
@@ -1408,25 +1401,6 @@ class Commands:
 
     topVnode = topPosition
     setTopVnode = setTopPosition
-    #@+node:ekr.20031218072017.3404: *5* c.trimTrailingLines
-    def trimTrailingLines(self, p):
-        """Trims trailing blank lines from a node.
-
-        It is surprising difficult to do this during Untangle."""
-        ### c = self
-        body = p.b
-        lines = body.split('\n')
-        i = len(lines) - 1; changed = False
-        while i >= 0:
-            line = lines[i]
-            j = g.skip_ws(line, 0)
-            if j + 1 == len(line):
-                del lines[i]
-                i -= 1; changed = True
-            else: break
-        if changed:
-            p.b = ''.join(body) + '\n'  # Add back one last newline.
-            # Don't set the dirty bit: it would just be annoying.
     #@+node:ekr.20171124081419.1: *3* c.Check Outline...
     #@+node:ekr.20141024211256.22: *4* c.checkGnxs
     def checkGnxs(self):
@@ -1609,8 +1583,10 @@ class Commands:
     #@+node:ekr.20031218072017.1760: *4* c.checkMoveWithParentWithWarning & c.checkDrag
     #@+node:ekr.20070910105044: *5* c.checkMoveWithParentWithWarning
     def checkMoveWithParentWithWarning(self, root, parent, warningFlag):
-        """Return False if root or any of root's descendents is a clone of
-        parent or any of parents ancestors."""
+        """
+        Return False if root or any of root's descendents is a clone of parent
+        or any of parents ancestors.
+        """
         c = self
         message = "Illegal move or drag: no clone may contain a clone of itself"
         clonedVnodes = {}
@@ -1670,12 +1646,12 @@ class Commands:
     # This code is no longer used by any Leo command,
     # but it will be retained for use of scripts.
     #@+node:ekr.20040723094220.1: *4* c.checkAllPythonCode
-    def checkAllPythonCode(self, event=None, unittest=False, ignoreAtIgnore=True):
+    def checkAllPythonCode(self, event=None, unittestFlag=False, ignoreAtIgnore=True):
         """Check all nodes in the selected tree for syntax and tab errors."""
         c = self; count = 0; result = "ok"
         for p in c.all_unique_positions():
             count += 1
-            if not unittest:
+            if not unittestFlag:
                 #@+<< print dots >>
                 #@+node:ekr.20040723094220.2: *5* << print dots >>
                 if count % 100 == 0:
@@ -1688,29 +1664,29 @@ class Commands:
                     not ignoreAtIgnore or not g.scanForAtIgnore(c, p)
                 ):
                     try:
-                        c.checkPythonNode(p, unittest)
+                        c.checkPythonNode(p, unittestFlag)
                     except(SyntaxError, tokenize.TokenError, tabnanny.NannyNag):
                         result = "error"  # Continue to check.
                     except Exception:
                         return "surprise"  # abort
-                    if unittest and result != "ok":
+                    if unittestFlag and result != "ok":
                         g.pr(f"Syntax error in {p.h}")
                         return result  # End the unit test: it has failed.
-        if not unittest:
+        if not unittestFlag:
             g.blue("check complete")
         return result
     #@+node:ekr.20040723094220.3: *4* c.checkPythonCode
     def checkPythonCode(self, event=None,
-        unittest=False, ignoreAtIgnore=True,
+        unittestFlag=False, ignoreAtIgnore=True,
         suppressErrors=False, checkOnSave=False
     ):
         """Check the selected tree for syntax and tab errors."""
         c = self; count = 0; result = "ok"
-        if not unittest:
+        if not unittestFlag:
             g.es("checking Python code   ")
         for p in c.p.self_and_subtree():
             count += 1
-            if not unittest and not checkOnSave:
+            if not unittestFlag and not checkOnSave:
                 #@+<< print dots >>
                 #@+node:ekr.20040723094220.4: *5* << print dots >>
                 if count % 100 == 0:
@@ -1721,17 +1697,17 @@ class Commands:
             if g.scanForAtLanguage(c, p) == "python":
                 if not ignoreAtIgnore or not g.scanForAtIgnore(c, p):
                     try:
-                        c.checkPythonNode(p, unittest, suppressErrors)
+                        c.checkPythonNode(p, unittestFlag, suppressErrors)
                     except(SyntaxError, tokenize.TokenError, tabnanny.NannyNag):
                         result = "error"  # Continue to check.
                     except Exception:
                         return "surprise"  # abort
-        if not unittest:
+        if not unittestFlag:
             g.blue("check complete")
         # We _can_ return a result for unit tests because we aren't using doCommand.
         return result
     #@+node:ekr.20040723094220.5: *4* c.checkPythonNode
-    def checkPythonNode(self, p, unittest=False, suppressErrors=False):
+    def checkPythonNode(self, p, unittestFlag=False, suppressErrors=False):
         c = self; h = p.h
         # Call getScript to ignore directives and section references.
         body = g.getScript(c, p.copy())
@@ -1739,20 +1715,20 @@ class Commands:
         try:
             fn = f"<node: {p.h}>"
             compile(body + '\n', fn, 'exec')
-            c.tabNannyNode(p, h, body, unittest, suppressErrors)
+            c.tabNannyNode(p, h, body, unittestFlag, suppressErrors)
         except SyntaxError:
             if not suppressErrors:
                 g.warning(f"Syntax error in: {h}")
                 g.es_exception(full=False, color="black")
-            if unittest: raise
+            if unittestFlag: raise
         except Exception:
             g.es_print('unexpected exception')
             g.es_exception()
-            if unittest: raise
+            if unittestFlag: raise
     #@+node:ekr.20040723094220.6: *4* c.tabNannyNode
     # This code is based on tabnanny.check.
 
-    def tabNannyNode(self, p, headline, body, unittest=False, suppressErrors=False):
+    def tabNannyNode(self, p, headline, body, unittestFlag=False, suppressErrors=False):
         """Check indentation using tabnanny."""
         # c = self
         try:
@@ -1763,13 +1739,13 @@ class Commands:
             if not suppressErrors:
                 g.warning("IndentationError in", headline)
                 g.es('', msg)
-            if unittest: raise
+            if unittestFlag: raise
         except tokenize.TokenError:
             junk, msg, junk = sys.exc_info()
             if not suppressErrors:
                 g.warning("TokenError in", headline)
                 g.es('', msg)
-            if unittest: raise
+            if unittestFlag: raise
         except tabnanny.NannyNag:
             junk, nag, junk = sys.exc_info()
             if not suppressErrors:
@@ -1780,11 +1756,11 @@ class Commands:
                 g.es(message)
                 line2 = repr(str(line))[1:-1]
                 g.es("offending line:\n", line2)
-            if unittest: raise
+            if unittestFlag: raise
         except Exception:
             g.trace("unexpected exception")
             g.es_exception()
-            if unittest: raise
+            if unittestFlag: raise
     #@+node:ekr.20171123200644.1: *3* c.Convenience methods
     #@+node:ekr.20171123135625.39: *4* c.getTime
     def getTime(self, body=True):
@@ -1998,7 +1974,7 @@ class Commands:
                 languages.add(word)
         return len(list(languages)) > 1
     #@+node:ekr.20080922124033.5: *4* c.os_path_finalize and c.os_path_finalize_join (deprecated)
-    deprecated_messages = []
+    deprecated_messages: List[str] = []
 
     def os_path_finalize(self, path, **keys):
         """
@@ -2088,8 +2064,9 @@ class Commands:
                 base = g.app.loadDir
             elif base and base == ".":
                 base = c.openDirectory
-        base = c.expand_path_expression(base)  # #1341:
-        absbase = g.os_path_finalize_join(g.app.loadDir, base)  # #1341:
+        base = c.expand_path_expression(base)  # #1341.
+        base = g.os_path_expanduser(base)  # #1889.
+        absbase = g.os_path_finalize_join(g.app.loadDir, base)  # #1341.
         # Step 2: look for @path directives.
         paths = []
         for d in aList:
@@ -2101,6 +2078,7 @@ class Commands:
                 path = g.stripPathCruft(path)
                 if path and not warning:
                     path = c.expand_path_expression(path)  # #1341.
+                    path = g.os_path_expanduser(path)  # #1889.
                     paths.append(path)
                 # We will silently ignore empty @path directives.
         # Add absbase and reverse the list.
@@ -2164,7 +2142,7 @@ class Commands:
             val = val.replace('\\', '/')
         return val
     #@+node:ekr.20190921130036.2: *4* c.replace_path_expression
-    replace_errors = []
+    replace_errors: List[str] = []
 
     def replace_path_expression(self, expr):
         """ local function to replace a single path expression."""
@@ -2215,8 +2193,8 @@ class Commands:
                 # We will use the (weird) key value for, say, Ctrl-s,
                 # if there is no binding for Ctrl-s.
         if not isinstance(event, leoGui.LeoKeyEvent):
-            if g.app.gui.guiName() not in ('console', 'curses'):
-                g.trace(f"not leo event: {event!r}, callers: {g.callers()}")
+            if g.app.gui.guiName() not in ('browser', 'console', 'curses'):  # #1839.
+                g.trace(f"not leo event: {event!r}, callers: {g.callers(8)}")
         if expected != got:
             g.trace(f"stroke: {stroke!r}, expected char: {expected!r}, got: {got!r}")
     #@+node:ekr.20031218072017.2817: *4* c.doCommand
@@ -2241,8 +2219,9 @@ class Commands:
             g.blue(c.disableCommandsMessage)
             return None
         if c.exists and c.inCommand and not g.unitTesting:
-            g.app.commandInterruptFlag = True
-            g.error('ignoring command: already executing a command.')
+            g.app.commandInterruptFlag = True  # For sc.make_slide_show_command.
+            # 1912: This message is annoying and unhelpful.
+            # g.error('ignoring command: already executing a command.')
             return None
         g.app.commandInterruptFlag = False
         if not g.doHook("command1", c=c, p=p, label=command_name):
@@ -3795,7 +3774,7 @@ class Commands:
         else:
             g.es_print(f"Does not exist: {dir_}")
     #@+node:ekr.20171124084149.1: *3* c.Scripting utils
-    #@+node:ekr.20160201072634.1: *4* c.cloneFindByPredicated
+    #@+node:ekr.20160201072634.1: *4* c.cloneFindByPredicate
     def cloneFindByPredicate(self,
         generator,  # The generator used to traverse the tree.
         predicate,  # A function of one argument p, returning True
@@ -3938,7 +3917,7 @@ class Commands:
 
         See "Theory of operation of c.deletePositionsInList" in LeoDocs.leo.
         """
-        # New implementation by Vitalije 2020-03-17 17:29 
+        # New implementation by Vitalije 2020-03-17 17:29
         c = self
         # Ensure all positions are valid.
         aList = [p for p in aList if c.positionExists(p)]
@@ -3949,7 +3928,7 @@ class Commands:
             parent_v = p.stack[-1][0] if p.stack else c.hiddenRootNode
             return p._childIndex, parent_v
 
-        links_to_be_cut = sorted(set(map(p2link, aList)), key=lambda x:-x[0])
+        links_to_be_cut = sorted(set(map(p2link, aList)), key=lambda x: -x[0])
         undodata = []
         for i, v in links_to_be_cut:
             ch = v.children.pop(i)

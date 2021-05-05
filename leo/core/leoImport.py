@@ -11,21 +11,23 @@ import os
 import re
 import time
 import urllib
-# Required so the unit test that simulates an @auto leoImport.py will work!
-from leo.core import leoGlobals as g
-from leo.core import leoNodes
+#
 # Third-party imports.
 try:
     import docutils
     import docutils.core
-    # print('leoImport.py:',docutils)
 except ImportError:
-    docutils = None
     # print('leoImport.py: can not import docutils')
+    docutils = None  # type: ignore
 try:
-    import lxml.html
+    import lxml
 except ImportError:
     lxml = None
+#
+# Leo imports...
+from leo.core import leoGlobals as g
+from leo.core import leoNodes
+#
 # Abbreviation.
 StringIO = io.StringIO
 #@-<< imports >>
@@ -105,6 +107,9 @@ class FreeMindImporter:
     #@+node:ekr.20160504043823.1: *3* freemind.prompt_for_files
     def prompt_for_files(self):
         """Prompt for a list of FreeMind (.mm.html) files and import them."""
+        if not lxml:
+            g.trace("FreeMind importer requires lxml")
+            return
         c = self.c
         types = [
             ("FreeMind files", "*.mm.html"),
@@ -548,7 +553,7 @@ class LeoImportCommands:
                     g.es("created:", newFileName)
             except Exception:
                 g.es("exception creating:", newFileName)
-                g.es_print_exception()
+                g.print_exception()
             #@-<< Write s into newFileName >>
         return None
     #@+node:ekr.20031218072017.3303: *4* ic.removeSentinelLines
@@ -604,7 +609,7 @@ class LeoImportCommands:
                         f.write(s.rstrip() + nl)
         except Exception:
             g.es("exception opening:", filename)
-            g.es_print_exception()
+            g.print_exception()
     #@+node:ekr.20031218072017.3209: *3* ic.Import
     #@+node:ekr.20031218072017.3210: *4* ic.createOutline & helpers
     def createOutline(self,
@@ -849,10 +854,7 @@ class LeoImportCommands:
         Import a list of .mm.html files exported from FreeMind:
         http://freemind.sourceforge.net/wiki/index.php/Main_Page
         """
-        if lxml:
-            FreeMindImporter(self.c).import_files(files)
-        else:
-            g.es_print('can not import lxml.html')
+        FreeMindImporter(self.c).import_files(files)
     #@+node:ekr.20160503125219.1: *4* ic.importMindMap
     def importMindMap(self, files):
         """
@@ -1177,7 +1179,7 @@ class LeoImportCommands:
     def cSharpUnitTest(self, p, fileName=None, s=None, showTree=False):
         return self.scannerUnitTest(
             p, fileName=fileName, s=s, showTree=showTree, ext='.c#')
-            
+
     def cythonUnitTest(self, p, fileName=None, s=None, showTree=False):
         return self.scannerUnitTest(
             p, fileName=fileName, s=s, showTree=showTree, ext='.pyx')
@@ -1246,6 +1248,8 @@ class LeoImportCommands:
         if docutils:
             return self.scannerUnitTest(
                 p, fileName=fileName, s=s, showTree=showTree, ext='.rst')
+
+        # print('leoImport.py: can not import docutils')
         return None
 
     def textUnitTest(self, p, fileName=None, s=None, showTree=False):
@@ -1768,7 +1772,6 @@ class RecursiveImportController:
     #@+others
     #@+node:ekr.20130823083943.12615: *3* ric.ctor
     def __init__(self, c, kind,
-        # force_at_others = False, #tag:no-longer-used
         add_context=None,  # Override setting only if True/False
         add_file_context=None,  # Override setting only if True/False
         add_path=True,
@@ -1780,10 +1783,8 @@ class RecursiveImportController:
         """Ctor for RecursiveImportController class."""
         self.c = c
         self.add_path = add_path
-        self.file_pattern = re.compile(r'^(([@])+(auto|clean|edit|file|nosent))')
-        self.kind = kind
-            # in ('@auto', '@clean', '@edit', '@file', '@nosent')
-        # self.force_at_others = force_at_others #tag:no-longer-used
+        self.file_pattern = re.compile(r'^(@@|@)(auto|clean|edit|file|nosent)')
+        self.kind = kind  # in ('@auto', '@clean', '@edit', '@file', '@nosent')
         self.recursive = recursive
         self.root = None
         self.safe_at_file = safe_at_file
@@ -1795,7 +1796,7 @@ class RecursiveImportController:
             if val not in (True, False):
                 return
             c.config.set(None, 'bool', setting, val, warn=True)
-            
+
         set_bool('add-context-to-headlines', add_context)
         set_bool('add-file-context-to-headlines', add_file_context)
     #@+node:ekr.20130823083943.12613: *3* ric.run & helpers
@@ -1884,7 +1885,7 @@ class RecursiveImportController:
         assert parent and parent.v != self.root.v, g.callers()
         if self.kind == '@edit':
             p = parent.insertAsLastChild()
-            p.v.h = path.replace('\\', '/')
+            p.v.h = '@edit ' + path.replace('\\', '/')  # 2021/02/19: bug fix: add @edit.
             s, e = g.readFileIntoString(path, kind=self.kind)
             p.v.b = s
             return
@@ -2182,7 +2183,7 @@ class TabImporter:
     #@-others
 #@+node:ekr.20200310060123.1: ** class ToDoImporter
 class ToDoImporter:
-    
+
     def __init__(self, c):
         self.c = c
 
@@ -2216,7 +2217,7 @@ class ToDoImporter:
                 with open(path, 'r') as f:
                     contents = f.read()
                     tasks = self.parse_file_contents(contents)
-                    d [path] = tasks
+                    d[path] = tasks
             except Exception:
                 print(f"unexpected exception in {tag}")
                 g.es_exception()
@@ -2229,7 +2230,7 @@ class ToDoImporter:
     task_s = r'\s*(.+)'
     line_s = fr"^{mark_s}?{priority_s}?{date_s}?{date_s}?{task_s}$"
     line_pat = re.compile(line_s)
-        
+
     def parse_file_contents(self, s):
         """
         Parse the contents of a file.
@@ -2514,14 +2515,14 @@ class LegacyExternalFileImporter:
     """
     # Sentinels to ignore, without the leading comment delim.
     ignore = ('@+at', '@-at', '@+leo', '@-leo', '@nonl', '@nl', '@-others')
-    
+
     def __init__(self, c):
         self.c = c
-    
+
     #@+others
     #@+node:ekr.20200424093946.1: *3* class Node
     class Node:
-        
+
         def __init__(self, h, level):
             """Hold node data."""
             self.h = h.strip()
@@ -2572,7 +2573,7 @@ class LegacyExternalFileImporter:
         stack = []  # A stack of nodes.
         for line in g.splitLines(s):
             s = line.lstrip()
-            lws = line[:len(line) - len(line.lstrip())]
+            lws = line[: len(line) - len(line.lstrip())]
             if s.startswith(delim1 + '@@'):
                 self.add(lws + s[2:], stack)
             elif s.startswith(ignore):
@@ -2591,7 +2592,7 @@ class LegacyExternalFileImporter:
                 if stack:
                     h = s[8:]
                     i = h.find(':')
-                    h = h[i+1:] if ':' in h else h
+                    h = h[i + 1 :] if ':' in h else h
                 else:
                     h = root_h
                 # Create a node and push it.
@@ -2619,12 +2620,12 @@ class LegacyExternalFileImporter:
                 root.h = root_h
                 root.b = b
             else:
-                parent = stack[level-1]
+                parent = stack[level - 1]
                 p = parent.insertAsLastChild()
                 p.b = b
                 p.h = node.h
                 # Good for debugging.
-                # p.h = f"{level} {node.h}"  
+                # p.h = f"{level} {node.h}"
                 stack = stack[:level] + [p]
         c.selectPosition(root)
         root.expand()  # c.expandAllSubheads()
@@ -2657,25 +2658,13 @@ class LegacyExternalFileImporter:
     #@-others
 #@+node:ekr.20101103093942.5938: ** Commands (leoImport)
 #@+node:ekr.20160504050255.1: *3* @g.command(import-free-mind-files)
-if lxml:
+@g.command('import-free-mind-files')
+def import_free_mind_files(event):
+    """Prompt for free-mind files and import them."""
+    c = event.get('c')
+    if c:
+        FreeMindImporter(c).prompt_for_files()
 
-    @g.command('import-free-mind-files')
-    def import_free_mind_files(event):
-        """Prompt for free-mind files and import them."""
-        c = event.get('c')
-        if c:
-            FreeMindImporter(c).prompt_for_files()
-
-else:
-
-    @g.command('import-free-mind-files')
-    def import_free_mind_files(event):
-        """
-        Prompt for free-mind files and import them.
-        
-        This command is disabled.  Please install lxml:
-        https://lxml.de/installation.html
-        """
 #@+node:ekr.20200424154303.1: *3* @g.command(import-legacy-external-file)
 @g.command('import-legacy-external-files')
 def import_legacy_external_files(event):

@@ -2,6 +2,7 @@
 #@+node:ekr.20170428084208.68: * @file ../external/npyscreen/wgmultiline.py
 #!/usr/bin/python
 # pylint: disable=no-member
+# type: ignore
 import collections
 import copy
 import curses
@@ -502,7 +503,7 @@ class MultiLine(widget.Widget):
         searchingfor = chr(input).upper()
         for counter in range(len(self.values)):
             try:
-                if self.values[counter].find(searchingfor) is not -1:
+                if self.values[counter].find(searchingfor) != -1:
                     self.cursor_line = counter
                     break
             except AttributeError:

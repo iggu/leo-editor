@@ -15,44 +15,25 @@ import logging
 import logging.handlers
 import os
 import sys
+import tabnanny
 import time
 import timeit
 import tokenize
 import unittest
-try:
-    import tabnanny  # Does not exist in jython.
-except ImportError:
-    tabnanny = None
 from leo.core import leoGlobals as g
 from leo.core import leoGui  # For UnitTestGui.
 #@-<< imports >>
-if g.app:  # Make sure we can import this module stand-alone.
-    newAtFile = g.app.pluginsController.isLoaded("___proto_atFile")
-else:
-    newAtFile = False
 #@+others
 #@+node:ekr.20200219074036.1: ** Top-level functions
 #@+node:ekr.20051104075904.17: *3* function: runGC & helpers
 lastObjectCount = 0
-lastObjectsDict = {}
-lastTypesDict = {}
-lastFunctionsDict = {}
-# Adapted from similar code in leoGlobals.g.
 
-def runGc(disable=False):
-    message = "runGC"
-    if gc is None:
-        g.pr("@gc: can not import gc")
-        return
+def runGC():
     gc.enable()
     set_debugGc()
     gc.collect()
-    printGc(message=message)
-    if disable:
-        gc.disable()
-    # makeObjectList(message)
-
-runGC = runGc
+    printGc()
+    gc.disable()
 #@+node:ekr.20051104075904.18: *4* enableGc
 def set_debugGc():
     gc.set_debug(
@@ -62,76 +43,30 @@ def set_debugGc():
         # gc.DEBUG_UNCOLLECTABLE
         # gc.DEBUG_SAVEALL
     )
-#@+node:ekr.20051104075904.19: *4* makeObjectList
-def makeObjectList(message):
-    # WARNING: this id trick is not proper:
-    # newly allocated objects can have the same address as old objects.
-    global lastObjectsDict
-    objects = gc.get_objects()
-    newObjects = [o for o in objects if not id(o) in lastObjectsDict]
-    lastObjectsDict = {}
-    for o in objects:
-        lastObjectsDict[id(o)] = o
-    g.pr(
-        f"{message:25}: {len(newObjects):d} new, "
-        f"{len(objects):d} total objects")
 #@+node:ekr.20051104075904.20: *4* printGc
-def printGc(message=None):
-    """Called from unit tests."""
-    if not message:
-        message = g.callers(2)
+def printGc():
+    """Print a summary of GC statistics."""
     global lastObjectCount
     n = len(gc.garbage)
     n2 = len(gc.get_objects())
     delta = n2 - lastObjectCount
-    g.pr('-' * 30)
-    g.pr(f"garbage: {n}")
-    g.pr(f"{delta:6d} = {n2:7d} totals")
-    #@+<< print number of each type of object >>
-    #@+node:ekr.20051104075904.21: *5* << print number of each type of object >>
-    global lastTypesDict
-    typesDict = {}
+    print('-' * 30)
+    print(f"garbage: {n}")
+    print(f"{delta:6d} = {n2:7d} totals")
+    # print number of each type of object.
+    count, d = 0, {}
     for obj in gc.get_objects():
-        n = typesDict.get(type(obj), 0)
-        typesDict[type(obj)] = n + 1
-    # Create the union of all the keys.
-    keys = {}
-    for key in lastTypesDict:
-        if key not in typesDict:
-            keys[key] = None
-    for key in sorted(keys):
-        n1 = lastTypesDict.get(key, 0)
-        n2 = typesDict.get(key, 0)
-        delta2 = n2 - n1
-        if delta2 != 0:
-            g.pr(f"{delta2:+6d} = {n2:7d} {key}")
-    lastTypesDict = typesDict
-    typesDict = {}
-    #@-<< print number of each type of object >>
-    if 0:
-        #@+<< print added functions >>
-        #@+node:ekr.20051104075904.22: *5* << print added functions >>
-        import types
-        import inspect
-        global lastFunctionsDict
-        funcDict = {}
-        for obj in gc.get_objects():
-            if isinstance(obj, types.FunctionType):
-                key = repr(obj)  # Don't create a pointer to the object!
-                funcDict[key] = None
-                if key not in lastFunctionsDict:
-                    g.pr('\n', obj)
-                    args, varargs, varkw, defaults = inspect.signature(obj)
-                    g.pr("args", args)
-                    if varargs: g.pr("varargs", varargs)
-                    if varkw: g.pr("varkw", varkw)
-                    if defaults:
-                        g.pr("defaults...")
-                        for s in defaults: g.pr(s)
-        lastFunctionsDict = funcDict
-        funcDict = {}
-        #@-<< print added functions >>
-    lastObjectCount = n2
+        key = str(type(obj))
+        n = d.get(key, 0)
+        d[key] = n + 1
+        count += 1
+    print(f"{count:7} objects...")
+    # Invert the dict.
+    d2 = {v: k for k, v in d.items()}
+    for key in reversed(sorted(d2.keys())):
+        val = d2.get(key)
+        print(f"{key:7} {val}")
+    lastObjectCount = count
     return delta
 #@+node:ekr.20051104075904.23: *4* printGcRefs
 def printGcRefs(verbose=True):
@@ -235,7 +170,7 @@ class EditBodyTestCase(unittest.TestCase):
         try:
             return f"EditBodyTestCase: {self.parent.h}"
         except Exception:
-            g.es_print_exception()
+            g.print_exception()
             return "EditBodyTestCase"
     #@+node:ekr.20051104075904.76: *3* tearDown
     def tearDown(self):
@@ -502,7 +437,7 @@ class LinterTable():
             'leofts.py',  # Not (yet) in leoPlugins.leo.
             'qtGui.py',  # Dummy file
             'qt_main.py',  # Created automatically.
-            'viewrendered2.py', # To be removed.
+            'viewrendered2.py',  # To be removed.
             'rst3.py',  # Obsolete
         ]
         remove = [g.os_path_finalize_join(self.loadDir, 'plugins', fn) for fn in remove]
@@ -699,7 +634,7 @@ class TestManager:
             g.unitTesting = g.app.unitTesting = False
             c.contractAllHeadlines()
             c.redraw(p1)
-    #@+node:ekr.20170504130531.1: *5* class LoggingLog
+    #@+node:ekr.20170504130531.1: *5* class LoggingLog (leoTest.py)
     class LoggingStream:
         """A class that can searve as a logging stream."""
 
@@ -907,7 +842,7 @@ class TestManager:
                 return None
         except Exception:
             print(f"\n{fname}: exception creating test class in {p.h}")
-            g.es_print_exception()
+            g.print_exception()
             return None
         return None
     #@+node:ekr.20051104075904.12: *5* tm.makeTestSuite
@@ -939,7 +874,7 @@ class TestManager:
             return suite
         except Exception:
             print(f"\n{fname}: exception creating test cases for {p.h}")
-            g.es_print_exception()
+            g.print_exception()
             return None
     #@+node:ekr.20070627135407: *4* TM.runTestsExternally (external tests)
     def runTestsExternally(self, all, marked):
@@ -1366,13 +1301,13 @@ class TestManager:
         except SyntaxError:
             if not suppress:
                 g.warning("syntax error in:", fileName)
-                g.es_print_exception(full=True, color="black")
+                g.print_exception(full=True, color="black")
             if reraise: raise
             return False
         except Exception:
             if not suppress:
                 g.warning("unexpected error in:", fileName)
-                # g.es_print_exception(full=False,color="black")
+                # g.print_exception(full=False,color="black")
             if reraise: raise
             return False
     #@+node:ekr.20051104075904.94: *4* TM.checkFileTabs
@@ -1397,7 +1332,7 @@ class TestManager:
             assert 0, "test failed"
         except Exception:
             g.trace("unexpected exception")
-            g.es_print_exception()
+            g.print_exception()
             assert 0, "test failed"
     #@+node:ekr.20051104075904.40: *4* TM.compareIgnoringNodeNames
     def compareIgnoringNodeNames(self, s1, s2, delims, verbose=False):
@@ -1545,7 +1480,7 @@ class TestManager:
                         p.moveToThreadNext()
         # Special case 0:
         # Look backward for the first @testsetup node.
-        if not any([tm.isTestSetupNode(z) for z in result]):
+        if not any(tm.isTestSetupNode(z) for z in result):
             p2 = p.threadBack()
             while p2:
                 if tm.isTestSetupNode(p2):
@@ -1603,7 +1538,7 @@ class TestManager:
             h = headline.strip().lower()
             if p.h.strip().lower() == h:
                 return p.copy()
-        if False and breakOnError:  # useful for debugging.
+        if False and breakOnError:
             aList = [repr(z.copy()) for z in c.p.parent().self_and_siblings()]
             print('\n'.join(aList))
         return None
@@ -1734,29 +1669,6 @@ class TestManager:
     #@+node:ekr.20051104075904.95: *4* TM.throwAssertionError
     def throwAssertionError(self):
         assert 0, 'assert(0) as a test of catching assertions'
-    #@+node:ekr.20051104075904.37: *4* TM.writeNodesToNode
-    def writeNodesToNode(self, c, p, output, sentinels=True):
-        result = []
-        for p2 in p.self_and_subtree():
-            s = self.writeNodeToString(c, p2, sentinels)
-            result.append(s)
-        result = ''.join(result)
-        output.scriptSetBodyString(result)
-    #@+node:ekr.20051104075904.38: *4* TM.writeNodeToNode
-    def writeNodeToNode(self, c, p, output, sentinels=True):
-        """Write the p's tree to the body text of the output node."""
-        s = self.writeNodeToString(c, p, sentinels)
-        output.scriptSetBodyString(s)
-    #@+node:ekr.20051104075904.39: *4* TM.writeNodeToString
-    def writeNodeToString(self, c, p, sentinels):
-        """Return an AtFile.write of p's tree to a string."""
-        at = c.atFileCommands
-        ni = g.app.nodeIndices
-        for p2 in p.self_and_subtree():
-            if not p2.v.fileIndex:
-                p2.v.fileIndex = ni.getNewIndex(p2.v)
-        # Write the file to a string.
-        return at.atFileToString(p, sentinels=sentinels)
     #@-others
 #@-others
 #@@language python

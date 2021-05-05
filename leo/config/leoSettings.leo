@@ -89,12 +89,38 @@
 </v>
 <v t="ekr.20200226103829.1"><vh>Deleted settings</vh>
 <v t="ekr.20190915192551.1"><vh>blacken command settings (no longer used)</vh>
-<v t="ekr.20190915192702.1"><vh>@bool black-keep-comment-indentation = True</vh></v>
-<v t="ekr.20190915192705.1"><vh>@bool black-string-normalization = False</vh></v>
-<v t="ekr.20190915192705.2"><vh>@int black-line-length = 88</vh></v>
+<v t="ekr.20190915192702.1"><vh>@@bool black-keep-comment-indentation = True</vh></v>
+<v t="ekr.20190915192705.1"><vh>@@bool black-string-normalization = False</vh></v>
+<v t="ekr.20190915192705.2"><vh>@@int black-line-length = 88</vh></v>
 </v>
-<v t="ekr.20141010095448.19779"><vh>@bool beautify-keep-comment-indentation = True</vh></v>
-<v t="ekr.20110510071925.14590"><vh>@@@bool use_codewise = False</vh></v>
+<v t="ekr.20141010095448.19779"><vh>@@bool beautify-keep-comment-indentation = True</vh></v>
+<v t="ekr.20110510071925.14590"><vh>@@bool use_codewise = False</vh></v>
+<v t="ekr.20200227181439.1"><vh>@@bool find-def-creates-clones = False</vh></v>
+<v t="ekr.20210327192658.1"><vh>rst No longer used</vh>
+<v t="ekr.20071213060514.1"><vh>rst3 mode options</vh>
+<v t="ekr.20071213061923"><vh>@bool rst3-code-mode = False</vh></v>
+<v t="ekr.20071213061923.1"><vh>@bool rst3-doc-only-mode = False</vh></v>
+</v>
+<v t="ekr.20071213060514.2"><vh>rst3 formatting options</vh>
+<v t="ekr.20071213061811"><vh>@bool rst3-number-code-lines = True</vh></v>
+<v t="ekr.20071213061930.1"><vh>@bool rst3-show-headlines = True</vh></v>
+<v t="ekr.20071213061930.3"><vh>@bool rst3-show-options-nodes = False</vh></v>
+<v t="ekr.20071213061930.2"><vh>@bool rst3-show-organizer-nodes = True</vh></v>
+<v t="ekr.20071213061930.4"><vh>@bool rst3-strip-at-file-prefixes = True</vh></v>
+</v>
+<v t="ekr.20071213061923.3"><vh>rst3 formatting options (code mode only)</vh>
+<v t="ekr.20071213062019"><vh>@bool rst3-show-doc-parts-as-paragraphs = False</vh></v>
+<v t="ekr.20071213062019.1"><vh>@bool rst3-show-leo-directives = True</vh></v>
+<v t="ekr.20071213062019.2"><vh>@bool rst3-show-markup-doc-parts = False</vh></v>
+<v t="ekr.20071213062019.3"><vh>@bool rst3-show-options-doc-parts = False</vh></v>
+<v t="ekr.20090430173906.1"><vh>@@string rst3_code_block_string = \n.. class:: code\n..\n\n::\n</vh></v>
+</v>
+<v t="ekr.20210327193058.1"><vh>rst3 http options</vh>
+<v t="ekr.20071213061454"><vh>@bool rst3-clear-http-attributes = False</vh></v>
+<v t="ekr.20071213061454.2"><vh>@string rst3-http-attributename = rst-http-attribute</vh></v>
+</v>
+<v t="ekr.20071213061923.2"><vh>@bool rst3-generate-rst = True</vh></v>
+</v>
 </v>
 <v t="ekr.20200226104131.1"><vh>Future settings</vh>
 <v t="ekr.20190926110217.1"><vh>@string adoc-base-directory = None</vh></v>
@@ -509,7 +535,6 @@
 <v t="ekr.20070318065601"><vh>@bool use-chapters = True</vh></v>
 </v>
 <v t="ekr.20041119034357.10"><vh>Command options</vh>
-<v t="ekr.20200227181439.1"><vh>@bool find-def-creates-clones = False</vh></v>
 <v t="ekr.20131112150804.18737"><vh>@bool force-execute-entire-body = False</vh></v>
 <v t="ekr.20111115083813.12518"><vh>@bool indent-added-comments = True</vh></v>
 <v t="ekr.20150227102835.1"><vh>@bool make-node-conflicts-node = True</vh></v>
@@ -561,44 +586,26 @@
 <v t="ekr.20160316112407.8"><vh>@string py2cs-output-directory = ~/py2cs</vh></v>
 </v>
 <v t="ekr.20071213060239"><vh>rst3 command settings</vh>
-<v t="ekr.20071213060239.1"><vh>rst3 http options</vh>
-<v t="ekr.20071213061454"><vh>@bool rst3-clear-http-attributes = False</vh></v>
+<v t="ekr.20210327193736.1"><vh>rst3 reporting options</vh>
+<v t="ekr.20071213061811.2"><vh>@bool rst3-verbose = True</vh></v>
+</v>
+<v t="ekr.20210327193806.1"><vh>rst3 http options</vh>
 <v t="ekr.20071213061454.1"><vh>@bool rst3-http-server-support = False</vh></v>
-<v t="ekr.20071213061454.2"><vh>@string rst3-http-attributename = rst-http-attribute</vh></v>
 <v t="ekr.20071213061454.3"><vh>@string rst3-node-begin-marker = http-node-marker-</vh></v>
 </v>
-<v t="ekr.20071213060239.2"><vh>rst3 path options</vh>
-<v t="ekr.20131027064821.18683"><vh>@string rst3-write-intermediate-extension = .txt</vh></v>
+<v t="ekr.20210327193854.1"><vh>rst3 output options</vh>
 <v t="ekr.20071213061504"><vh>@string rst3-default-path = None</vh></v>
+<v t="ekr.20090430075506.7"><vh>@bool rst3-generate-rst-header-comment = True</vh></v>
+<v t="ekr.20071213061811.1"><vh>@string rst3-underline-characters = #=+*^~`-:&gt;&lt;-</vh></v>
+<v t="ekr.20071213061811.3"><vh>@bool rst3-write-intermediate-file = True</vh></v>
+<v t="ekr.20131027064821.18683"><vh>@string rst3-write-intermediate-extension = .txt</vh></v>
+</v>
+<v t="ekr.20210327194119.1"><vh>rst3 docutils options</vh>
+<v t="ekr.20131009050634.17656"><vh>@bool rst3-call-docutils = True</vh></v>
+<v t="ekr.20210327193418.1"><vh>@bool rst3-stylesheet-embed = False</vh></v>
+<v t="ekr.20071213061504.3"><vh>@string rst3-publish-argv-for-missing-stylesheets = None</vh></v>
 <v t="ekr.20071213061504.1"><vh>@string rst3-stylesheet-name = default.css</vh></v>
 <v t="ekr.20071213061504.2"><vh>@string rst3-stylesheet-path = None</vh></v>
-<v t="ekr.20071213061504.3"><vh>@string rst3-publish-argv-for-missing-stylesheets = None</vh></v>
-</v>
-<v t="ekr.20071213060514"><vh>rst3 global options</vh>
-<v t="ekr.20131009050634.17656"><vh>@bool rst3-call-docutils = True</vh></v>
-<v t="ekr.20071213061811"><vh>@bool rst3-number-code-lines = True</vh></v>
-<v t="ekr.20071213061811.1"><vh>@string rst3-underline-characters = #=+*^~`-:&gt;&lt;-</vh></v>
-<v t="ekr.20071213061811.2"><vh>@bool rst3-verbose = True</vh></v>
-<v t="ekr.20071213061811.3"><vh>@bool rst3-write-intermediate-file = True</vh></v>
-</v>
-<v t="ekr.20071213060514.1"><vh>rst3 mode options</vh>
-<v t="ekr.20071213061923"><vh>@bool rst3-code-mode = False</vh></v>
-<v t="ekr.20071213061923.1"><vh>@bool rst3-doc-only-mode = False</vh></v>
-<v t="ekr.20071213061923.2"><vh>@bool rst3-generate-rst = True</vh></v>
-<v t="ekr.20090430075506.7"><vh>@bool rst3-generate-rst-header-comment = True</vh></v>
-</v>
-<v t="ekr.20071213060514.2"><vh>rst3 formatting options</vh>
-<v t="ekr.20071213061930.1"><vh>@bool rst3-show-headlines = True</vh></v>
-<v t="ekr.20071213061930.2"><vh>@bool rst3-show-organizer-nodes = True</vh></v>
-<v t="ekr.20071213061930.3"><vh>@bool rst3-show-options-nodes = False</vh></v>
-<v t="ekr.20071213061930.4"><vh>@bool rst3-strip-at-file-prefixes = True</vh></v>
-</v>
-<v t="ekr.20071213061923.3"><vh>rst3 formatting options (code mode only)</vh>
-<v t="ekr.20071213062019"><vh>@bool rst3-show-doc-parts-as-paragraphs = False</vh></v>
-<v t="ekr.20071213062019.1"><vh>@bool rst3-show-leo-directives = True</vh></v>
-<v t="ekr.20071213062019.2"><vh>@bool rst3-show-markup-doc-parts = False</vh></v>
-<v t="ekr.20071213062019.3"><vh>@bool rst3-show-options-doc-parts = False</vh></v>
-<v t="ekr.20090430173906.1"><vh>@@string rst3_code_block_string = \n.. class:: code\n..\n\n::\n</vh></v>
 </v>
 </v>
 <v t="ekr.20110611092035.16477"><vh>Undo settings</vh>
@@ -681,7 +688,6 @@
 </v>
 <v t="ekr.20041119034357.20"><vh>Find/replace options</vh>
 <v t="ekr.20141024165714.1"><vh>@bool auto-scroll-find-tab = True</vh></v>
-<v t="ekr.20150629172742.1"><vh>@bool find-ignore-duplicates = False</vh></v>
 <v t="ekr.20131119143342.20107"><vh>@bool minibuffer-find-mode = False</vh></v>
 <v t="tbrown.20151010094807.1"><vh>@bool show-find-result-in-status = True</vh></v>
 <v t="ekr.20150710065036.1"><vh>@bool preload-find-pattern = False</vh></v>
@@ -730,10 +736,10 @@
 <v t="ekr.20180411070112.1"><vh>@bool replace-meta-with-alt = False</vh></v>
 <v t="ekr.20060122105527.8"><vh>@bool showHelpWhenEnteringModes = False</vh></v>
 <v t="ekr.20181018104056.1"><vh>@bool smart-quotes = False</vh></v>
-<v t="ekr.20200518065357.1"><vh>@bool use-german-keyboard = False</vh></v>
 <v t="ekr.20131112161153.4420"><vh>@bool vim-mode = False</vh></v>
 <v t="ekr.20060926161207.1"><vh>@bool warn-about-redefined-shortcuts = True</vh></v>
 <v t="ekr.20181018113612.1"><vh>@string default-editing-state = insert</vh></v>
+<v t="ekr.20210412113510.1"><vh>@string keyboard-kind = default-keyboard</vh></v>
 <v t="ekr.20181018113656.1"><vh>@string top-level-unbound-key-action = insert</vh></v>
 <v t="ekr.20060926161207.2"><vh>@strings  [command,insert, overwrite] top_level_unbound_key_action = insert</vh></v>
 </v>
@@ -1001,8 +1007,9 @@
 <v t="ekr.20131213135427.21832"><vh>@item -</vh></v>
 <v t="ekr.20131213135427.21834"><vh>@item save-file</vh></v>
 <v t="ekr.20131213135427.21835"><vh>@item save-file-as</vh></v>
-<v t="ekr.20131213135427.21836"><vh>@item save-file-as-unzipped</vh></v>
-<v t="ekr.20131213135427.21837"><vh>@item save-file-as-zipped</vh></v>
+<v t="ekr.20131213135427.21837"><vh>@item save-file-as-leojs</vh></v>
+<v t="ekr.20131213135427.21836"><vh>@item save-file-as-xml</vh></v>
+<v t="ekr.20210324162150.1"><vh>@item save-file-as-zipped</vh></v>
 <v t="ekr.20131213135427.21838"><vh>@item save-file-to</vh></v>
 <v t="ekr.20140718064506.18998"><vh>@item -</vh></v>
 <v t="ekr.20180403105112.1"><vh>@menu &amp;Compare/Diff Files</vh>
@@ -1243,7 +1250,6 @@
 </v>
 </v>
 <v t="ekr.20131213135427.22223"><vh>@menu &amp;Format Text</vh>
-<v t="ekr.20131213135427.22224"><vh>@item &amp;code-to-rst</vh></v>
 <v t="ekr.20131213135427.21896"><vh>@item &amp;insert-body-&amp;time</vh></v>
 <v t="ekr.20131213135427.21897"><vh>@item &amp;reformat-paragraph</vh></v>
 <v t="ekr.20131213135427.22225"><vh>@item &amp;rst3</vh></v>
@@ -1282,7 +1288,6 @@
 <v t="ekr.20131213135427.21929"><vh>@item &amp;toggle-find-mark-finds-option</vh></v>
 <v t="ekr.20131213135427.21930"><vh>@item &amp;toggle-find-regex-option</vh></v>
 <v t="ekr.20131213135427.21931"><vh>@item &amp;toggle-find-word-option</vh></v>
-<v t="ekr.20131213135427.21932"><vh>@item &amp;toggle-find-wrap-around-option</vh></v>
 </v>
 <v t="ekr.20180403115410.1"><vh>@menu &amp;Find One Character</vh>
 <v t="ekr.20131213135427.21938"><vh>@item &amp;find-character</vh></v>
@@ -1313,7 +1318,6 @@
 <v t="ekr.20131213135427.22204"><vh>@item show-&amp;fonts</vh></v>
 </v>
 <v t="ekr.20180403122225.1"><vh>@menu &amp;Reload Settings</vh>
-<v t="ekr.20171229135829.1"><vh>@item reload-all-settings</vh></v>
 <v t="ekr.20171229135843.1"><vh>@item reload-settings</vh></v>
 <v t="tbrown.20140814090009.57476"><vh>@item reload-style-sheets</vh></v>
 </v>
@@ -1451,8 +1455,6 @@
 <v t="ekr.20131213135427.22131"><vh>@menu &amp;Control Garbage Collection</vh>
 <v t="ekr.20131213135427.22132"><vh>@item gc-&amp;collect-garbage</vh></v>
 <v t="ekr.20131213135427.22133"><vh>@item gc-dump-&amp;all-objects</vh></v>
-<v t="ekr.20131213135427.22134"><vh>@item gc-dump-&amp;new-objects</vh></v>
-<v t="ekr.20131213135427.22135"><vh>@item gc-dump-objects-&amp;verbose</vh></v>
 <v t="ekr.20131213135427.22136"><vh>@item gc-show-&amp;summary</vh></v>
 </v>
 <v t="ekr.20131213135427.22194"><vh>@menu &amp;Execute Shell Commands</vh>
@@ -2302,6 +2304,8 @@
 </v>
 </v>
 <v t="ekr.20140915194122.23428"></v>
+<v t="ekr.20071213060239"></v>
+<v t="ekr.20210412113510.1"></v>
 </vnodes>
 <tnodes>
 <t tx="TL.20080702085131.2">If True: Save the Leo file and all modified derived files every time the external editor saves a modified file.
@@ -3294,7 +3298,6 @@ replace-string
 search-again
 search-backward
 search-forward
-set-replace-string
 
 Setting find options:
 
@@ -3310,7 +3313,6 @@ toggle-find-mark-changes-option
 toggle-find-mark-finds-option
 toggle-find-regex-option
 toggle-find-word-option
-toggle-find-wrap-around-option
 word-search-backward
 word-search-forward</t>
 <t tx="ekr.20060323131801">True: warn if a command has no setting.</t>
@@ -3358,7 +3360,6 @@ find-character-extend-selection             = None ### = Alt-Shift-P
 
 # To start finds and changes...
 start-search                        = Ctrl-f
-set-replace-string                  = None # Ctrl-Shift-r
 find-tab-hide                       = None
 find-tab-open                       = None
 
@@ -3369,7 +3370,6 @@ isearch-forward                     = Alt-I # Alt-S conflicts with &amp;Search a
 isearch-forward-regexp              = None
 search-backward                     = None
 search-forward                      = None
-search-return-to-origin             = None
 word-search-backward                = None 
 word-search-forward                 = None
 
@@ -3390,10 +3390,7 @@ toggle-find-in-headline-option      = Alt-Ctrl-h
 toggle-find-mark-changes-option     = Alt-Ctrl-c
 toggle-find-mark-finds-option       = Alt-Ctrl-f
 toggle-find-regex-option            = Alt-Ctrl-x
-toggle-find-word-option             = Alt-Ctrl-w
-toggle-find-wrap-around-option      = Alt-Ctrl-a
-
-search-return-to-origin             = Alt+F3</t>
+toggle-find-word-option             = Alt-Ctrl-w</t>
 <t tx="ekr.20060603215208.20">full-command            = Alt-x
 # negative-argument     = None      # Alt-minus conflicts with contract-all.
 repeat-complex-command  = Ctrl-P
@@ -3592,7 +3589,8 @@ delete-comments                     = Ctrl-parenright # Shift-Ctrl-0
 delete-word                         = Ctrl-Delete
 delete-word                         = Keypad+Ctrl+Delete
 delete-spaces                       = None
-indent-region                       !text = Tab
+### Fix #1801. Bind only to body, not text.
+indent-region                       !body = Tab
 indent-region                       = ctrl-greater # Ctrl-shift-&gt;
 kill-line                           = Ctrl-k
 kill-to-end-of-line                 = None
@@ -3921,23 +3919,56 @@ for which leading whitespace is not terribly significant.
 True: @auto warns about mismatches that occur solely in leading whitespace.</t>
 <t tx="ekr.20071114072753">True: the vim plugin will open @url nodes when they are double clicked.</t>
 <t tx="ekr.20071213060239">@color</t>
-<t tx="ekr.20071213060239.1"></t>
-<t tx="ekr.20071213060239.2"></t>
-<t tx="ekr.20071213060514"></t>
 <t tx="ekr.20071213060514.1"></t>
 <t tx="ekr.20071213060514.2"># Formatting options that apply to both code and rst modes....</t>
 <t tx="ekr.20071213061454"></t>
-<t tx="ekr.20071213061454.1"></t>
+<t tx="ekr.20071213061454.1">True: Writes **node markers** for use by the http plugin.
+
+Node markers are rst named hyperlink targets. By default they look like:
+``.. _http-node-marker-N``, where N is a unique node number.
+
+`@string rst3-node-begin-marker` specifies the format of these node markers.
+
+</t>
 <t tx="ekr.20071213061454.2"></t>
-<t tx="ekr.20071213061454.3"></t>
-<t tx="ekr.20071213061504"></t>
-<t tx="ekr.20071213061504.1"></t>
-<t tx="ekr.20071213061504.2"></t>
-<t tx="ekr.20071213061504.3"></t>
+<t tx="ekr.20071213061454.3">The string used for node markers.  See `@bool rst3-http-server-support`.
+</t>
+<t tx="ekr.20071213061504">The path to be prepended to *relative* filenames given in @rst nodes.
+
+This setting has no effect for *absolute* filenames.</t>
+<t tx="ekr.20071213061504.1">The name of the stylesheet passed to docutils.
+
+This setting has effect only if `@bool rst3-call-docutils = True`.
+</t>
+<t tx="ekr.20071213061504.2">The directory containing the stylesheet passed to docutils.
+
+This setting has effect only if `@bool rst3-call-docutils = True`.
+</t>
+<t tx="ekr.20071213061504.3">This setting has effect only if `@bool rst3-call-docutils = True`.
+
+This setting gives arguments to be passed to ``docutils.core.Publisher().publish()``
+when no stylesheet is in effect.
+
+The setting should be comma-separated list of strings: For example, the option::
+
+    publish-argv-for-missing-stylesheets=--language=de,--documentclass=report,--use-latex-toc
+
+results in the call::
+
+    publish(['--language=de','--documentclass=report','--use-latex-toc'])</t>
 <t tx="ekr.20071213061811"></t>
-<t tx="ekr.20071213061811.1"></t>
-<t tx="ekr.20071213061811.2"></t>
-<t tx="ekr.20071213061811.3">Required if using Sphinx markup.</t>
+<t tx="ekr.20071213061811.1">The underlining characters to be used to specify rST sections.
+
+The first character is reserved (not used) so you can specify the top-level
+section explicitly.</t>
+<t tx="ekr.20071213061811.2">**True**: write additional informational messages to the log.</t>
+<t tx="ekr.20071213061811.3">True: writes the intermediate file to the external file system.
+      Must be True when using Sphinx.
+    
+The name of the intermediate file is the name of the output file with the extension given by
+
+`@string rst3-write-intermediate-extension`.
+</t>
 <t tx="ekr.20071213061923"># True: generate rst markup from @code and @doc parts.</t>
 <t tx="ekr.20071213061923.1"># True: generate only from @doc parts.</t>
 <t tx="ekr.20071213061923.2"># True: generate rst markup. False: generate plain text.</t>
@@ -4659,8 +4690,7 @@ print ('done')
     
 .. rst3: filename: &lt;filename&gt;
 
-at start of intermediate file. Requires rst3_generate_rst and
-rst3_write_intermediate_file options both to be true.</t>
+at these start of the output.</t>
 <t tx="ekr.20090430173906.1">@nocolor-node
 
 The rST markup string preceding code parts.
@@ -5370,8 +5400,12 @@ action will be used instead.</t>
 vr-toggle = Alt-0</t>
 <t tx="ekr.20131007055150.13034"></t>
 <t tx="ekr.20131008181812.17533">False: disable all drag and drop operations in the outline.</t>
-<t tx="ekr.20131009050634.17656"></t>
-<t tx="ekr.20131027064821.18683"></t>
+<t tx="ekr.20131009050634.17656">True: Call docutils to process the intermediate file.
+
+Set this option to False when using Sphinx.</t>
+<t tx="ekr.20131027064821.18683">The extention appended to the names of intermediate files.
+
+See `@bool rst3-write-intermediate-file`</t>
 <t tx="ekr.20131112150804.18737">True: the execute-script command executes the entire body, even if text is selected.</t>
 <t tx="ekr.20131112161153.4420">True: use built-in vim emulation.</t>
 <t tx="ekr.20131115075142.18226">\@outline-data nodes and their descendants create settings whose values are
@@ -5531,7 +5565,6 @@ minibuffer-find-mode    use-find-dialog     mode: Ctrl-F puts focus in
 <t tx="ekr.20131213135427.21929"></t>
 <t tx="ekr.20131213135427.21930"></t>
 <t tx="ekr.20131213135427.21931"></t>
-<t tx="ekr.20131213135427.21932"></t>
 <t tx="ekr.20131213135427.21933"></t>
 <t tx="ekr.20131213135427.21934"></t>
 <t tx="ekr.20131213135427.21935"></t>
@@ -5697,8 +5730,6 @@ minibuffer-find-mode    use-find-dialog     mode: Ctrl-F puts focus in
 <t tx="ekr.20131213135427.22131"></t>
 <t tx="ekr.20131213135427.22132"></t>
 <t tx="ekr.20131213135427.22133"></t>
-<t tx="ekr.20131213135427.22134"></t>
-<t tx="ekr.20131213135427.22135"></t>
 <t tx="ekr.20131213135427.22136"></t>
 <t tx="ekr.20131213135427.22139"></t>
 <t tx="ekr.20131213135427.22140"></t>
@@ -5736,7 +5767,6 @@ minibuffer-find-mode    use-find-dialog     mode: Ctrl-F puts focus in
 <t tx="ekr.20131213135427.22211"></t>
 <t tx="ekr.20131213135427.22212"></t>
 <t tx="ekr.20131213135427.22223"></t>
-<t tx="ekr.20131213135427.22224"></t>
 <t tx="ekr.20131213135427.22225"></t>
 <t tx="ekr.20131213135427.22226"></t>
 <t tx="ekr.20131213135427.22229"></t>
@@ -6144,7 +6174,6 @@ toggle-find-mark-changes-option     = None
 toggle-find-mark-finds-option       = None
 toggle-find-regex-option            = None
 toggle-find-word-option             = None
-toggle-find-wrap-around-option      = None
 toggle-split-direction          = None
 transpose-chars                 = Ctrl-t
 transpose-lines                 = None
@@ -6391,17 +6420,9 @@ forward-sentence-extend-selection   = None
 forward-word                        = None
 forward-word-extend-selection       = None
 full-command                        = None
-# fully-expand-body-pane              = None
-# fully-expand-log-pane               = None
-# fully-expand-outline-pane           = None
-# fully-expand-pane                   = None
 gc-collect-garbage                  = None
 gc-dump-all-objects                 = None
-gc-dump-new-objects                 = None
-gc-dump-objects-verbose             = None
 gc-show-summary                     = None
-# gc-trace-disable                  = None
-# gc-trace-enable                   = None
 get-ipython-results                 = None
 go-back                             = None
 go-forward                          = None
@@ -6578,7 +6599,6 @@ scroll-up-line                      = None
 scroll-up-page                      = None
 search-backward                     = None
 search-forward                      = None
-search-return-to-origin             = None
 select-all                          = None
 set-colors                          = None
 set-comment-column                  = None
@@ -6593,7 +6613,6 @@ set-command-state                   = None
 set-insert-state                    = None
 # set-mark-command                  = None
 set-overwrite-state                 = None
-set-replace-string                  = None
 settings                            = None
 shell-command                       = None
 shell-command-on-region             = None
@@ -6640,7 +6659,6 @@ toggle-find-mark-changes-option     = None
 toggle-find-mark-finds-option       = None
 toggle-find-regex-option            = None
 toggle-find-word-option             = None
-toggle-find-wrap-around-option      = None
 toggle-split-direction              = None
 transpose-chars                     = None
 transpose-lines                     = None
@@ -9658,8 +9676,6 @@ To enable:
 <t tx="ekr.20150626060719.1"></t>
 <t tx="ekr.20150626060837.1"></t>
 <t tx="ekr.20150626061905.1"></t>
-<t tx="ekr.20150629172742.1">True: Match each cloned node only once.
-False: Match each cloned node for every cloned instance.</t>
 <t tx="ekr.20150701052157.1"></t>
 <t tx="ekr.20150701052212.2"></t>
 <t tx="ekr.20150701052212.3"></t>
@@ -10197,7 +10213,6 @@ find-character-extend-selection             = None
 
 # To start finds and changes...
 # start-search                        = Ctrl-f
-set-replace-string                  = Ctrl-Alt-e
 #find-tab-hide                       = None
 #find-tab-open                       = None
 
@@ -10231,7 +10246,6 @@ toggle-find-mark-changes-option     = None
 toggle-find-mark-finds-option       = None
 toggle-find-regex-option            = None
 toggle-find-word-option             = None
-toggle-find-wrap-around-option      = None
 
 ###
 
@@ -10912,7 +10926,6 @@ arg:    C:\apps\SciTE\scite.exe
 kind:   subprocess.Popen
 arg:    "%ProgramFiles%/Windows NT/Accessories/wordpad.exe"
 </t>
-<t tx="ekr.20171229135829.1"></t>
 <t tx="ekr.20171229135843.1"></t>
 <t tx="ekr.20180117074230.1"># True: Show user tips on startup.</t>
 <t tx="ekr.20180124050114.1">For each @button node, Leo adds right-click menu items for:
@@ -11395,12 +11408,9 @@ Bookmarks are created as the first node in the outline which has been
 opened longest. You can this setting to specify an alternative location.
 For example: /home/tbrown/.bookmarks.leo#@bookmarks--&gt;Incoming
 </t>
-<t tx="ekr.20200227064211.1"></t>
+<t tx="ekr.20200227064211.1">@nosearch</t>
 <t tx="ekr.20200227181439.1">True: find-def (ctrl-click on word) creates a clone of the defining node.</t>
 <t tx="ekr.20200229053354.1"></t>
-<t tx="ekr.20200518065357.1">True: Remove Shift modifier when the desired key is a colon or semicolon.
-      This fixes an infelicity in German keyboards.
-</t>
 <t tx="ekr.20200620060909.1">True: The cython importer will copy the first decorator preceding a
       function/method into the headline of the imported node.
       
@@ -11585,6 +11595,21 @@ False: Use ``asciidoc``</t>
 <t tx="ekr.20201021110940.1">URL for RsT Stylesheet</t>
 <t tx="ekr.20201118055941.1"></t>
 <t tx="ekr.20201118060235.1"></t>
+<t tx="ekr.20210324162150.1"></t>
+<t tx="ekr.20210327192658.1"></t>
+<t tx="ekr.20210327193058.1"></t>
+<t tx="ekr.20210327193418.1">This setting has effect only if `@bool rst3-call-docutils = True`.
+
+True: Docutils will embed a the stylesheet in the output file.
+False: Docutils will link to an external stylesheet file.</t>
+<t tx="ekr.20210327193736.1"></t>
+<t tx="ekr.20210327193806.1"></t>
+<t tx="ekr.20210327193854.1"></t>
+<t tx="ekr.20210327194119.1"></t>
+<t tx="ekr.20210412113510.1">default-keyboard: No late alterations.
+
+german:  Remove *plain* Shift modifier for colon and semicolon.
+spanish: Remove *plain* Shift modifier for colon and semicolon.</t>
 <t tx="jlunz.20150821113251.1">def html_tag():
     """expand &lt;tag&gt; to 
        &lt;tag&gt;\n&lt;/tag&gt; with proper indendation"""

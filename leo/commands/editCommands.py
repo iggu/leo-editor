@@ -976,7 +976,7 @@ class EditCommandsClass(BaseEditCommandsClass):
             return
         self._setIconListHelper(p, l, p.v, setDirty)
         if g.app.gui.guiName() == 'qt':
-            self.c.frame.tree.updateIcon(p, True)
+            self.c.frame.tree.updateAllIcons(p)
     #@+node:ekr.20150514063305.235: *6* ec._setIconListHelper
     def _setIconListHelper(self, p, subl, uaLoc, setDirty):
         """icon setting code common between v and t nodes
@@ -1159,6 +1159,20 @@ class EditCommandsClass(BaseEditCommandsClass):
         finally:
             self.endCommand(changed=True, setLabel=True)
     #@+node:ekr.20150514063305.245: *3* ec: info
+    #@+node:ekr.20210311154956.1: *4* ec.copyGnx
+    @cmd('copy-gnx')
+    def copyGnx(self, event):
+        """Copy c.p.gnx to the clipboard and display it in the status area."""
+        c = self.c
+        if not c:
+            return
+        gnx = c.p and c.p.gnx
+        if not gnx:
+            return
+        g.app.gui.replaceClipboardWith(gnx)
+        status_line = getattr(c.frame, "statusLine", None)
+        if status_line:
+            status_line.put(f"gnx: {gnx}")
     #@+node:ekr.20150514063305.247: *4* ec.lineNumber
     @cmd('line-number')
     def lineNumber(self, event):
@@ -1174,7 +1188,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         k.setLabelGrey(
             'char: %s row: %d col: %d pos: %d (%d%% of %d)' % (
                 repr(s[i]), row, col, i, percent, len(s)))
-    #@+node:ekr.20150514063305.248: *4* ec.k.viewLossage
+    #@+node:ekr.20150514063305.248: *4* ec.viewLossage
     @cmd('view-lossage')
     def viewLossage(self, event):
         """Put the Emacs-lossage in the minibuffer label."""
@@ -1550,7 +1564,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         self.beginCommand(w, undoType='insert-newline-and-indent')
         oldSel = w.getSelectionRange()
         self.insertNewlineHelper(w=w, oldSel=oldSel, undoType=None)
-        self.updateTab(p, w, smartTab=False)
+        self.updateTab(event, p, w, smartTab=False)
         k.setInputState('insert')
         k.showStateAndMode()
         self.endCommand(changed=True, setLabel=False)
@@ -1681,12 +1695,12 @@ class EditCommandsClass(BaseEditCommandsClass):
         #@-<< set local vars >>
         if not ch:
             return
-        if trace: g.trace('ch', repr(ch)) # and ch in '\n\r\t'
+        if trace: g.trace('ch', repr(ch))  # and ch in '\n\r\t'
         assert g.isStrokeOrNone(stroke)
         if g.doHook("bodykey1", c=c, p=p, ch=ch, oldSel=oldSel, undoType=undoType):
             return
         if ch == '\t':
-            self.updateTab(p, w, smartTab=True)
+            self.updateTab(event, p, w, smartTab=True)
         elif ch == '\b':
             # This is correct: we only come here if there no bindngs for this key.
             self.backwardDeleteCharacter(event)
@@ -1897,7 +1911,7 @@ class EditCommandsClass(BaseEditCommandsClass):
                 w.insert(i, ch)
                 w.setInsertPoint(i + 1)
     #@+node:ekr.20150514063305.277: *5* ec.updateTab
-    def updateTab(self, p, w, smartTab=True):
+    def updateTab(self, event, p, w, smartTab=True):
         """
         A helper for selfInsertCommand.
 
@@ -1907,7 +1921,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         i, j = w.getSelectionRange()
             # Returns insert point if no selection, with i <= j.
         if i != j:
-            c.indentBody()
+            c.indentBody(event)
             return
         tab_width = c.getTabWidth(p)
         # Get the preceeding characters.
